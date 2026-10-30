@@ -1,0 +1,30 @@
+{
+	"name": "@merijnslegers/migrations",
+	"version": "0.1.0",
+	"description": "Run Supabase migrations on every production deploy, and check that every new table gets its grant and row level security.",
+	"type": "module",
+	"bin": {
+		"run-migrations": "./bin/run-migrations.js"
+	},
+	"exports": {
+		"./checks": {
+			"types": "./src/checks.d.ts",
+			"default": "./src/checks.js"
+		}
+	},
+	"files": ["bin", "src", "README.md"],
+	"engines": {
+		"node": ">=22"
+	},
+	"dependencies": {
+		"pg": "^8.23.1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Merijnslegers90/software-factory.git",
+		"directory": "packages/migrations"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

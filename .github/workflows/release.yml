@@ -1,0 +1,65 @@
+# Publishes a package to npm when its version on main is not on npm yet. A
+# release is therefore a pull request that raises the version in
+# packages/<name>/package.json; nothing else, no tags.
+#
+# Uses npm's trusted publishing: npm checks that the release comes from this
+# workflow in this repo, so no npm token is stored in GitHub. The first
+# version of a package is published by hand, because trusted publishing can
+# only be set up on a package that exists (see packages/README.md).
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# Two releases of the same package at once would race for the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [migrations, config]
+
+    defaults:
+      run:
+        working-directory: packages/${{ matrix.package }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or later; Node 22 ships npm 10.
+      - name: Update npm
+        run: npm install -g npm@11
+
+      - name: Tests
+        working-directory: .
+        run: node --test "packages/${{ matrix.package }}/test/*.test.mjs"
+
+      - name: Publish if this version is new
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "$name@$version is already on npm; nothing to publish."
+          else
+            npm publish --access public
+          fi
