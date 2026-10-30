@@ -1,0 +1,16 @@
+{
+	"name": "software-factory",
+	"owner": {
+		"name": "Merijn Slegers"
+	},
+	"metadata": {
+		"description": "The software factory: skills, agents and decisions that make every product get built the same way."
+	},
+	"plugins": [
+		{
+			"name": "software-factory",
+			"source": "./plugins/software-factory",
+			"description": "Factory decisions, skills for migrations and ADRs, and a review agent that checks a change against the rules."
+		}
+	]
+}

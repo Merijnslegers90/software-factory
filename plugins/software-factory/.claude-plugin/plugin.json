@@ -1,0 +1,9 @@
+{
+	"name": "software-factory",
+	"version": "0.1.0",
+	"description": "Factory decisions, skills for migrations and ADRs, and a review agent that checks a change against the rules.",
+	"author": {
+		"name": "Merijn Slegers"
+	},
+	"repository": "https://github.com/Merijnslegers90/software-factory"
+}
