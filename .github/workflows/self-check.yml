@@ -1,7 +1,7 @@
-# Controleert deze repo zelf: de besluiten, de plugin en dat er niets in staat
-# wat in een publieke repo niet hoort. Zonder afhankelijkheden, met de
-# testrunner van Node.
-name: Zelfcontrole
+# Checks this repo itself: the decisions, the plugin, and that nothing is in
+# it that does not belong in a public repo. No dependencies, using Node's own
+# test runner.
+name: Self-check
 
 on:
   push:
@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  controle:
-    name: Besluiten, plugin en publiek
+  check:
+    name: Decisions, plugin and public
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -27,8 +27,8 @@ jobs:
       - name: Tests
         run: npm test
 
-      # Dezelfde controle die Claude Code bij het installeren doet.
-      - name: Plugin valideren
+      # The same validation Claude Code runs on install.
+      - name: Validate plugin
         run: |
           npx --yes @anthropic-ai/claude-code plugin validate .
           npx --yes @anthropic-ai/claude-code plugin validate plugins/software-factory

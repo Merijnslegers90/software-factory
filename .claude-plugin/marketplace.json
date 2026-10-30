@@ -4,13 +4,13 @@
 		"name": "Merijn Slegers"
 	},
 	"metadata": {
-		"description": "De softwarefabriek: skills, agents en besluiten die elk product op dezelfde manier laten bouwen."
+		"description": "The software factory: skills, agents and decisions that make every product get built the same way."
 	},
 	"plugins": [
 		{
 			"name": "software-factory",
 			"source": "./plugins/software-factory",
-			"description": "Fabrieksbesluiten, skills voor migraties en ADR's, en een review-agent die een wijziging aan de regels toetst."
+			"description": "Factory decisions, skills for migrations and ADRs, and a review agent that checks a change against the rules."
 		}
 	]
 }

@@ -1,7 +1,7 @@
 {
 	"name": "software-factory",
 	"version": "0.1.0",
-	"description": "Fabrieksbesluiten, skills voor migraties en ADR's, en een review-agent die een wijziging aan de regels toetst.",
+	"description": "Factory decisions, skills for migrations and ADRs, and a review agent that checks a change against the rules.",
 	"author": {
 		"name": "Merijn Slegers"
 	},

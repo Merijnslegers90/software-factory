@@ -2,75 +2,75 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { ROOT } from './bestanden.mjs';
+import { ROOT } from './files.mjs';
 
-// De fabrieksbesluiten in adr/ (F-0001). Zie adr/README.md voor de opbouw.
-const ADR_MAP = path.join(ROOT, 'adr');
-const SKILL = path.join(ROOT, 'plugins/software-factory/skills/fabrieksbesluiten/SKILL.md');
-const BESTANDSNAAM = /^F-(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$/;
-const KOPJES = ['## Context', '## Besluit', '## Gevolgen', '## In de code'];
-const STATUS = /^- \*\*Status:\*\* (voorgesteld|aangenomen|vervallen|vervangen door F-(\d{4}))$/m;
+// The factory decisions in adr/ (F-0001). See adr/README.md for the structure.
+const ADR_DIR = path.join(ROOT, 'adr');
+const SKILL = path.join(ROOT, 'plugins/software-factory/skills/factory-decisions/SKILL.md');
+const FILE_NAME = /^F-(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$/;
+const HEADINGS = ['## Context', '## Decision', '## Consequences', '## In the code'];
+const STATUS = /^- \*\*Status:\*\* (proposed|accepted|deprecated|superseded by F-(\d{4}))$/m;
 
-const adrs = readdirSync(ADR_MAP)
-	.filter((naam) => naam !== 'README.md')
+const adrs = readdirSync(ADR_DIR)
+	.filter((name) => name !== 'README.md')
 	.sort()
-	.map((naam) => ({
-		naam,
-		nummer: BESTANDSNAAM.exec(naam)?.[1],
-		tekst: readFileSync(path.join(ADR_MAP, naam), 'utf8')
+	.map((name) => ({
+		name,
+		number: FILE_NAME.exec(name)?.[1],
+		text: readFileSync(path.join(ADR_DIR, name), 'utf8')
 	}));
-const readme = readFileSync(path.join(ADR_MAP, 'README.md'), 'utf8');
+const readme = readFileSync(path.join(ADR_DIR, 'README.md'), 'utf8');
 const skill = readFileSync(SKILL, 'utf8');
 
-test('alleen bestanden in de vorm F-NNNN-titel.md, doorlopend genummerd vanaf F-0001', () => {
+test('only files named F-NNNN-title.md, numbered consecutively from F-0001', () => {
 	assert.ok(adrs.length > 0);
 	adrs.forEach((adr, i) => {
-		assert.equal(adr.nummer, String(i + 1).padStart(4, '0'), adr.naam);
+		assert.equal(adr.number, String(i + 1).padStart(4, '0'), adr.name);
 	});
 });
 
-test('elk besluit begint met zijn eigen nummer als titel', () => {
+test('every decision starts with its own number as title', () => {
 	for (const adr of adrs) {
-		assert.match(adr.tekst.split('\n')[0], new RegExp(`^# F-${adr.nummer}: \\S`), adr.naam);
+		assert.match(adr.text.split('\n')[0], new RegExp(`^# F-${adr.number}: \\S`), adr.name);
 	}
 });
 
-test('elk besluit heeft een status, een datum en de vier vaste kopjes', () => {
+test('every decision has a status, a date and the four fixed headings', () => {
 	for (const adr of adrs) {
-		assert.match(adr.tekst, STATUS, adr.naam);
-		assert.match(adr.tekst, /^- \*\*Datum:\*\* \S/m, adr.naam);
-		for (const kopje of KOPJES) {
-			assert.ok(adr.tekst.includes(`\n${kopje}\n`), `${adr.naam} mist "${kopje}"`);
+		assert.match(adr.text, STATUS, adr.name);
+		assert.match(adr.text, /^- \*\*Date:\*\* \S/m, adr.name);
+		for (const heading of HEADINGS) {
+			assert.ok(adr.text.includes(`\n${heading}\n`), `${adr.name} is missing "${heading}"`);
 		}
 	}
 });
 
-test('een vervangen besluit wijst naar een bestaand besluit dat zegt dat het hem vervangt', () => {
+test('a superseded decision points to an existing one that says it supersedes it', () => {
 	for (const adr of adrs) {
-		const opvolger = STATUS.exec(adr.tekst)?.[2];
-		if (!opvolger) continue;
-		const nieuw = adrs.find((a) => a.nummer === opvolger);
-		assert.ok(nieuw, `${adr.naam} wijst naar F-${opvolger}`);
-		assert.ok(nieuw.tekst.includes(`- **Vervangt:** F-${adr.nummer}`), nieuw.naam);
+		const successor = STATUS.exec(adr.text)?.[2];
+		if (!successor) continue;
+		const next = adrs.find((a) => a.number === successor);
+		assert.ok(next, `${adr.name} points to F-${successor}`);
+		assert.ok(next.text.includes(`- **Supersedes:** F-${adr.number}`), next.name);
 	}
 });
 
-test('elk besluit staat in de lijst in adr/README.md', () => {
+test('every decision is in the list in adr/README.md', () => {
 	for (const adr of adrs) {
-		assert.ok(readme.includes(`](${adr.naam})`), `${adr.naam} staat niet in de README`);
+		assert.ok(readme.includes(`](${adr.name})`), `${adr.name} is not in the README`);
 	}
 });
 
-test('elk geldend besluit staat in de skill fabrieksbesluiten, en de skill noemt niets anders', () => {
-	const geldend = adrs.filter((a) => !/vervangen door|vervallen/.test(STATUS.exec(a.tekst)[1]));
-	for (const adr of geldend) {
-		assert.ok(skill.includes(`adr/${adr.naam}`), `${adr.naam} staat niet in de skill`);
+test('every current decision is in the skill factory-decisions, and the skill names nothing else', () => {
+	const current = adrs.filter((a) => !/superseded by|deprecated/.test(STATUS.exec(a.text)[1]));
+	for (const adr of current) {
+		assert.ok(skill.includes(`adr/${adr.name}`), `${adr.name} is not in the skill`);
 	}
-	const genoemd = [...skill.matchAll(/adr\/(F-\d{4}-[\w-]+\.md)/g)].map((m) => m[1]);
-	for (const naam of genoemd) {
+	const named = [...skill.matchAll(/adr\/(F-\d{4}-[\w-]+\.md)/g)].map((m) => m[1]);
+	for (const name of named) {
 		assert.ok(
-			geldend.some((a) => a.naam === naam),
-			`de skill noemt ${naam}, en dat is geen geldend besluit`
+			current.some((a) => a.name === name),
+			`the skill names ${name}, which is not a current decision`
 		);
 	}
 });

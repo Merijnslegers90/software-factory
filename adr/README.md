@@ -1,62 +1,64 @@
-# Fabrieksbesluiten
+# Factory decisions
 
-Hier staan de besluiten die voor elk product van de fabriek gelden, één
-bestand per besluit. Een project houdt daarnaast zijn eigen besluiten bij in
-`docs/adr/`, voor wat alleen bij dat product hoort. Waarom het zo in twee
-lagen gaat, staat in [F-0001](F-0001-besluiten-in-twee-lagen.md).
+These are the decisions that hold for every product built by the factory, one
+file per decision. Each project also keeps its own decisions in `docs/adr/`,
+for what belongs to that product alone. Why it works in two layers is in
+[F-0001](F-0001-decisions-in-two-layers.md).
 
-## Wanneer is het een fabrieksbesluit
+## When is it a factory decision
 
-Als het voor elk product zou gelden: de stack, hoe de database wordt
-aangesproken, hoe er wordt gedeployd, wat de CI controleert. Gaat het over
-één product (een boekhoudpakket, een betaalprovider, de opbouw van een
-scherm), dan is het een projectbesluit.
+When it would hold for every product: the stack, how the database is reached,
+how deploys work, what CI checks. If it is about one product (an accounting
+package, a payment provider, how a screen is built), it is a project decision.
 
-Twijfel je, begin dan in het project. Een besluit dat in een tweede project
-terugkomt, hoort hier, en de projectbesluiten krijgen dan de status
-"vervangen door F-NNNN".
+When in doubt, start in the project. A decision that comes back in a second
+project belongs here, and the project decisions then get the status
+"superseded by F-NNNN".
 
-## Hoe
+## How
 
-- Een nieuw bestand `F-NNNN-korte-titel.md`, met het volgende vrije nummer.
-- Bovenaan `# F-NNNN: Titel`, dan de status en de datum, en daarna de vier
-  vaste kopjes: **Context**, **Besluit**, **Gevolgen** en **In de code**.
-- Status is een van: `voorgesteld`, `aangenomen`, `vervangen door F-NNNN` of
-  `vervallen`.
-- Een aangenomen besluit pas je niet achteraf aan. Verandert het, schrijf dan
-  een nieuw besluit, zet in het oude "vervangen door F-NNNN" en in het nieuwe
-  "Vervangt: F-NNNN". Een verduidelijking of een verwijzing die niet meer
-  klopt mag wel.
-- Zet het besluit in de lijst hieronder en in de lijst van de skill
-  `fabrieksbesluiten`, met de korte regel. Zo kent elke agent het.
+- A new file `F-NNNN-short-title.md`, with the next free number.
+- At the top `# F-NNNN: Title`, then the status and the date, then the four
+  fixed headings: **Context**, **Decision**, **Consequences** and **In the
+  code**.
+- Status is one of: `proposed`, `accepted`, `superseded by F-NNNN` or
+  `deprecated`.
+- An accepted decision is not edited after the fact. If it changes, write a
+  new decision, put "superseded by F-NNNN" in the old one and "Supersedes:
+  F-NNNN" in the new one. A clarification or a reference that is out of date
+  may be fixed.
+- Add the decision to the list below and to the list in the skill
+  `factory-decisions`, with its short rule. That is how every agent knows it.
 
-`tests/adr.test.mjs` controleert de nummering, de kopjes, de status, de
-verwijzingen en beide lijsten. Geen gedachtestreepjes, ook hier niet.
+`tests/adr.test.mjs` checks the numbering, headings, status, references and
+both lists. No em dashes, here too.
 
-## Hoe een project ernaar verwijst
+## How a project refers to it
 
-- Werkt een projectbesluit een fabrieksbesluit uit, zet er dan
-  `- **Volgt:** F-NNNN` onder de datum.
-- Wijkt een project bewust af, dan is dat een projectbesluit met
-  `- **Wijkt af van:** F-NNNN` en de reden in de context. Zonder zo'n besluit
-  geldt de fabriek.
-- In de `CLAUDE.md` van een project verwijst de korte regel naar het nummer,
-  net als bij een projectbesluit ("F-0004").
+- A project decision that works out a factory decision has
+  `- **Follows:** F-NNNN` below its date.
+- A project that deliberately deviates writes a project decision with
+  `- **Deviates from:** F-NNNN` and the reason in its context. Without one,
+  the factory applies.
+- A project that writes its decisions in another language may use the same
+  lines in that language (in Dutch: `Volgt` and `Wijkt af van`).
+- In a project's `CLAUDE.md`, the short rule points to the number, just like
+  for a project decision ("F-0004").
 
-Besluiten met een datum van vóór 30 oktober 2026 zijn achteraf opgeschreven
-uit wat de eerste twee producten al deden. De datum is die van het besluit
-zelf.
+Decisions dated before 30 October 2026 were written down afterwards, from
+what the first two products already did. Their date is that of the decision
+itself.
 
-## Lijst
+## List
 
-| Nr                                          | Besluit                                                       | Status     |
-| ------------------------------------------- | ------------------------------------------------------------- | ---------- |
-| [F-0001](F-0001-besluiten-in-twee-lagen.md) | Besluiten staan als ADR, in twee lagen                        | aangenomen |
-| [F-0002](F-0002-een-stack.md)               | Eén stack voor elk product                                    | aangenomen |
-| [F-0003](F-0003-migraties-bij-deploy.md)    | Migraties draaien mee bij de productie-deploy                 | aangenomen |
-| [F-0004](F-0004-database-alleen-server.md)  | De database alleen vanaf de server, met service_role          | aangenomen |
-| [F-0005](F-0005-uit-zonder-sleutel.md)      | Een functie die een sleutel nodig heeft, staat uit zonder     | aangenomen |
-| [F-0006](F-0006-logica-puur-en-getest.md)   | Logica puur en getest, de buitenwereld in server-only modules | aangenomen |
-| [F-0007](F-0007-een-kwaliteitscontrole.md)  | Elke wijziging gaat door dezelfde kwaliteitscontrole          | aangenomen |
-| [F-0008](F-0008-afbeeldingen-verkleinen.md) | Afbeeldingen worden in de browser verkleind voor de upload    | aangenomen |
-| [F-0009](F-0009-een-project-per-product.md) | Elk product een eigen Supabase-project                        | aangenomen |
+| No                                               | Decision                                              | Status   |
+| ------------------------------------------------ | ----------------------------------------------------- | -------- |
+| [F-0001](F-0001-decisions-in-two-layers.md)      | Decisions are ADRs, in two layers                     | accepted |
+| [F-0002](F-0002-one-stack.md)                    | One stack for every product                           | accepted |
+| [F-0003](F-0003-migrations-on-deploy.md)         | Migrations run with the production deploy             | accepted |
+| [F-0004](F-0004-database-server-only.md)         | The database only from the server, with service_role  | accepted |
+| [F-0005](F-0005-off-without-key.md)              | A feature that needs a key is off without it          | accepted |
+| [F-0006](F-0006-pure-tested-logic.md)            | Pure, tested logic; the outside world in server-only  | accepted |
+| [F-0007](F-0007-one-quality-check.md)            | Every change goes through the same quality check      | accepted |
+| [F-0008](F-0008-resize-images-in-browser.md)     | Images are resized in the browser before upload       | accepted |
+| [F-0009](F-0009-one-project-per-product.md)      | Every product its own Supabase project                | accepted |

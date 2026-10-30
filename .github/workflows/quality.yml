@@ -1,0 +1,107 @@
+# The factory's quality check (F-0007). A project calls this workflow instead
+# of maintaining its own variant:
+#
+#   jobs:
+#     quality:
+#       uses: Merijnslegers90/software-factory/.github/workflows/quality.yml@v1
+#       with:
+#         e2e: true
+#
+# Runs lint, check, test and build, and optionally the end-to-end tests, with
+# the fake values from .env.example. No secrets are needed and no external
+# service is called (F-0005). Building and publishing is Vercel's job; this
+# workflow only checks that everything still holds.
+name: Quality
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node version.
+        type: string
+        default: '22'
+      pnpm-version:
+        description: pnpm version. Leave empty to take "packageManager" from package.json.
+        type: string
+        default: ''
+      env-file:
+        description: File with fake values that is copied to .env.
+        type: string
+        default: .env.example
+      build:
+        description: Whether the production build runs.
+        type: boolean
+        default: true
+      e2e:
+        description: Whether the Playwright end-to-end tests run.
+        type: boolean
+        default: false
+      timeout-minutes:
+        description: How long the check may take.
+        type: number
+        default: 20
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Lint, types, tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-version }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The type check and the build want a .env; the fake values suffice.
+      - name: Prepare env
+        env:
+          ENV_FILE: ${{ inputs.env-file }}
+        run: |
+          if [ -f "$ENV_FILE" ]; then
+            cp "$ENV_FILE" .env
+          else
+            echo "No $ENV_FILE found; continuing without .env."
+          fi
+
+      - name: Format and lint
+        run: pnpm run lint
+
+      - name: Type check
+        run: pnpm run check
+
+      - name: Unit tests
+        run: pnpm run test
+
+      - name: Build
+        if: inputs.build
+        run: pnpm run build
+
+      # Chromium only: the e2e tests do not run per browser.
+      - name: Install browser
+        if: inputs.e2e
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        if: inputs.e2e
+        run: pnpm run test:e2e
+
+      - name: Keep the Playwright report on failure
+        if: failure() && inputs.e2e
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

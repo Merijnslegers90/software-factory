@@ -2,48 +2,48 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
-import { ROOT, frontmatter } from './bestanden.mjs';
+import { ROOT, frontmatter } from './files.mjs';
 
-const leesJson = (bestand) => JSON.parse(readFileSync(path.join(ROOT, bestand), 'utf8'));
-const marketplace = leesJson('.claude-plugin/marketplace.json');
+const readJson = (file) => JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
+const marketplace = readJson('.claude-plugin/marketplace.json');
 
-test('elke plugin in de marketplace bestaat en heeft dezelfde naam in zijn plugin.json', () => {
+test('every plugin in the marketplace exists and has the same name in its plugin.json', () => {
 	assert.ok(marketplace.plugins.length > 0);
 	for (const plugin of marketplace.plugins) {
 		const manifest = path.join(plugin.source, '.claude-plugin/plugin.json');
-		assert.ok(existsSync(path.join(ROOT, manifest)), `${manifest} ontbreekt`);
-		assert.equal(leesJson(manifest).name, plugin.name);
+		assert.ok(existsSync(path.join(ROOT, manifest)), `${manifest} is missing`);
+		assert.equal(readJson(manifest).name, plugin.name);
 	}
 });
 
 for (const plugin of marketplace.plugins) {
-	const map = path.join(ROOT, plugin.source);
+	const dir = path.join(ROOT, plugin.source);
 
-	test(`${plugin.name}: elke skill heeft een SKILL.md met zijn eigen naam en een beschrijving`, () => {
-		const skills = readdirSync(path.join(map, 'skills'));
+	test(`${plugin.name}: every skill has a SKILL.md with its own name and a description`, () => {
+		const skills = readdirSync(path.join(dir, 'skills'));
 		assert.ok(skills.length > 0);
 		for (const skill of skills) {
-			const velden = frontmatter(readFileSync(path.join(map, 'skills', skill, 'SKILL.md'), 'utf8'));
-			assert.ok(velden, `${skill}/SKILL.md heeft geen frontmatter`);
-			assert.equal(velden.name, skill);
-			assert.ok(velden.description?.length > 40, `${skill} heeft een te korte beschrijving`);
-			assert.ok(velden.description.length <= 1024, `${skill} heeft een te lange beschrijving`);
+			const fields = frontmatter(readFileSync(path.join(dir, 'skills', skill, 'SKILL.md'), 'utf8'));
+			assert.ok(fields, `${skill}/SKILL.md has no frontmatter`);
+			assert.equal(fields.name, skill);
+			assert.ok(fields.description?.length > 40, `${skill} has too short a description`);
+			assert.ok(fields.description.length <= 1024, `${skill} has too long a description`);
 		}
 	});
 
-	test(`${plugin.name}: elke agent heeft een naam gelijk aan zijn bestand en een beschrijving`, () => {
-		for (const bestand of readdirSync(path.join(map, 'agents'))) {
-			const velden = frontmatter(readFileSync(path.join(map, 'agents', bestand), 'utf8'));
-			assert.ok(velden, `${bestand} heeft geen frontmatter`);
-			assert.equal(velden.name, bestand.replace(/\.md$/, ''));
-			assert.ok(velden.description?.length > 40, `${bestand} heeft een te korte beschrijving`);
+	test(`${plugin.name}: every agent has a name equal to its file and a description`, () => {
+		for (const file of readdirSync(path.join(dir, 'agents'))) {
+			const fields = frontmatter(readFileSync(path.join(dir, 'agents', file), 'utf8'));
+			assert.ok(fields, `${file} has no frontmatter`);
+			assert.equal(fields.name, file.replace(/\.md$/, ''));
+			assert.ok(fields.description?.length > 40, `${file} has too short a description`);
 		}
 	});
 }
 
-// Een geïnstalleerde plugin kan niet buiten zijn eigen map lezen. De besluiten
-// komen daarom via een symlink mee, en die moet naar adr/ wijzen.
-test('de skill fabrieksbesluiten heeft de besluiten via een symlink naar adr/', () => {
-	const link = path.join(ROOT, 'plugins/software-factory/skills/fabrieksbesluiten/adr');
+// An installed plugin cannot read outside its own folder. The decisions
+// therefore come along through a symlink, which must point to adr/.
+test('the skill factory-decisions has the decisions through a symlink to adr/', () => {
+	const link = path.join(ROOT, 'plugins/software-factory/skills/factory-decisions/adr');
 	assert.equal(realpathSync(link), realpathSync(path.join(ROOT, 'adr')));
 });
