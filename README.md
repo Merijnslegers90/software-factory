@@ -131,3 +131,7 @@ claude plugin validate plugins/software-factory
 ```
 
 The workflow `self-check.yml` runs them on every pull request.
+
+## License
+
+MIT, see [LICENSE](LICENSE). The packages carry the same license.

@@ -2,6 +2,7 @@
 	"name": "@merijnslegers/migrations",
 	"version": "0.1.0",
 	"description": "Run Supabase migrations on every production deploy, and check that every new table gets its grant and row level security.",
+	"license": "MIT",
 	"type": "module",
 	"bin": {
 		"run-migrations": "./bin/run-migrations.js"
@@ -12,7 +13,11 @@
 			"default": "./src/checks.js"
 		}
 	},
-	"files": ["bin", "src", "README.md"],
+	"files": [
+		"bin",
+		"src",
+		"README.md"
+	],
 	"engines": {
 		"node": ">=22"
 	},
