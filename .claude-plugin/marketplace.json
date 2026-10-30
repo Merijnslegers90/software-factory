@@ -1,0 +1,16 @@
+{
+	"name": "software-factory",
+	"owner": {
+		"name": "Merijn Slegers"
+	},
+	"metadata": {
+		"description": "De softwarefabriek: skills, agents en besluiten die elk product op dezelfde manier laten bouwen."
+	},
+	"plugins": [
+		{
+			"name": "software-factory",
+			"source": "./plugins/software-factory",
+			"description": "Fabrieksbesluiten, skills voor migraties en ADR's, en een review-agent die een wijziging aan de regels toetst."
+		}
+	]
+}

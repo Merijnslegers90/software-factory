@@ -1,0 +1,107 @@
+# De kwaliteitscontrole van de fabriek (F-0007). Een project roept deze
+# workflow aan in plaats van een eigen variant bij te houden:
+#
+#   jobs:
+#     kwaliteit:
+#       uses: Merijnslegers90/software-factory/.github/workflows/kwaliteit.yml@v1
+#       with:
+#         e2e: true
+#
+# Draait lint, check, test en build, en desgewenst de end-to-end-tests, met de
+# nepwaarden uit .env.example. Er zijn dus geen secrets nodig en er wordt geen
+# externe dienst aangeroepen (F-0005). Bouwen en publiceren doet Vercel; deze
+# workflow kijkt alleen of alles nog klopt.
+name: Kwaliteit
+
+on:
+  workflow_call:
+    inputs:
+      node-versie:
+        description: Versie van Node.
+        type: string
+        default: '22'
+      pnpm-versie:
+        description: Versie van pnpm. Leeg laten om "packageManager" uit package.json te nemen.
+        type: string
+        default: ''
+      env-bestand:
+        description: Bestand met nepwaarden dat als .env wordt klaargezet.
+        type: string
+        default: .env.example
+      build:
+        description: Of de productiebuild meedraait.
+        type: boolean
+        default: true
+      e2e:
+        description: Of de end-to-end-tests met Playwright meedraaien.
+        type: boolean
+        default: false
+      timeout-minuten:
+        description: Hoe lang de controle mag duren.
+        type: number
+        default: 20
+
+permissions:
+  contents: read
+
+jobs:
+  controle:
+    name: Lint, types, tests en build
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minuten }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ inputs.pnpm-versie }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-versie }}
+          cache: pnpm
+
+      - name: Afhankelijkheden installeren
+        run: pnpm install --frozen-lockfile
+
+      # De typecheck en de build willen een .env; de nepwaarden volstaan.
+      - name: Env klaarzetten
+        env:
+          ENV_BESTAND: ${{ inputs.env-bestand }}
+        run: |
+          if [ -f "$ENV_BESTAND" ]; then
+            cp "$ENV_BESTAND" .env
+          else
+            echo "Geen $ENV_BESTAND gevonden; zonder .env verder."
+          fi
+
+      - name: Opmaak en lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run check
+
+      - name: Unit-tests
+        run: pnpm run test
+
+      - name: Build
+        if: inputs.build
+        run: pnpm run build
+
+      # Alleen chromium: de e2e-tests draaien niet per browser.
+      - name: Browser installeren
+        if: inputs.e2e
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end-tests
+        if: inputs.e2e
+        run: pnpm run test:e2e
+
+      - name: Playwright-rapport bewaren bij een fout
+        if: failure() && inputs.e2e
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-rapport
+          path: playwright-report/
+          retention-days: 7

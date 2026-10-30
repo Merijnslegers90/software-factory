@@ -1,0 +1,9 @@
+{
+	"name": "software-factory",
+	"version": "0.1.0",
+	"description": "Fabrieksbesluiten, skills voor migraties en ADR's, en een review-agent die een wijziging aan de regels toetst.",
+	"author": {
+		"name": "Merijn Slegers"
+	},
+	"repository": "https://github.com/Merijnslegers90/software-factory"
+}
