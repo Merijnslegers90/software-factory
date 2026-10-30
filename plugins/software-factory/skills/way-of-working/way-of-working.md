@@ -1,0 +1,1 @@
+../../../../docs/way-of-working.md

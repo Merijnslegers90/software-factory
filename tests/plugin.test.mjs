@@ -58,9 +58,16 @@ for (const plugin of marketplace.plugins) {
 	});
 }
 
-// An installed plugin cannot read outside its own folder. The decisions
-// therefore come along through a symlink, which must point to adr/.
-test('the skill factory-decisions has the decisions through a symlink to adr/', () => {
-	const link = path.join(ROOT, 'plugins/software-factory/skills/factory-decisions/adr');
-	assert.equal(realpathSync(link), realpathSync(path.join(ROOT, 'adr')));
-});
+// An installed plugin cannot read outside its own folder. The decisions and
+// the way of working therefore come along through symlinks into the skills.
+const LINKS = [
+	['skills/factory-decisions/adr', 'adr'],
+	['skills/way-of-working/way-of-working.md', 'docs/way-of-working.md']
+];
+
+for (const [link, target] of LINKS) {
+	test(`${link} is a symlink to ${target}`, () => {
+		const from = path.join(ROOT, 'plugins/software-factory', link);
+		assert.equal(realpathSync(from), realpathSync(path.join(ROOT, target)));
+	});
+}
