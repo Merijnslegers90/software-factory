@@ -1,6 +1,6 @@
 ---
 name: fabrieksbesluiten
-description: De besluiten die voor elk product van de fabriek gelden (stack, database, migraties, sleutels, tests, CI, afbeeldingen). Gebruik dit voordat je een keuze maakt over architectuur, de database, een externe dienst, omgevingsvariabelen, tests of de CI, en bij elke review.
+description: De besluiten die voor elk product van de fabriek gelden (stack, database, migraties, sleutels, tests, CI, afbeeldingen, een project per product). Gebruik dit voordat je een keuze maakt over architectuur, de database, een externe dienst, omgevingsvariabelen, tests of de CI, en bij elke review.
 ---
 
 # Fabrieksbesluiten
@@ -27,6 +27,7 @@ werk het raakt.
 | F-0006 | Rekenwerk en regels in pure modules met een test ernaast; database en diensten in dunne server-only modules. Een test die een besluit afdwingt, noemt het nummer.                     | `adr/F-0006-logica-puur-en-getest.md`   |
 | F-0007 | Elke PR gaat door de centrale workflow `kwaliteit.yml` (zonder secrets) en door de agent `fabrieksreview` voordat hij wordt gemerged.                                                 | `adr/F-0007-een-kwaliteitscontrole.md`  |
 | F-0008 | Afbeeldingen worden in de browser verkleind voor de upload, naar een vaste breedte per soort; alleen wat buitenstaanders laden staat in een publieke bucket.                          | `adr/F-0008-afbeeldingen-verkleinen.md` |
+| F-0009 | Elk product een eigen Supabase-project met eigen sleutels. Nooit twee producten in één project, behalve met een projectbesluit dat afwijkt.                                     | `adr/F-0009-een-project-per-product.md` |
 
 ## Als je werk een besluit raakt
 

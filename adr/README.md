@@ -59,3 +59,4 @@ zelf.
 | [F-0006](F-0006-logica-puur-en-getest.md)   | Logica puur en getest, de buitenwereld in server-only modules | aangenomen |
 | [F-0007](F-0007-een-kwaliteitscontrole.md)  | Elke wijziging gaat door dezelfde kwaliteitscontrole          | aangenomen |
 | [F-0008](F-0008-afbeeldingen-verkleinen.md) | Afbeeldingen worden in de browser verkleind voor de upload    | aangenomen |
+| [F-0009](F-0009-een-project-per-product.md) | Elk product een eigen Supabase-project                        | aangenomen |
