@@ -17,17 +17,19 @@ plugins/software-factory/
   skills/factory-decisions/       loads the factory decisions, so every agent knows them
   skills/new-migration/           a Supabase migration with grants and RLS
   skills/write-adr/               record a decision in the right layer
+  skills/way-of-working/          loads the way of working (writing, pull requests)
   agents/factory-review.md        checks a change against the rules and decisions
   hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
 adr/                              factory decisions (F-0001, F-0002, ...)
+docs/way-of-working.md            how we write and describe a change
 .github/workflows/quality.yml     reusable CI workflow
 tests/                            checks on this repo itself
 ```
 
 Still to build: a hook for lint and format after a change, the shared packages
 under `packages/` (`migrations`, `config`, `admin`, `mail`), skills for an
-admin screen, a mail type, a spec and a new product, and the way of working in
-`docs/way-of-working.md`.
+admin screen, a mail type, a spec and a new product, and the spec format and
+the loop in `docs/way-of-working.md`.
 
 ## Connecting a project
 
@@ -52,8 +54,8 @@ To install it on its own, outside a project:
 `/plugin install software-factory --marketplace Merijnslegers90/software-factory`.
 
 The skills are called `software-factory:factory-decisions`,
-`software-factory:new-migration` and `software-factory:write-adr`, the agent
-`software-factory:factory-review`.
+`software-factory:way-of-working`, `software-factory:new-migration` and
+`software-factory:write-adr`, the agent `software-factory:factory-review`.
 
 **CI.** Replace the project's own workflow with a call to the central one:
 

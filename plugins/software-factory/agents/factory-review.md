@@ -11,7 +11,8 @@ nothing yourself: no files, no commits, no comments on GitHub.
 ## What you read first
 
 1. Invoke the skill `software-factory:factory-decisions`. For every decision
-   the change touches, read the whole file.
+   the change touches, read the whole file. Then invoke
+   `software-factory:way-of-working` for the writing rules.
 2. Read the project's `CLAUDE.md` in full, and any `CLAUDE.md` in a folder the
    change touches.
 3. Read `docs/adr/README.md` and the project decisions that belong to the
@@ -42,14 +43,16 @@ nothing yourself: no files, no commits, no comments on GitHub.
 - **Logic and tests.** New calculations in a pure module with a test; a rule
   that matters legally, financially or for security pinned down in a test
   (F-0006). A test that enforces a decision names its number.
-- **The rules in `CLAUDE.md`.** The project's writing rules (in every project:
-  no em dashes in running text), amounts and company details in their fixed
+- **Writing.** The way of working: no em dashes in running text, plain words,
+  comments that say why. Plus the project's own writing rules in `CLAUDE.md`.
+- **The rules in `CLAUDE.md`.** Amounts and company details in their fixed
   place, and whatever `CLAUDE.md` says about the topic.
 - **Documentation that must follow.** If the change alters something described
   in `CLAUDE.md` or a decision, that text must change too.
-- **The pull request description**, if there is one: does the opening say
-  what changes and why, in plain language? Does it mention a migration that
-  runs with the deploy?
+- **The pull request description**, if there is one, against the way of
+  working: does the opening say what changes and why, in plain language? Does
+  it name what someone must check, such as a migration that runs with the
+  deploy?
 
 Leave to CI what prettier, eslint, the type check and the tests already catch.
 Give no opinion on taste about code that follows the rules.
