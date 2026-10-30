@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { ROOT, frontmatter } from './files.mjs';
 
@@ -37,6 +37,23 @@ for (const plugin of marketplace.plugins) {
 			assert.ok(fields, `${file} has no frontmatter`);
 			assert.equal(fields.name, file.replace(/\.md$/, ''));
 			assert.ok(fields.description?.length > 40, `${file} has too short a description`);
+		}
+	});
+
+	test(`${plugin.name}: every hook command points to an executable file in the plugin`, () => {
+		const file = path.join(dir, 'hooks/hooks.json');
+		if (!existsSync(file)) return;
+		const { hooks } = JSON.parse(readFileSync(file, 'utf8'));
+		const commands = Object.values(hooks)
+			.flat()
+			.flatMap((entry) => entry.hooks)
+			.map((hook) => hook.command);
+		assert.ok(commands.length > 0);
+		for (const command of commands) {
+			const script = command.replace(/^"(.*)"$/, '$1').replace('${CLAUDE_PLUGIN_ROOT}', dir);
+			assert.notEqual(script, command, `${command} does not start from CLAUDE_PLUGIN_ROOT`);
+			assert.ok(existsSync(script), `${command} does not exist`);
+			assert.ok(statSync(script).mode & 0o111, `${command} is not executable`);
 		}
 	});
 }

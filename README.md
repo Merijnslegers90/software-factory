@@ -18,12 +18,13 @@ plugins/software-factory/
   skills/new-migration/           a Supabase migration with grants and RLS
   skills/write-adr/               record a decision in the right layer
   agents/factory-review.md        checks a change against the rules and decisions
+  hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
 adr/                              factory decisions (F-0001, F-0002, ...)
 .github/workflows/quality.yml     reusable CI workflow
 tests/                            checks on this repo itself
 ```
 
-Still to build: hooks (lint and format after a change), the shared packages
+Still to build: a hook for lint and format after a change, the shared packages
 under `packages/` (`migrations`, `config`, `admin`, `mail`), skills for an
 admin screen, a mail type, a spec and a new product, and the way of working in
 `docs/way-of-working.md`.
