@@ -80,6 +80,29 @@ also `test:e2e`, with the fake values from `.env.example`. Other inputs:
 the factory with "Follows: F-NNNN" or, deliberately, "Deviates from: F-NNNN".
 See [adr/README.md](adr/README.md).
 
+## Using it with other agents
+
+The factory is not tied to one AI vendor. Almost everything here is plain
+Markdown:
+
+- The decisions in `adr/` are readable by any agent, and by any human
+  reviewer.
+- The skills are `SKILL.md` files in the open Agent Skills format. Agents
+  that support that format can load them from `plugins/software-factory/skills/`;
+  for the rest they read as written instructions.
+- The CI workflow is GitHub Actions, so every change passes the same check,
+  whoever or whatever wrote it.
+
+Specific to Claude Code are only the packaging and one header: the
+marketplace and plugin manifests in the two `.claude-plugin/` folders, and
+the frontmatter of `agents/factory-review.md` (its tool list and the skill it
+calls by its Claude Code name). Another agent uses the same review
+instructions in its own format.
+
+Each project has an `AGENTS.md` next to its `CLAUDE.md`. Most other coding
+agents read that file first. It says what the product is and points to the
+factory decisions and the project's own `docs/adr/`.
+
 ## Versions
 
 The workflow is called on a major version (`@v1`). A change that can break a
