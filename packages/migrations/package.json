@@ -5,7 +5,7 @@
 	"license": "MIT",
 	"type": "module",
 	"bin": {
-		"run-migrations": "./bin/run-migrations.js"
+		"run-migrations": "bin/run-migrations.js"
 	},
 	"exports": {
 		"./checks": {
