@@ -1,0 +1,79 @@
+{
+	"name": "@merijnslegers/config",
+	"version": "0.1.0",
+	"description": "The shared prettier, eslint and TypeScript settings of the software factory, and the em dash check from its way of working.",
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		"./prettier": "./src/prettier.js",
+		"./eslint": {
+			"types": "./src/eslint.d.ts",
+			"default": "./src/eslint.js"
+		},
+		"./writing": {
+			"types": "./src/writing.d.ts",
+			"default": "./src/writing.js"
+		},
+		"./tsconfig.json": "./tsconfig.json"
+	},
+	"files": [
+		"src",
+		"tsconfig.json",
+		"README.md"
+	],
+	"engines": {
+		"node": ">=22"
+	},
+	"peerDependencies": {
+		"@eslint/compat": "^2.1.1",
+		"@eslint/js": "^10.0.1",
+		"eslint": "^10.11.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-svelte": "^3.23.0",
+		"globals": "^17.12.0",
+		"prettier": "^3.9.9",
+		"prettier-plugin-svelte": "^4.1.1",
+		"prettier-plugin-tailwindcss": "^0.8.1",
+		"typescript-eslint": "^8.70.1"
+	},
+	"peerDependenciesMeta": {
+		"@eslint/compat": {
+			"optional": true
+		},
+		"@eslint/js": {
+			"optional": true
+		},
+		"eslint": {
+			"optional": true
+		},
+		"eslint-config-prettier": {
+			"optional": true
+		},
+		"eslint-plugin-svelte": {
+			"optional": true
+		},
+		"globals": {
+			"optional": true
+		},
+		"prettier": {
+			"optional": true
+		},
+		"prettier-plugin-svelte": {
+			"optional": true
+		},
+		"prettier-plugin-tailwindcss": {
+			"optional": true
+		},
+		"typescript-eslint": {
+			"optional": true
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Merijnslegers90/software-factory.git",
+		"directory": "packages/config"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}
