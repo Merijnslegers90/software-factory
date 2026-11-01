@@ -10,7 +10,7 @@
 		{
 			"name": "software-factory",
 			"source": "./plugins/software-factory",
-			"description": "Factory decisions, skills for migrations and ADRs, and a review agent that checks a change against the rules."
+			"description": "Factory decisions, skills for planning a change, migrations and ADRs, and a review agent that checks a change against its spec and the rules."
 		}
 	]
 }

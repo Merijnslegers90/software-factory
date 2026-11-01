@@ -14,11 +14,12 @@ that product.
 ```
 .claude-plugin/marketplace.json   this repo as a plugin marketplace for Claude Code
 plugins/software-factory/
+  skills/plan/                    questions the owner, then writes the spec, before anything is built
   skills/factory-decisions/       loads the factory decisions, so every agent knows them
   skills/new-migration/           a Supabase migration with grants and RLS
   skills/write-adr/               record a decision in the right layer
   skills/way-of-working/          loads the way of working (writing, pull requests)
-  agents/factory-review.md        checks a change against the rules and decisions
+  agents/factory-review.md        checks a change against its spec, the rules and decisions
   hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
 adr/                              factory decisions (F-0001, F-0002, ...)
 docs/way-of-working.md            the loop, the spec format, how we write and describe a change
@@ -55,9 +56,10 @@ everywhere at once.
 To install it on its own, outside a project:
 `/plugin install software-factory --marketplace Merijnslegers90/software-factory`.
 
-The skills are called `software-factory:factory-decisions`,
-`software-factory:way-of-working`, `software-factory:new-migration` and
-`software-factory:write-adr`, the agent `software-factory:factory-review`.
+The skills are called `software-factory:plan`,
+`software-factory:factory-decisions`, `software-factory:way-of-working`,
+`software-factory:new-migration` and `software-factory:write-adr`, the agent
+`software-factory:factory-review`.
 
 **CI.** Replace the project's own workflow with a call to the central one:
 
