@@ -14,9 +14,8 @@ cannot check a pull request from outside.
 ## Decision
 
 - Keys and settings of external services are read at runtime
-  (`$env/dynamic/private`), not at build time. On SvelteKit 3 they are
-  declared in `src/env.ts`, never `static`, and read from `$app/env/private`
-  (F-0010).
+  (`$env/dynamic/private`), not at build time. (On SvelteKit 3:
+  `$app/env/private`, see F-0010.)
 - Without the key, the feature is off: not a single call goes to the service,
   and the screen and its menu item disappear. Where someone would look for the
   feature (in the admin), the name of what is missing is shown.

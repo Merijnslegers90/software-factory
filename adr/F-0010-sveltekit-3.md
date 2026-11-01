@@ -1,7 +1,7 @@
 # F-0010: One stack for every product, on SvelteKit 3
 
 - **Status:** accepted
-- **Date:** November 2026
+- **Date:** 1 November 2026
 - **Supersedes:** F-0002
 
 ## Context

@@ -78,7 +78,9 @@ lists them as peer dependencies.
 ```
 
 The shared tsconfig names the types of Node and of SvelteKit (`$app/types`),
-because TypeScript 6 no longer loads them by default.
+because TypeScript 6 no longer loads them by default, and turns on `strict`
+and source maps. The other options it held in 0.x (`allowJs`, `checkJs`,
+`skipLibCheck` and the like) now come from `$app/tsconfig`.
 
 **Which version.** `@merijnslegers/config` 1.x is for SvelteKit 3 (F-0010).
 A project still on SvelteKit 2 stays on 0.x until it moves over, with its

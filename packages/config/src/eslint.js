@@ -58,8 +58,18 @@ export default async function factoryEslint({ gitignorePath, svelteConfig }) {
 }
 
 async function loadSvelteConfig(root) {
-	const { loadConfig } = await import('@sveltejs/load-config');
+	let loadConfig;
+	try {
+		({ loadConfig } = await import('@sveltejs/load-config'));
+	} catch {
+		throw new Error(
+			'@merijnslegers/config/eslint: install @sveltejs/load-config, or pass svelteConfig.'
+		);
+	}
 	const loaded = await loadConfig(root, { traverse: false });
-	if (loaded && 'error' in loaded) throw loaded.error;
-	return loaded?.config;
+	if (!loaded) {
+		throw new Error(`@merijnslegers/config/eslint: no vite.config or svelte.config in ${root}.`);
+	}
+	if ('error' in loaded) throw loaded.error;
+	return loaded.config;
 }

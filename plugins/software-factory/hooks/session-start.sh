@@ -7,7 +7,7 @@ set -uo pipefail
 [ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 
-# Only for projects on the factory stack (F-0002).
+# Only for projects on the factory stack (F-0010).
 [ -f package.json ] && [ -f pnpm-lock.yaml ] || exit 0
 
 done=()
@@ -27,7 +27,8 @@ if [ ! -f .env ] && [ -f .env.example ]; then
 	cp .env.example .env && done+=(".env from .env.example")
 fi
 
-# Creates .svelte-kit/tsconfig.json, so a plain `npx vitest` works too.
+# Writes the generated tsconfig and types (on SvelteKit 2 in .svelte-kit, on
+# SvelteKit 3 in node_modules/$app), so a plain `npx vitest` works too.
 if [ -d node_modules/@sveltejs/kit ]; then
 	npx svelte-kit sync >/dev/null 2>&1 && done+=("svelte-kit sync")
 fi

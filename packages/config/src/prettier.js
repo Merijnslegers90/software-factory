@@ -1,4 +1,4 @@
-// The prettier settings every product shares (F-0002). A project's
+// The prettier settings every product shares (F-0010). A project's
 // prettier.config.js spreads this and adds what is its own, such as the
 // stylesheet for the Tailwind plugin:
 //
