@@ -14,14 +14,16 @@ that product.
 ```
 .claude-plugin/marketplace.json   this repo as a plugin marketplace for Claude Code
 plugins/software-factory/
+  skills/plan/                    questions the owner, then writes the spec, before anything is built
+  skills/preview-check/           goes through the Vercel preview and reports what it saw
   skills/factory-decisions/       loads the factory decisions, so every agent knows them
   skills/new-migration/           a Supabase migration with grants and RLS
   skills/write-adr/               record a decision in the right layer
-  skills/way-of-working/          loads the way of working (writing, pull requests)
-  agents/factory-review.md        checks a change against the rules and decisions
+  skills/way-of-working/          loads the way of working (the loop, specs, writing, pull requests)
+  agents/factory-review.md        checks a change against its spec, the rules and decisions
   hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
 adr/                              factory decisions (F-0001, F-0002, ...)
-docs/way-of-working.md            how we write and describe a change
+docs/way-of-working.md            the loop, the spec format, how we write and describe a change
 packages/migrations/              @merijnslegers/migrations: migration runner and grant/RLS check
 packages/config/                  @merijnslegers/config: prettier, eslint, tsconfig, em dash check
 .github/workflows/quality.yml     reusable CI workflow
@@ -30,9 +32,8 @@ tests/                            checks on this repo itself
 ```
 
 Still to build: a hook for lint and format after a change, the packages
-`admin` and `mail`, skills for an
-admin screen, a mail type, a spec and a new product, and the spec format and
-the loop in `docs/way-of-working.md`.
+`admin` and `mail`, and skills for an admin screen, a mail type and a new
+product.
 
 ## Connecting a project
 
@@ -56,7 +57,8 @@ everywhere at once.
 To install it on its own, outside a project:
 `/plugin install software-factory --marketplace Merijnslegers90/software-factory`.
 
-The skills are called `software-factory:factory-decisions`,
+The skills are called `software-factory:plan`,
+`software-factory:preview-check`, `software-factory:factory-decisions`,
 `software-factory:way-of-working`, `software-factory:new-migration` and
 `software-factory:write-adr`, the agent `software-factory:factory-review`.
 
@@ -103,7 +105,10 @@ Specific to Claude Code are only the packaging and one header: the
 marketplace and plugin manifests in the two `.claude-plugin/` folders, and
 the frontmatter of `agents/factory-review.md` (its tool list and the skill it
 calls by its Claude Code name). Another agent uses the same review
-instructions in its own format.
+instructions in its own format. The skills name each other by their Claude
+Code names too, and `preview-check` uses the tool names of the Vercel
+connector and Playwright; another agent follows the same steps with its own
+tools.
 
 Each project has an `AGENTS.md` next to its `CLAUDE.md`. Most other coding
 agents read that file first. It says what the product is and points to the

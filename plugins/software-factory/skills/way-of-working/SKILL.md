@@ -1,12 +1,13 @@
 ---
 name: way-of-working
-description: How we write and how a change is described, in every product of the factory - no em dashes, plain words, and how to open a pull request, write a commit and a code comment. Use this before writing any page text, mail, admin copy, code comment, commit message or pull request description, and in every review.
+description: How a change goes from idea to main in every product of the factory (the loop, the spec format), how we write (no em dashes, plain words) and how a change is described (pull request, commit, code comment). Use this before planning a change or writing a spec, before writing any page text, mail, admin copy, code comment, commit message or pull request description, and in every review.
 ---
 
 # Way of working
 
 The full text is in `way-of-working.md` next to this file. Read it before you
-write anything a reader will see, including commits and pull requests. The
+plan a change or write a spec ("The loop" and "Specs"), and before you write
+anything a reader will see, including commits and pull requests. The
 project's `CLAUDE.md` adds its own rules on top (its language, its tone, its
 exceptions); it never weakens these.
 
