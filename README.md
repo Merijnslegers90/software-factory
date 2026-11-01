@@ -15,6 +15,7 @@ that product.
 .claude-plugin/marketplace.json   this repo as a plugin marketplace for Claude Code
 plugins/software-factory/
   skills/plan/                    questions the owner, then writes the spec, before anything is built
+  skills/preview-check/           goes through the Vercel preview and reports what it saw
   skills/factory-decisions/       loads the factory decisions, so every agent knows them
   skills/new-migration/           a Supabase migration with grants and RLS
   skills/write-adr/               record a decision in the right layer
@@ -57,7 +58,7 @@ To install it on its own, outside a project:
 `/plugin install software-factory --marketplace Merijnslegers90/software-factory`.
 
 The skills are called `software-factory:plan`,
-`software-factory:factory-decisions`, `software-factory:way-of-working`,
+`software-factory:preview-check`, `software-factory:factory-decisions`, `software-factory:way-of-working`,
 `software-factory:new-migration` and `software-factory:write-adr`, the agent
 `software-factory:factory-review`.
 

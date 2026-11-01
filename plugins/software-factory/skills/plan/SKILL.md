@@ -57,8 +57,9 @@ questions. A small change may need two questions; a new module, twenty.
 
 - Show the owner the spec (the whole file, or a link to it on the branch),
   with the choices you made yourself listed first.
+- Commit the draft on the branch, so it is not lost if the session ends.
 - Change it until the owner says it is right. Then set the status to
-  `approved` (`akkoord`) and commit it as its own commit, before any code.
+  `approved` (`akkoord`) in its own commit, before any code.
 - Do not start building on silence or on "looks fine so far". Ask for a
   clear yes.
 
