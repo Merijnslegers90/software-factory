@@ -21,7 +21,7 @@ plugins/software-factory/
   agents/factory-review.md        checks a change against the rules and decisions
   hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
 adr/                              factory decisions (F-0001, F-0002, ...)
-docs/way-of-working.md            how we write and describe a change
+docs/way-of-working.md            the loop, the spec format, how we write and describe a change
 packages/migrations/              @merijnslegers/migrations: migration runner and grant/RLS check
 packages/config/                  @merijnslegers/config: prettier, eslint, tsconfig, em dash check
 .github/workflows/quality.yml     reusable CI workflow
@@ -30,9 +30,8 @@ tests/                            checks on this repo itself
 ```
 
 Still to build: a hook for lint and format after a change, the packages
-`admin` and `mail`, skills for an
-admin screen, a mail type, a spec and a new product, and the spec format and
-the loop in `docs/way-of-working.md`.
+`admin` and `mail`, and skills for an admin screen, a mail type and a new
+product.
 
 ## Connecting a project
 

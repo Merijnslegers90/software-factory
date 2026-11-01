@@ -1,15 +1,97 @@
 # Way of working
 
 The factory decisions in [`adr/`](../adr/README.md) say how products are
-built. This document says how we work on them: how we write, and how a change
-is described. It holds for every product; a project adds its own rules in its
+built. This document says how we work on them: how a change goes from an idea
+to `main`, how it is specified, how we write, and how a change is described. It holds for every product; a project adds its own rules in its
 `CLAUDE.md` (its language, its tone, its exceptions) and never weakens these.
 
 These are conventions, not decisions. They are easy to change, so they are not
 ADRs; a change here is an ordinary pull request.
 
-Still to come here (step 6 of the plan): the spec format and the loop itself,
-from spec to merged change.
+## The loop
+
+Every change that is more than a small fix goes the same way. People decide
+what is built and what is merged; agents do the work in between.
+
+1. **An issue** says what is wanted, in a few lines.
+2. **Plan.** Before anything is built, the agent questions the owner until
+   every choice is settled, then writes a spec (skill `plan`). The owner
+   approves it. Nothing is built before that.
+3. **Build** from the spec, on a branch, following the decisions it names.
+4. **CI** runs the central quality check (F-0007).
+5. **Review.** The agent `factory-review` checks the change against the
+   rules, the decisions and the spec. Blocking findings are fixed first.
+6. **Preview.** Once Vercel has built the preview, the agent goes through it
+   (skill `preview-check`) and reports what it saw and what it could not
+   check.
+7. **The owner** opens the preview, tries what matters, and is the only one
+   who merges. The agent's checks prepare that review; they never replace it.
+
+A small fix (a typo, a dependency update, a hotfix for something broken in
+production) skips the plan and the spec. The rest of the loop still applies.
+
+## Specs
+
+A spec says what one change must do, before it is built. It is what the
+agent builds from and what the review checks against, so it is written for
+both: precise enough to build, short enough to read.
+
+### Where
+
+In the project's `docs/specs/`, one file per change:
+`NNNN-short-title.md`, with the next free number (`ls docs/specs`), in the
+project's language. A spec stays in the repo after the change is merged; it
+says why the code is the way it is.
+
+### The form
+
+```markdown
+# Spec NNNN: Title in plain words
+
+- **Status:** draft
+- **Date:** 1 November 2026
+- **Issue:** #12
+
+## Problem
+
+What is wrong or missing now, and for whom. Why it is worth changing.
+
+## What it does
+
+The behaviour after the change, as short rules a reader can check.
+
+## Not in scope
+
+What this change deliberately does not do, so neither the build nor the
+review drifts into it. Each with a word on why, or where it goes instead.
+
+## Edge cases
+
+Empty, long, wrong and slow input; phone and desktop; signed in and out;
+a key that is missing (F-0005). For each, what happens.
+
+## Done when
+
+A list of checks that are true when the change is finished: what the
+owner will see on the preview, which test pins a rule down.
+
+## Decisions
+
+The factory decisions (F-NNNN) and project decisions (ADR NNNN) this change
+follows. A new decision this change needs is named here and written
+alongside it (skill `write-adr`).
+```
+
+- **Status** is `draft` while it is being discussed, `approved` once the
+  owner says so, and `done` when the change is merged. Only an approved spec
+  is built.
+- A project that writes in Dutch uses its own headings (Probleem, Wat het
+  doet, Bewust niet, Randgevallen, Klaar als, Besluiten) and status values
+  (`concept`, `akkoord`, `klaar`).
+- A choice that turns out wrong during the build is not quietly changed in
+  the code. The spec changes first, and the owner agrees again.
+- A spec is not a decision. When a choice in it is hard to reverse or holds
+  beyond this change, it also gets an ADR (F-0001), and the spec points to it.
 
 ## Writing
 
