@@ -2,15 +2,18 @@
 
 The factory decisions in [`adr/`](../adr/README.md) say how products are
 built. This document says how we work on them: how a change goes from an idea
-to `main`, how it is specified, how we write, and how a change is described. It holds for every product; a project adds its own rules in its
-`CLAUDE.md` (its language, its tone, its exceptions) and never weakens these.
+to `main`, how it is specified, how we write, and how a change is described.
+It holds for every product; a project adds its own rules in its `CLAUDE.md`
+(its language, its tone, its exceptions) and never weakens these.
 
 These are conventions, not decisions. They are easy to change, so they are not
-ADRs; a change here is an ordinary pull request.
+ADRs; a change here is an ordinary pull request. The decision behind the loop
+is F-0007: every change goes through CI, `factory-review` and a human before
+it is merged. The loop says how we get there.
 
 ## The loop
 
-Every change that is more than a small fix goes the same way. People decide
+Every feature and every change in behaviour goes the same way. People decide
 what is built and what is merged; agents do the work in between.
 
 1. **An issue** says what is wanted, in a few lines.
@@ -27,8 +30,11 @@ what is built and what is merged; agents do the work in between.
 7. **The owner** opens the preview, tries what matters, and is the only one
    who merges. The agent's checks prepare that review; they never replace it.
 
-A small fix (a typo, a dependency update, a hotfix for something broken in
-production) skips the plan and the spec. The rest of the loop still applies.
+**A small fix** skips the plan and the spec: a typo, a dependency update, a
+hotfix for something broken in production, or a change that leaves behaviour
+as it is (a refactor, CI, docs). The rest of the loop still applies. This is
+the one place that says what a small fix is; the skill `plan` and the review
+point here.
 
 ## Specs
 
@@ -42,6 +48,9 @@ In the project's `docs/specs/`, one file per change:
 `NNNN-short-title.md`, with the next free number (`ls docs/specs`), in the
 project's language. A spec stays in the repo after the change is merged; it
 says why the code is the way it is.
+
+For a change to the factory itself, the issue is the spec, with the same
+headings: the factory has no product code to keep it next to.
 
 ### The form
 
@@ -82,12 +91,12 @@ follows. A new decision this change needs is named here and written
 alongside it (skill `write-adr`).
 ```
 
-- **Status** is `draft` while it is being discussed, `approved` once the
-  owner says so, and `done` when the change is merged. Only an approved spec
-  is built.
+- **Status** is `draft` while it is being discussed and `approved` once the
+  owner says so. Only an approved spec is built. That the change is merged,
+  the history shows; the status does not change again.
 - A project that writes in Dutch uses its own headings (Probleem, Wat het
   doet, Bewust niet, Randgevallen, Klaar als, Besluiten) and status values
-  (`concept`, `akkoord`, `klaar`).
+  (`concept`, `akkoord`).
 - A choice that turns out wrong during the build is not quietly changed in
   the code. The spec changes first, and the owner agrees again.
 - A spec is not a decision. When a choice in it is hard to reverse or holds

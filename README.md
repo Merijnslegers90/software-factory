@@ -19,7 +19,7 @@ plugins/software-factory/
   skills/factory-decisions/       loads the factory decisions, so every agent knows them
   skills/new-migration/           a Supabase migration with grants and RLS
   skills/write-adr/               record a decision in the right layer
-  skills/way-of-working/          loads the way of working (writing, pull requests)
+  skills/way-of-working/          loads the way of working (the loop, specs, writing, pull requests)
   agents/factory-review.md        checks a change against its spec, the rules and decisions
   hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
 adr/                              factory decisions (F-0001, F-0002, ...)
@@ -58,9 +58,9 @@ To install it on its own, outside a project:
 `/plugin install software-factory --marketplace Merijnslegers90/software-factory`.
 
 The skills are called `software-factory:plan`,
-`software-factory:preview-check`, `software-factory:factory-decisions`, `software-factory:way-of-working`,
-`software-factory:new-migration` and `software-factory:write-adr`, the agent
-`software-factory:factory-review`.
+`software-factory:preview-check`, `software-factory:factory-decisions`,
+`software-factory:way-of-working`, `software-factory:new-migration` and
+`software-factory:write-adr`, the agent `software-factory:factory-review`.
 
 **CI.** Replace the project's own workflow with a call to the central one:
 
@@ -105,7 +105,10 @@ Specific to Claude Code are only the packaging and one header: the
 marketplace and plugin manifests in the two `.claude-plugin/` folders, and
 the frontmatter of `agents/factory-review.md` (its tool list and the skill it
 calls by its Claude Code name). Another agent uses the same review
-instructions in its own format.
+instructions in its own format. The skills name each other by their Claude
+Code names too, and `preview-check` uses the tool names of the Vercel
+connector and Playwright; another agent follows the same steps with its own
+tools.
 
 Each project has an `AGENTS.md` next to its `CLAUDE.md`. Most other coding
 agents read that file first. It says what the product is and points to the

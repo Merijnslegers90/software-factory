@@ -1,6 +1,6 @@
 ---
 name: preview-check
-description: Go through the Vercel preview of a change before saying it is ready - the pages it touches, HTTP status, runtime and browser errors, screenshots at phone and desktop width - and report what was seen and what could not be checked. Use this as the last step of the loop, once CI is green and the preview is built, and whenever someone asks to check a preview. Prepares the owner's review; never replaces it.
+description: Go through the Vercel preview of a change before saying it is ready: the pages it touches, HTTP status, runtime and browser errors, screenshots at phone and desktop width. Report what was seen and what could not be checked. Use this as the last step of the loop, once CI is green and the preview is built, and whenever someone asks to check a preview. Prepares the owner's review; never replaces it.
 ---
 
 # Checking the preview
@@ -30,9 +30,10 @@ With the Vercel connector:
 ## 3. Get in
 
 Previews are usually behind Vercel's login. `get_access_to_vercel_url` gives
-a share link that sets a cookie and works for anyone who has it, for about a
-day. Use it in the browser; never post it in a pull request or anywhere
-public. `web_fetch_vercel_url` fetches one page without a browser: enough for
+a share link that sets a cookie and works for anyone who has it: a new link
+for 23 hours, an existing one possibly without end. Open it first in
+Playwright, so the browser has the cookie, then go to the pages. Never post
+it in a pull request or anywhere public. `web_fetch_vercel_url` fetches one page without a browser: enough for
 the status and the HTML, not for screenshots or browser errors.
 
 If the browser cannot reach the preview (the network of the session blocks
@@ -60,8 +61,9 @@ needs a browser as not checked.
   scroll, contrast.
 - **What the spec asks**: try the behaviour itself (hover, focus, a click, a
   form with fake values), as far as it is safe on a preview.
-- **Runtime logs** of the deployment: `get_runtime_logs` with the deployment
-  ID and level `error`, after the pages have been visited.
+- **Runtime errors** of the deployment, after the pages have been visited:
+  `get_runtime_logs` with the project ID, the team ID, the deployment ID and
+  level `error`; `get_runtime_errors` for the project gives them grouped.
 
 ## 6. What you do not check
 

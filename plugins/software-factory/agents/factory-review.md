@@ -40,9 +40,10 @@ nothing yourself: no files, no commits, no comments on GitHub.
   code settle something differently from the spec, without the spec changing
   along? Each of those is blocking. A point under **Done when** that only the
   owner can check on the preview, you name as such, not as missing.
-- **No spec.** A feature or a change in behaviour without a spec is blocking
-  (way of working, "The loop"). A small fix (a typo, a dependency update, a
-  hotfix) needs none.
+- **No spec.** A feature or a change in behaviour without an approved spec
+  is blocking. What counts as a small fix, which needs none, is in the way of
+  working ("The loop"). For a change to the factory itself, the issue is the
+  spec.
 - **Decisions.** Does the change go against a factory decision or a project
   decision, without a decision that says "Deviates from" or "Supersedes"?
 - **A new decision without an ADR.** A new source of truth, external service,

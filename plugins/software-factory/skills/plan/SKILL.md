@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Plan a change before it is built - question the owner one topic at a time until every choice is settled, then write the spec in docs/specs/ and get it approved. Use this at the start of every feature or change in behaviour, before writing any code, and whenever someone asks to plan, scope or specify a change. Not for a typo, a dependency update or a hotfix.
+description: Plan a change before it is built. Question the owner one topic at a time until every choice is settled, then write the spec in docs/specs/ and get it approved. Use this at the start of every feature or change in behaviour, before writing any code, and whenever someone asks to plan, scope or specify a change. Not for a small fix, as the way of working defines it.
 ---
 
 # Planning a change
