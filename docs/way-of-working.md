@@ -50,7 +50,8 @@ project's language. A spec stays in the repo after the change is merged; it
 says why the code is the way it is.
 
 For a change to the factory itself, the issue is the spec, with the same
-headings: the factory has no product code to keep it next to.
+headings: the factory has no product code to keep it next to. The owner
+approves it in a comment on the issue.
 
 ### The form
 

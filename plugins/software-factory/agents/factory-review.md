@@ -42,8 +42,8 @@ nothing yourself: no files, no commits, no comments on GitHub.
   owner can check on the preview, you name as such, not as missing.
 - **No spec.** A feature or a change in behaviour without an approved spec
   is blocking. What counts as a small fix, which needs none, is in the way of
-  working ("The loop"). For a change to the factory itself, the issue is the
-  spec.
+  working ("The loop"), and so is where the spec of a change to the factory
+  itself lives.
 - **Decisions.** Does the change go against a factory decision or a project
   decision, without a decision that says "Deviates from" or "Supersedes"?
 - **A new decision without an ADR.** A new source of truth, external service,

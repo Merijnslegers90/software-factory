@@ -33,8 +33,9 @@ Previews are usually behind Vercel's login. `get_access_to_vercel_url` gives
 a share link that sets a cookie and works for anyone who has it: a new link
 for 23 hours, an existing one possibly without end. Open it first in
 Playwright, so the browser has the cookie, then go to the pages. Never post
-it in a pull request or anywhere public. `web_fetch_vercel_url` fetches one page without a browser: enough for
-the status and the HTML, not for screenshots or browser errors.
+it in a pull request or anywhere public. `web_fetch_vercel_url` fetches one
+page without a browser: enough for the status and the HTML, not for
+screenshots or browser errors.
 
 If the browser cannot reach the preview (the network of the session blocks
 it), say so, check what `web_fetch_vercel_url` can, and name everything that
