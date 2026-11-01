@@ -1,6 +1,6 @@
 # F-0002: One stack for every product
 
-- **Status:** accepted
+- **Status:** superseded by F-0010
 - **Date:** September 2026
 
 ## Context

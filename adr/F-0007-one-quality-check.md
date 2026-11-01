@@ -29,7 +29,7 @@ other. An improvement in one did not reach the other.
   A change that can break a project becomes a new major version (`@v2`).
 - A project can switch a step off with a workflow input, but cannot quietly
   run its own variant.
-- The fixed script names from F-0002 are thereby an agreement that CI
+- The fixed script names from F-0010 are thereby an agreement that CI
   enforces.
 
 ## In the code

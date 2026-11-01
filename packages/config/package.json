@@ -1,6 +1,6 @@
 {
 	"name": "@merijnslegers/config",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "The shared prettier, eslint and TypeScript settings of the software factory, and the em dash check from its way of working.",
 	"license": "MIT",
 	"type": "module",
@@ -22,11 +22,12 @@
 		"README.md"
 	],
 	"engines": {
-		"node": ">=22"
+		"node": ">=22.17"
 	},
 	"peerDependencies": {
 		"@eslint/compat": "^2.1.1",
 		"@eslint/js": "^10.0.1",
+		"@sveltejs/load-config": "^0.2.3",
 		"eslint": "^10.11.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.23.0",
@@ -41,6 +42,9 @@
 			"optional": true
 		},
 		"@eslint/js": {
+			"optional": true
+		},
+		"@sveltejs/load-config": {
 			"optional": true
 		},
 		"eslint": {

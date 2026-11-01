@@ -1,14 +1,17 @@
-// The eslint settings every product shares (F-0002). A project's
+// The eslint settings every product shares (F-0010). A project's
 // eslint.config.js calls this and can add its own blocks after it:
 //
 //   import path from 'node:path';
 //   import factory from '@merijnslegers/config/eslint';
-//   import svelteConfig from './svelte.config.js';
 //
 //   export default factory({
-//     gitignorePath: path.resolve(import.meta.dirname, '.gitignore'),
-//     svelteConfig
+//     gitignorePath: path.resolve(import.meta.dirname, '.gitignore')
 //   });
+//
+// Since SvelteKit 3 the Svelte settings live in vite.config.ts, which eslint
+// cannot import by itself. Without svelteConfig this function loads them with
+// @sveltejs/load-config, from the folder that holds the .gitignore.
+import path from 'node:path';
 import prettier from 'eslint-config-prettier';
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
@@ -17,7 +20,9 @@ import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import ts from 'typescript-eslint';
 
-export default function factoryEslint({ gitignorePath, svelteConfig }) {
+export default async function factoryEslint({ gitignorePath, svelteConfig }) {
+	svelteConfig ??= await loadSvelteConfig(path.dirname(gitignorePath));
+
 	return defineConfig(
 		includeIgnoreFile(gitignorePath),
 		js.configs.recommended,
@@ -50,4 +55,21 @@ export default function factoryEslint({ gitignorePath, svelteConfig }) {
 			}
 		}
 	);
+}
+
+async function loadSvelteConfig(root) {
+	let loadConfig;
+	try {
+		({ loadConfig } = await import('@sveltejs/load-config'));
+	} catch {
+		throw new Error(
+			'@merijnslegers/config/eslint: install @sveltejs/load-config, or pass svelteConfig.'
+		);
+	}
+	const loaded = await loadConfig(root, { traverse: false });
+	if (!loaded) {
+		throw new Error(`@merijnslegers/config/eslint: no vite.config or svelte.config in ${root}.`);
+	}
+	if ('error' in loaded) throw loaded.error;
+	return loaded.config;
 }

@@ -51,14 +51,15 @@ itself.
 
 ## List
 
-| No                                               | Decision                                              | Status   |
-| ------------------------------------------------ | ----------------------------------------------------- | -------- |
-| [F-0001](F-0001-decisions-in-two-layers.md)      | Decisions are ADRs, in two layers                     | accepted |
-| [F-0002](F-0002-one-stack.md)                    | One stack for every product                           | accepted |
-| [F-0003](F-0003-migrations-on-deploy.md)         | Migrations run with the production deploy             | accepted |
-| [F-0004](F-0004-database-server-only.md)         | The database only from the server, with service_role  | accepted |
-| [F-0005](F-0005-off-without-key.md)              | A feature that needs a key is off without it          | accepted |
-| [F-0006](F-0006-pure-tested-logic.md)            | Pure, tested logic; the outside world in server-only  | accepted |
-| [F-0007](F-0007-one-quality-check.md)            | Every change goes through the same quality check      | accepted |
-| [F-0008](F-0008-resize-images-in-browser.md)     | Images are resized in the browser before upload       | accepted |
-| [F-0009](F-0009-one-project-per-product.md)      | Every product its own Supabase project                | accepted |
+| No                                           | Decision                                             | Status               |
+| -------------------------------------------- | ---------------------------------------------------- | -------------------- |
+| [F-0001](F-0001-decisions-in-two-layers.md)  | Decisions are ADRs, in two layers                    | accepted             |
+| [F-0002](F-0002-one-stack.md)                | One stack for every product                          | superseded by F-0010 |
+| [F-0003](F-0003-migrations-on-deploy.md)     | Migrations run with the production deploy            | accepted             |
+| [F-0004](F-0004-database-server-only.md)     | The database only from the server, with service_role | accepted             |
+| [F-0005](F-0005-off-without-key.md)          | A feature that needs a key is off without it         | accepted             |
+| [F-0006](F-0006-pure-tested-logic.md)        | Pure, tested logic; the outside world in server-only | accepted             |
+| [F-0007](F-0007-one-quality-check.md)        | Every change goes through the same quality check     | accepted             |
+| [F-0008](F-0008-resize-images-in-browser.md) | Images are resized in the browser before upload      | accepted             |
+| [F-0009](F-0009-one-project-per-product.md)  | Every product its own Supabase project               | accepted             |
+| [F-0010](F-0010-sveltekit-3.md)              | One stack for every product, on SvelteKit 3          | accepted             |
