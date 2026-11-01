@@ -34,7 +34,8 @@ the `function_search_path_mutable` warning.
 ## Consequences
 
 - The `service_role` key never reaches the browser: only through
-  `$env/dynamic/private` or `$env/static/private`.
+  `$env/dynamic/private` or `$env/static/private`, and on SvelteKit 3
+  through `$app/env/private` (F-0010).
 - A login through Supabase Auth uses the anon key, but only on the server and
   only to log in; the tables stay closed to that role.
 - Images that outsiders must load (the site, a mail client) live in a public

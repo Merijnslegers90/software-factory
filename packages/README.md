@@ -7,7 +7,7 @@ copy, and Dependabot or Renovate opens a pull request for each new version.
 | Package                     | What it holds                                                          |
 | --------------------------- | ---------------------------------------------------------------------- |
 | `@merijnslegers/migrations` | The migration runner for `vercel-build` (F-0003) and the grant and RLS check (F-0004) |
-| `@merijnslegers/config`     | The shared prettier, eslint and TypeScript settings (F-0002), and the em dash check   |
+| `@merijnslegers/config`     | The shared prettier, eslint and TypeScript settings (F-0010), and the em dash check   |
 
 Plain JavaScript with hand-written type files, so there is no build step.
 Tests run with Node's own test runner: `npm test` at the repo root.
@@ -55,13 +55,15 @@ export default { ...config, tailwindStylesheet: './src/app.css' };
 ```js
 import path from 'node:path';
 import factory from '@merijnslegers/config/eslint';
-import svelteConfig from './svelte.config.js';
 
 export default factory({
-	gitignorePath: path.resolve(import.meta.dirname, '.gitignore'),
-	svelteConfig
+	gitignorePath: path.resolve(import.meta.dirname, '.gitignore')
 });
 ```
+
+The Svelte settings are loaded from `vite.config.ts` with
+`@sveltejs/load-config`, which the project installs as a dev dependency. Pass
+`svelteConfig` to give them yourself.
 
 The project keeps its own eslint and prettier plugins installed; the package
 lists them as peer dependencies.
@@ -69,8 +71,19 @@ lists them as peer dependencies.
 **TypeScript.** `tsconfig.json`:
 
 ```json
-{ "extends": ["./.svelte-kit/tsconfig.json", "@merijnslegers/config/tsconfig.json"] }
+{
+	"extends": ["$app/tsconfig", "@merijnslegers/config/tsconfig.json"],
+	"include": ["src", "vite.config.ts"]
+}
 ```
+
+The shared tsconfig names the types of Node and of SvelteKit (`$app/types`),
+because TypeScript 6 no longer loads them by default.
+
+**Which version.** `@merijnslegers/config` 1.x is for SvelteKit 3 (F-0010).
+A project still on SvelteKit 2 stays on 0.x until it moves over, with its
+eslint config passing `svelteConfig` from `svelte.config.js` and its tsconfig
+extending `./.svelte-kit/tsconfig.json`.
 
 **The em dash check** (way of working), in a test:
 
