@@ -1,0 +1,41 @@
+{
+	"name": "@merijnslegers/admin",
+	"version": "0.1.0",
+	"description": "The admin login of the software factory: Supabase Auth with an allow list, the access rules and headers, and image resizing in the browser.",
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		"./rules": {
+			"types": "./src/rules.d.ts",
+			"default": "./src/rules.js"
+		},
+		"./server": {
+			"types": "./src/server.d.ts",
+			"default": "./src/server.js"
+		},
+		"./resize": {
+			"types": "./src/resize.d.ts",
+			"default": "./src/resize.js"
+		}
+	},
+	"files": [
+		"src",
+		"README.md"
+	],
+	"engines": {
+		"node": ">=22.17"
+	},
+	"peerDependencies": {
+		"@supabase/ssr": "^0.12.7",
+		"@supabase/supabase-js": "^2.118.0",
+		"@sveltejs/kit": "^3.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Merijnslegers90/software-factory.git",
+		"directory": "packages/admin"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

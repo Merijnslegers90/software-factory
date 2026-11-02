@@ -63,3 +63,4 @@ itself.
 | [F-0008](F-0008-resize-images-in-browser.md) | Images are resized in the browser before upload      | accepted             |
 | [F-0009](F-0009-one-project-per-product.md)  | Every product its own Supabase project               | accepted             |
 | [F-0010](F-0010-sveltekit-3.md)              | One stack for every product, on SvelteKit 3          | accepted             |
+| [F-0011](F-0011-admin-login.md)              | One admin login, through Supabase Auth               | accepted             |
