@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { keepsAsIs, renamed, resizePlan, SKIP_BELOW_BYTES, targetType } from '../src/resize.js';
+import {
+	keepsAsIs,
+	mustConvert,
+	renamed,
+	resizePlan,
+	SKIP_BELOW_BYTES,
+	targetType
+} from '../src/resize.js';
 
 // F-0008: images are resized in the browser before upload, to a fixed width per kind.
 
@@ -73,4 +80,20 @@ test('renamed gives the new extension and a name when there is none', () => {
 	assert.equal(renamed('IMG_0001.HEIC', 'webp'), 'IMG_0001.webp');
 	assert.equal(renamed('logo.final.png', 'png'), 'logo.final.png');
 	assert.equal(renamed('.jpg', 'jpg'), 'image.jpg');
+});
+
+test('mail never sends a webp or AVIF as it is, however small', () => {
+	assert.equal(mustConvert('image/webp', 'mail'), true);
+	assert.equal(mustConvert('image/avif', 'mail'), true);
+	assert.equal(mustConvert('image/jpeg', 'mail'), false);
+	assert.equal(mustConvert('image/png', 'mail'), false);
+	assert.equal(mustConvert('image/webp', 'webp'), false);
+	const small = { type: 'image/webp', size: 200 * 1024, width: 600, height: 400 };
+	assert.deepEqual(resizePlan(small, { maxWidth: 1200, format: 'mail' }), {
+		width: 600,
+		height: 400,
+		type: 'image/jpeg',
+		extension: 'jpg'
+	});
+	assert.equal(resizePlan(small, { maxWidth: 1200 }), null);
 });

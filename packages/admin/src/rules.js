@@ -29,14 +29,32 @@ export function adminPaths({ base = '/admin', login, password } = {}) {
 	};
 }
 
-/** Whether a path is the admin path or below it. `/administration` is not. */
-export function isAdminPath(pathname, paths) {
-	return pathname === paths.base || pathname.startsWith(paths.base + '/');
+/**
+ * The path as SvelteKit decodes it to pick a route. Comparing the raw path
+ * would let `/%61dmin/orders` reach the route `/admin/orders` past the hook.
+ * Null when it cannot be decoded.
+ */
+export function decodePath(pathname) {
+	try {
+		return pathname.split('%25').map(decodeURI).join('%25');
+	} catch {
+		return null;
+	}
 }
 
-/** The screens under the admin path you must reach without a session. */
+/**
+ * Whether a path is the admin path or below it, after decoding. `/administration`
+ * is not. A path that cannot be decoded counts as admin, so it stays closed.
+ */
+export function isAdminPath(pathname, paths) {
+	const path = decodePath(pathname);
+	return path === null || path === paths.base || path.startsWith(paths.base + '/');
+}
+
+/** The screens under the admin path you must reach without a session, after decoding. */
 export function isOpenPath(pathname, paths) {
-	return pathname === paths.login || pathname === paths.password;
+	const path = decodePath(pathname);
+	return path !== null && (path === paths.login || path === paths.password);
 }
 
 /** An email address as we compare it: without spaces, in lower case. */
@@ -136,14 +154,15 @@ export function adminDecision({ url, method, contentType, origin, signedIn, path
 }
 
 /**
- * The settings that are missing, by the names the project gave them. Empty
- * when everything is there. Without them nobody gets in (F-0005).
+ * The settings logging in needs that are missing, by the names the project
+ * gave them. Empty when everything is there. Without them nobody gets in
+ * (F-0005). The service_role key is not among them: only a password link
+ * needs it, and the database has it anyway (F-0004).
  */
 export function missingSettings(settings, names) {
 	const missing = [];
 	if (!settings.supabaseUrl) missing.push(names.supabaseUrl);
 	if (!settings.anonKey) missing.push(names.anonKey);
-	if (!settings.serviceRoleKey) missing.push(names.serviceRoleKey);
 	if (settings.allowList.size === 0) missing.push(names.allowList);
 	return missing;
 }

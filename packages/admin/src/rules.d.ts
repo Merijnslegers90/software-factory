@@ -24,6 +24,7 @@ export const PASSWORD_MIN_LENGTH: number;
 export const ADMIN_HEADERS: Readonly<Record<string, string>>;
 
 export function adminPaths(paths?: Partial<AdminPaths>): AdminPaths;
+export function decodePath(pathname: string): string | null;
 export function isAdminPath(pathname: string, paths: AdminPaths): boolean;
 export function isOpenPath(pathname: string, paths: AdminPaths): boolean;
 export function normaliseEmail(email: string | null | undefined): string;
@@ -48,7 +49,6 @@ export function missingSettings(
 	settings: {
 		supabaseUrl: string;
 		anonKey: string;
-		serviceRoleKey: string;
 		allowList: Set<string>;
 	},
 	names: SettingNames

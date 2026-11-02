@@ -39,6 +39,9 @@ them if the code is shared, and an improvement reaches all of them the same way.
 - **A request under the admin path that can change something must come from
   the site's own origin**, even when SvelteKit's own check is off for a
   webhook. A webhook therefore never lives under the admin path.
+- **The path is decoded before it is compared**, the way SvelteKit decodes it
+  to pick a route, so `/%61dmin` is the admin path too. A remote function,
+  which runs outside the admin path, checks the session itself.
 - **Every admin response gets the same headers:** no framing, `noindex`,
   `no-store`, and a referrer that stays on the site.
 - **A password link is used only when the password is saved**, never when the

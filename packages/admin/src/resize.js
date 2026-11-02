@@ -22,6 +22,14 @@ export function targetType(type, format) {
 	return 'image/webp';
 }
 
+/**
+ * Whether the original may not go as it is, whatever its size: a webp or AVIF
+ * in a mail would not show in many mail clients.
+ */
+export function mustConvert(type, format) {
+	return format === 'mail' && type !== 'image/jpeg' && type !== 'image/png';
+}
+
 const EXTENSIONS = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
 
 /**
@@ -30,7 +38,7 @@ const EXTENSIONS = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'pn
  */
 export function resizePlan({ type, size, width, height }, { maxWidth, format = 'webp' }) {
 	if (keepsAsIs(type)) return null;
-	if (width <= maxWidth && size <= SKIP_BELOW_BYTES) return null;
+	if (width <= maxWidth && size <= SKIP_BELOW_BYTES && !mustConvert(type, format)) return null;
 	const scale = Math.min(1, maxWidth / width);
 	const target = targetType(type, format);
 	return {
@@ -67,7 +75,8 @@ export async function resizeImage(file, { maxWidth, format = 'webp', quality = 0
 		const blob = await draw(bitmap, plan, plan.type === 'image/png' ? undefined : quality);
 		// A browser that cannot write the type (webp in an older Safari) quietly
 		// gives a PNG instead; then the original is the better choice.
-		if (!blob || blob.type !== plan.type || blob.size >= file.size) return file;
+		if (!blob || blob.type !== plan.type) return file;
+		if (blob.size >= file.size && !mustConvert(file.type, format)) return file;
 		return new File([blob], renamed(file.name, plan.extension), { type: plan.type });
 	} catch (err) {
 		console.error('Resizing failed, the original is used:', err);

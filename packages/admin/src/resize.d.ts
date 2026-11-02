@@ -18,6 +18,7 @@ export interface ResizePlan {
 
 export const SKIP_BELOW_BYTES: number;
 export function keepsAsIs(type: string): boolean;
+export function mustConvert(type: string, format: ImageFormat): boolean;
 export function targetType(type: string, format: ImageFormat): ResizePlan['type'];
 export function resizePlan(
 	image: { type: string; size: number; width: number; height: number },

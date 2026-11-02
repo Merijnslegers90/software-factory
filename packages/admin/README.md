@@ -92,6 +92,10 @@ declare global {
 
 A webhook belongs under `/api`, never under the admin path.
 
+**Remote functions** are called at `/_app/remote/...`, outside the admin path,
+so the hook does not guard them. An admin remote function checks
+`admin.currentAdmin(cookies)` itself, first thing.
+
 **The screens.** The login and password screens use `+page@.svelte`, so they do
 not hang under the admin layout, which belongs to someone signed in. Their
 actions call the package and turn its outcome into the project's own words:
@@ -199,7 +203,9 @@ const photo = await resizeImage(file, MAIL_PHOTO);
 - An image that is already narrow enough and under 1 MB is left alone.
 - SVG and GIF are never drawn again.
 - When the browser cannot do it, or the result is not smaller, the original
-  goes and the server decides.
+  goes and the server decides. With `mail`, a webp or AVIF is always turned
+  into JPEG, even when that is larger.
+- A browser without `OffscreenCanvas` draws on an ordinary canvas instead.
 
 ## Tests
 

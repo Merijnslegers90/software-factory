@@ -6,6 +6,7 @@ import {
 	adminPaths,
 	fromOtherSite,
 	isAdminPath,
+	isOpenPath,
 	linkOutcome,
 	loginAddress,
 	mayManage,
@@ -26,7 +27,7 @@ const mail = (name, domain = 'example') => `${name}@${domain}.org`;
 const paths = adminPaths();
 const site = 'https://shop.example.org';
 
-test('adminPaths gives defaults and takes a project its own screens', () => {
+test("adminPaths gives defaults and takes a project's own screens", () => {
 	assert.deepEqual(paths, { base: '/admin', login: '/admin/login', password: '/admin/password' });
 	assert.deepEqual(adminPaths({ base: '/beheer/', login: '/beheer/inloggen' }), {
 		base: '/beheer',
@@ -40,6 +41,22 @@ test('isAdminPath holds the admin path and below, not a path that only starts al
 	assert.equal(isAdminPath('/admin/orders', paths), true);
 	assert.equal(isAdminPath('/administration', paths), false);
 	assert.equal(isAdminPath('/', paths), false);
+});
+
+test('isAdminPath decodes the path the way SvelteKit does, so encoding is no way around the hook (F-0011)', () => {
+	assert.equal(isAdminPath('/%61dmin/orders', paths), true);
+	assert.equal(isAdminPath('/%61%64min', paths), true);
+	assert.equal(isAdminPath('/admin/%6Frders', paths), true);
+	assert.equal(isAdminPath('/%25admin', paths), false);
+	// A path that cannot be decoded stays closed.
+	assert.equal(isAdminPath('/%E0%A4%A', paths), true);
+});
+
+test('isOpenPath decodes too, and opens nothing it cannot read', () => {
+	assert.equal(isOpenPath('/admin/login', paths), true);
+	assert.equal(isOpenPath('/admin/%6Cogin', paths), true);
+	assert.equal(isOpenPath('/admin/orders', paths), false);
+	assert.equal(isOpenPath('/%E0%A4%A', paths), false);
 });
 
 test('parseAllowList reads commas, semicolons, spaces and new lines, and skips typos', () => {
@@ -171,7 +188,7 @@ test('ADMIN_HEADERS keep the admin out of frames, search engines and caches', ()
 	});
 });
 
-test('missingSettings names what is missing, by the project its names (F-0005)', () => {
+test("missingSettings names what is missing, by the project's names (F-0005)", () => {
 	const names = {
 		supabaseUrl: 'URL',
 		anonKey: 'ANON',
@@ -185,13 +202,15 @@ test('missingSettings names what is missing, by the project its names (F-0005)',
 		allowList: parseAllowList(mail('ann'))
 	};
 	assert.deepEqual(missingSettings(all, names), []);
+	// Logging in works without it; only a password link needs it.
+	assert.deepEqual(missingSettings({ ...all, serviceRoleKey: '' }, names), []);
 	assert.deepEqual(
 		missingSettings({ ...all, anonKey: '', allowList: parseAllowList('nobody') }, names),
 		['ANON', 'LIST']
 	);
 });
 
-test('the outcome codes follow Supabase its errors', () => {
+test("the outcome codes follow Supabase's errors", () => {
 	assert.equal(signInOutcome(null), 'ok');
 	assert.equal(signInOutcome({ status: 400, code: 'invalid_credentials' }), 'invalid_credentials');
 	assert.equal(signInOutcome({ status: 429 }), 'rate_limited');

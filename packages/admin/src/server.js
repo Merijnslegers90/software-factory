@@ -42,7 +42,8 @@ export function createAdmin(options) {
 		serviceRoleKey: options.serviceRoleKey ?? '',
 		allowList: parseAllowList(options.allowList)
 	};
-	const missing = missingSettings(settings, { ...DEFAULT_NAMES, ...options.settingNames });
+	const names = { ...DEFAULT_NAMES, ...options.settingNames };
+	const missing = missingSettings(settings, names);
 	const ready = missing.length === 0;
 
 	function mayLogIn(email) {
@@ -142,6 +143,10 @@ export function createAdmin(options) {
 	async function sendPasswordLink(cookies, email, origin) {
 		if (!normaliseEmail(email).includes('@')) return 'invalid_email';
 		if (!ready || !mayLogIn(email)) return 'ok';
+		if (!settings.serviceRoleKey) {
+			console.error(`Sending password link failed: ${names.serviceRoleKey} is missing.`);
+			return 'send_failed';
+		}
 
 		const service = createClient(settings.supabaseUrl, settings.serviceRoleKey, {
 			auth: { autoRefreshToken: false, persistSession: false }
