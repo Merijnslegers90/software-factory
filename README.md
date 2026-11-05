@@ -26,13 +26,14 @@ adr/                              factory decisions (F-0001, F-0002, ...)
 docs/way-of-working.md            the loop, the spec format, how we write and describe a change
 packages/migrations/              @merijnslegers/migrations: migration runner and grant/RLS check
 packages/config/                  @merijnslegers/config: prettier, eslint, tsconfig, em dash check
+packages/admin/                   @merijnslegers/admin: admin login, access rules, image resizing
 .github/workflows/quality.yml     reusable CI workflow
 .github/workflows/release.yml     publishes a package when its version is new
 tests/                            checks on this repo itself
 ```
 
-Still to build: a hook for lint and format after a change, the packages
-`admin` and `mail`, and skills for an admin screen, a mail type and a new
+Still to build: a hook for lint and format after a change, the package
+`mail`, and skills for an admin screen, a mail type and a new
 product.
 
 ## Connecting a project

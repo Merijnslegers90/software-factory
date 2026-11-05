@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [migrations, config]
+        package: [migrations, config, admin]
 
     defaults:
       run:

@@ -1,6 +1,6 @@
 ---
 name: factory-decisions
-description: The decisions that hold for every product built by the factory (stack, database, migrations, keys, tests, CI, images, one project per product). Use this before making a choice about architecture, the database, an external service, environment variables, tests or CI, and in every review.
+description: The decisions that hold for every product built by the factory (stack, database, migrations, keys, tests, CI, images, one project per product, the admin login). Use this before making a choice about architecture, the database, an external service, environment variables, tests or CI, and in every review.
 ---
 
 # Factory decisions
@@ -28,6 +28,7 @@ as your work touches it.
 | F-0008 | Images are resized in the browser before upload, to a fixed width per kind; only what outsiders load sits in a public bucket.                                                                                                                          | `adr/F-0008-resize-images-in-browser.md` |
 | F-0009 | Every product its own Supabase project with its own keys. Never two products in one project, unless a project decision deviates.                                                                                                                       | `adr/F-0009-one-project-per-product.md`  |
 | F-0010 | SvelteKit 3 (Svelte 5), TypeScript 6, Tailwind 4, Vercel, Supabase, pnpm, Node 22.17+. Variables in `src/env.ts`. Fixed scripts: `lint`, `check`, `test`, `build`, `test:e2e`.                                                                         | `adr/F-0010-sveltekit-3.md`              |
+| F-0011 | Admin login through `@merijnslegers/admin`: Supabase Auth, one account per person, access by `ADMIN_EMAILS` checked on every request. Cookie on the admin path only; writes must come from the own origin; webhooks never under the admin path.        | `adr/F-0011-admin-login.md`              |
 
 ## When your work touches a decision
 

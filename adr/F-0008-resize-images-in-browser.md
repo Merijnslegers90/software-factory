@@ -29,4 +29,6 @@ costs bandwidth on every view, and on the Supabase free plan that is capped.
 
 ## In the code
 
-- The resizing in each project's admin. It becomes part of `packages/admin`.
+- `packages/admin/src/resize.js` (`@merijnslegers/admin/resize`), with the
+  plan per file tested in `test/resize.test.mjs`. Each project sets the width
+  and the format per kind of image in one place.
