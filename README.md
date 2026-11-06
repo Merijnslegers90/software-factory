@@ -45,17 +45,14 @@ everywhere at once.
 
 ```json
 {
-  "extraKnownMarketplaces": {
-    "software-factory": {
-      "source": {
-        "source": "github",
-        "repo": "Merijnslegers90/software-factory"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "software-factory@software-factory": true
-  }
+	"extraKnownMarketplaces": {
+		"software-factory": {
+			"source": { "source": "github", "repo": "Merijnslegers90/software-factory" }
+		}
+	},
+	"enabledPlugins": {
+		"software-factory@software-factory": true
+	}
 }
 ```
 
