@@ -1,6 +1,6 @@
 # F-0012: Content in code, a CMS when the customer edits, a database when money is involved
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 6 November 2026
 
 ## Context
