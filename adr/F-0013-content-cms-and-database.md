@@ -53,7 +53,8 @@ with its database.
 - **Content starts in code.** Texts and pages sit in the repo, and a change
   goes through a commit and a preview. A CMS is added only when the customer
   asks to edit themselves.
-- **The CMS is Sanity**, the one external service F-0010 adds for this kind.
+- **The CMS is Sanity**, the one external service this kind adds to the
+  stack of F-0010.
   - The schema sits in the repo next to the site, and the types are generated
     from it.
   - The published content is read on the server, at build time when the site
@@ -65,7 +66,9 @@ with its database.
     Sanity project exists yet. It is not a second copy that is kept up to date.
   - When Sanity cannot be reached during a build, or a document the site needs
     is missing, the build fails with a message that names it. Vercel keeps the
-    previous deployment live.
+    previous deployment live. This does not go against F-0005, which is about
+    a key that is missing: here nothing is missing, the content is there but
+    cannot be reached.
   - The Studio lives in `studio/` in the same repo and is hosted by Sanity, so
     the SvelteKit app gets no React. The skill `add-sanity` sets it up.
 - **Images in the CMS** go to Sanity's asset store and are scaled by its image

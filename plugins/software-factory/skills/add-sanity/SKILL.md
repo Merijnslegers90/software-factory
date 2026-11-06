@@ -35,7 +35,9 @@ sanity` in the linked project (check the slug with `vercel integration add
   their own name, with their own email address, and invites the builder as an
   administrator. Create the project inside that organization. Do not use the
   Marketplace integration: it ties the project to the builder's Vercel team,
-  and the customer could not take it along (F-0013).
+  and the customer could not take it along (F-0013). When the work ends, the
+  customer keeps the Sanity organization; only the Vercel project is
+  transferred.
 
 Either way: one project per site, dataset `production`, public (the
 default). Published content on a public dataset can be read without a token;
@@ -47,13 +49,15 @@ From the repo root, with the project ID from step 1:
 
 ```bash
 npx sanity@latest init -y --project <projectId> --dataset production \
-  --output-path studio --template clean --typescript
+  --output-path studio --template clean --typescript --package-manager pnpm
 ```
 
-- The Studio is its own package with its own `package.json` and lockfile.
-  It is not part of the site's build: add `studio/` to the `ignores` of the
-  site's ESLint config and to `exclude` in its `tsconfig.json`, so `lint`
-  and `check` leave it alone. Vercel only builds the site.
+- The Studio is its own package with its own `package.json` and lockfile,
+  and `sanity init` gives it its own prettier settings. It is not part of the
+  site's build: add `studio/` to the `ignores` of the site's ESLint config and
+  to `.prettierignore`, so `lint` leaves it alone. The site's `tsconfig.json`
+  does not include it already; leave that file as it is. Vercel only builds
+  the site.
 - **The schema** lives in `studio/schemaTypes/`, one file per type, in
   TypeScript. Model what the site has now: a page that exists once (the home
   page, the about page) is a singleton with a fixed `_id`; something that
@@ -116,15 +120,18 @@ export const SANITY_API_VERSION = "2026-11-01";
 - One function per piece of content, such as `getHome()`. Without a client it
   returns the launch content from code (step 7). With a client it runs the
   query; if the request fails, it throws an error that starts with
-  `Sanity unreachable:`, and if a document the site needs is missing, it
-  throws an error that names the document. Either error fails the build
+  `Sanity unreachable:`, and if a document the site needs is missing, or
+  the dataset is empty, it throws an error that names Sanity and the
+  document, such as `Sanity: document home is missing`. Either error fails the build
   (step 8).
 - Turning the query result into what the page shows is a pure function in
   `src/lib/sanity/`, with a test (F-0006). So is the check that a required
   document is there.
 
 **Prerendering.** In `src/routes/+layout.ts`: `export const prerender = true`.
-The loads run at build time and call the functions above.
+The loads go in `+page.server.ts` and `+layout.server.ts`, never in a
+universal `+page.ts`, because they import the server-only module. They run at
+build time and call the functions above.
 
 - A page with a form action cannot be prerendered. A contact form posts to an
   endpoint under `/api/` instead, which sends the mail and stores nothing
