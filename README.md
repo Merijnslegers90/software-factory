@@ -19,6 +19,7 @@ plugins/software-factory/
   skills/factory-decisions/       loads the factory decisions, so every agent knows them
   skills/new-migration/           a Supabase migration with grants and RLS
   skills/write-adr/               record a decision in the right layer
+  skills/add-sanity/              moves a site's content from code to Sanity (F-0013)
   skills/way-of-working/          loads the way of working (the loop, specs, writing, pull requests)
   agents/factory-review.md        checks a change against its spec, the rules and decisions
   hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
