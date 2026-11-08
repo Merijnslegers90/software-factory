@@ -13,6 +13,12 @@ export type AdminDecision =
 	| { kind: 'unauthorized' }
 	| { kind: 'forbidden' };
 
+/** The project's own words for the hook's 401 and 403. A missing one is an empty body. */
+export interface AdminResponses {
+	unauthorized?: string;
+	forbidden?: string;
+}
+
 export interface SettingNames {
 	supabaseUrl: string;
 	anonKey: string;
@@ -45,6 +51,7 @@ export function adminDecision(request: {
 	signedIn: boolean;
 	paths: AdminPaths;
 }): AdminDecision;
+export function refusal(kind: 'unauthorized' | 'forbidden', responses?: AdminResponses): Response;
 export function missingSettings(
 	settings: {
 		supabaseUrl: string;

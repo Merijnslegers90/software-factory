@@ -1,6 +1,6 @@
 {
 	"name": "@merijnslegers/admin",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "The admin login of the software factory: Supabase Auth with an allow list, the access rules and headers, and image resizing in the browser.",
 	"license": "MIT",
 	"type": "module",
