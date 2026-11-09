@@ -24,6 +24,7 @@ import {
 	parseAllowList,
 	passwordOutcome,
 	passwordProblem,
+	refusal,
 	signInOutcome
 } from './rules.js';
 
@@ -106,9 +107,7 @@ export function createAdmin(options) {
 		const response =
 			decision.kind === 'pass'
 				? await resolve(event)
-				: new Response(decision.kind === 'forbidden' ? 'Forbidden' : 'Unauthorized', {
-						status: decision.kind === 'forbidden' ? 403 : 401
-					});
+				: refusal(decision.kind, options.responses);
 		for (const [name, value] of Object.entries(ADMIN_HEADERS)) response.headers.set(name, value);
 		return response;
 	}

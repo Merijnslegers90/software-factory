@@ -154,6 +154,20 @@ export function adminDecision({ url, method, contentType, origin, signedIn, path
 }
 
 /**
+ * The answer to an `unauthorized` (401) or `forbidden` (403) decision. The
+ * package chooses no words (F-0011): the body is the project's own text from
+ * `responses`, or empty when it passes none. `ADMIN_HEADERS` are on it too.
+ */
+export function refusal(kind, responses = {}) {
+	const status = kind === 'forbidden' ? 403 : 401;
+	const text = (kind === 'forbidden' ? responses.forbidden : responses.unauthorized) ?? '';
+	const headers = new Headers(ADMIN_HEADERS);
+	if (!text) return new Response(null, { status, headers });
+	headers.set('Content-Type', 'text/plain; charset=utf-8');
+	return new Response(text, { status, headers });
+}
+
+/**
  * The settings logging in needs that are missing, by the names the project
  * gave them. Empty when everything is there. Without them nobody gets in
  * (F-0005). The service_role key is not among them: only a password link

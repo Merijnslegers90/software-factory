@@ -16,6 +16,7 @@ import {
 	passwordOutcome,
 	passwordProblem,
 	readPasswordLink,
+	refusal,
 	safeReturnPath,
 	signInOutcome
 } from '../src/rules.js';
@@ -174,6 +175,42 @@ test('adminDecision: a fetch without a session gets a 401', () => {
 	assert.deepEqual(decide({ method: 'POST', contentType: 'application/json', origin: site }), {
 		kind: 'unauthorized'
 	});
+});
+
+test('refusal: without the project\'s words the 401 and 403 have an empty body (F-0011)', async () => {
+	for (const [kind, status] of [
+		['unauthorized', 401],
+		['forbidden', 403]
+	]) {
+		for (const responses of [undefined, {}, { unauthorized: '', forbidden: '' }]) {
+			const response = refusal(kind, responses);
+			assert.equal(response.status, status);
+			assert.equal(await response.text(), '');
+			assert.equal(response.headers.get('Content-Type'), null);
+			for (const [name, value] of Object.entries(ADMIN_HEADERS)) {
+				assert.equal(response.headers.get(name), value);
+			}
+		}
+	}
+});
+
+test('refusal: the project\'s own words, intact outside ASCII (F-0011)', async () => {
+	const responses = {
+		unauthorized: 'U bent niet ingelogd.',
+		forbidden: 'Dit verzoek kwam niet van onze eigen site, café’s ook niet.'
+	};
+	const unauthorized = refusal('unauthorized', responses);
+	assert.equal(unauthorized.status, 401);
+	assert.equal(await unauthorized.text(), responses.unauthorized);
+	assert.equal(unauthorized.headers.get('Content-Type'), 'text/plain; charset=utf-8');
+
+	const forbidden = refusal('forbidden', responses);
+	assert.equal(forbidden.status, 403);
+	assert.equal(await forbidden.text(), responses.forbidden);
+	assert.equal(forbidden.headers.get('X-Frame-Options'), 'DENY');
+
+	// Only one given: the other stays empty.
+	assert.equal(await refusal('forbidden', { unauthorized: 'U bent niet ingelogd.' }).text(), '');
 });
 
 test('ADMIN_HEADERS keep the admin out of frames, search engines and caches', () => {

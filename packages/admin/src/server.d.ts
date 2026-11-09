@@ -1,6 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
 import type { Handle } from '@sveltejs/kit/hooks';
-import type { AdminPaths, SettingNames } from './rules.js';
+import type { AdminPaths, AdminResponses, SettingNames } from './rules.js';
 
 export interface AdminOptions {
 	/** Read at runtime in the project's src/env.ts (F-0005). An empty string means missing. */
@@ -13,6 +13,8 @@ export interface AdminOptions {
 	paths?: Partial<AdminPaths>;
 	/** The names `missingSettings()` reports, if the project's variables are named differently. */
 	settingNames?: Partial<SettingNames>;
+	/** The body of the hook's 401 and 403, in the project's own words. Without it the body is empty. */
+	responses?: AdminResponses;
 }
 
 export interface Admin {

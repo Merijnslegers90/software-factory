@@ -52,7 +52,12 @@ export const admin = createAdmin({
 	serviceRoleKey: SUPABASE_SERVICE_ROLE_KEY,
 	allowList: ADMIN_EMAILS,
 	// Optional: a project in Dutch names its screens in Dutch.
-	paths: { login: '/admin/inloggen', password: '/admin/wachtwoord' }
+	paths: { login: '/admin/inloggen', password: '/admin/wachtwoord' },
+	// Optional: the hook's 401 and 403 in the project's own words.
+	responses: {
+		unauthorized: 'U bent niet ingelogd.',
+		forbidden: 'Dit verzoek kwam niet van onze eigen site.'
+	}
 });
 ```
 
@@ -74,6 +79,8 @@ For everything under the admin path it:
 - answers a request that can change something with a 403 when it does not come
   from the site's own origin, even when SvelteKit's own check is off for a
   webhook;
+- gives that 401 or 403 the text from `responses` as plain text, or an empty
+  body without it, so the package chooses no words of its own;
 - puts `ADMIN_HEADERS` on every response: no framing, `noindex`, `no-store`,
   a referrer that stays on the site.
 
