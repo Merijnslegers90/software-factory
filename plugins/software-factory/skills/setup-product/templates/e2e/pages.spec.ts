@@ -5,8 +5,10 @@ import { pagesToCheck } from './pages';
 // that throws, an {#each} with duplicate keys (skill setup-product). The
 // pages come from pages.ts.
 
-// Network errors to external services belong to a run on fake keys and say
-// nothing about the page itself. Name the services this product calls.
+// Console errors about external services belong to a run on fake keys and say
+// nothing about the page itself. Name the hosts this product calls. A failed
+// request to the site's own origin (a script, a stylesheet, an image) is never
+// noise: the response listener below reports it.
 const EXTERNAL_NOISE = /ERR_NAME_NOT_RESOLVED|Failed to load resource/i;
 
 const pages = await pagesToCheck();
@@ -18,6 +20,13 @@ for (const path of pages) {
 			if (msg.type() === 'error') problems.push(`console: ${msg.text()}`);
 		});
 		page.on('pageerror', (err) => problems.push(`pageerror: ${err.message}`));
+		page.on('response', (response) => {
+			const base = process.env.E2E_BASE_URL ?? 'http://localhost:4173';
+			const own = new URL(response.url()).origin === new URL(base).origin;
+			if (own && response.status() >= 400) {
+				problems.push(`${response.status()} on ${response.url()}`);
+			}
+		});
 
 		const response = await page.goto(path, { waitUntil: 'networkidle' });
 

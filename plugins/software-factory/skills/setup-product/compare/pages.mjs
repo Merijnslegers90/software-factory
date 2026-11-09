@@ -46,12 +46,41 @@ export function parsePageList(text) {
 	);
 }
 
-/** The paths in a sitemap.xml, whatever host it names. */
-export function parseSitemap(xml) {
-	const locs = [...String(xml ?? '').matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) =>
+function locs(xml) {
+	return [...String(xml ?? '').matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)].map((m) =>
 		m[1].replace(/&amp;/g, '&')
 	);
-	return unique(locs);
+}
+
+/** Whether a sitemap is an index that points to other sitemaps. */
+export function isSitemapIndex(xml) {
+	return /<sitemapindex[\s>]/.test(String(xml ?? ''));
+}
+
+/** The addresses of the sitemaps a sitemap index points to. */
+export function sitemapChildren(xml) {
+	return isSitemapIndex(xml) ? locs(xml) : [];
+}
+
+/** The paths of the pages in a sitemap, whatever host it names. An index gives none. */
+export function parseSitemap(xml) {
+	if (isSitemapIndex(xml)) return [];
+	return unique(locs(xml).filter((loc) => !/\.xml(\?|$)/.test(loc)));
+}
+
+/**
+ * The paths in the PAGES list of a project's e2e/pages.ts, so the comparison
+ * reads the same list as the tests and no copy goes stale. Only quoted strings
+ * that start with a slash, on lines that are not commented out.
+ */
+export function parsePagesModule(source) {
+	const block = /PAGES[^=]*=\s*\[([\s\S]*?)\]/.exec(String(source ?? ''));
+	if (!block) return [];
+	const paths = block[1]
+		.split('\n')
+		.filter((line) => !line.trim().startsWith('//'))
+		.flatMap((line) => [...line.matchAll(/['"`](\/[^'"`]*)['"`]/g)].map((m) => m[1]));
+	return unique(paths);
 }
 
 /** The full address of a path on a site. */
@@ -59,7 +88,17 @@ export function pageUrl(base, path) {
 	return new URL(path, String(base).replace(/\/+$/, '') + '/').toString();
 }
 
-/** A file name for one page at one width, safe on every file system. */
+/** A short, stable hash, so two paths that read alike never share a file. */
+function shortHash(text) {
+	let hash = 0x811c9dc5;
+	for (const char of text) {
+		hash ^= char.codePointAt(0);
+		hash = Math.imul(hash, 0x01000193) >>> 0;
+	}
+	return hash.toString(36).slice(0, 6);
+}
+
+/** A file name for one page at one width, safe on every file system and unique per path. */
 export function screenshotName(path, viewport) {
 	const slug =
 		path === '/'
@@ -69,7 +108,7 @@ export function screenshotName(path, viewport) {
 					.replace(/[^a-zA-Z0-9]+/g, '-')
 					.replace(/^-|-$/g, '')
 					.toLowerCase();
-	return `${slug || 'home'}--${viewport}.png`;
+	return `${slug || 'home'}-${shortHash(path)}--${viewport}.png`;
 }
 
 /**

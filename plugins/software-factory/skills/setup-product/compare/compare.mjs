@@ -21,7 +21,9 @@ import {
 	classify,
 	pageUrl,
 	parsePageList,
+	parsePagesModule,
 	parseSitemap,
+	sitemapChildren,
 	renderReport,
 	screenshotName
 } from './pages.mjs';
@@ -42,11 +44,23 @@ function options(argv) {
 	return out;
 }
 
+async function fetchText(url) {
+	const response = await fetch(url);
+	if (!response.ok) throw new Error(`${url} gave ${response.status}`);
+	return response.text();
+}
+
 async function pagesToCompare(opts) {
-	if (opts.pages) return parsePageList(await readFile(opts.pages, 'utf8'));
-	const response = await fetch(pageUrl(opts.live, '/sitemap.xml'));
-	if (!response.ok) throw new Error(`sitemap.xml gave ${response.status}`);
-	return parseSitemap(await response.text());
+	if (opts.pages) {
+		const text = await readFile(opts.pages, 'utf8');
+		return /\.[cm]?[jt]s$/.test(opts.pages) ? parsePagesModule(text) : parsePageList(text);
+	}
+	const xml = await fetchText(pageUrl(opts.live, '/sitemap.xml'));
+	const children = sitemapChildren(xml);
+	if (children.length === 0) return parseSitemap(xml);
+	// A sitemap index: one level down.
+	const lists = await Promise.all(children.map(async (url) => parseSitemap(await fetchText(url))));
+	return [...new Set(lists.flat())];
 }
 
 /** Scrolls the page through, so content that appears on scroll is there, and waits. */
@@ -167,13 +181,24 @@ async function main() {
 	const paths = await pagesToCompare(opts);
 	await mkdir(path.join(opts.out, 'images'), { recursive: true });
 
+	// The bypass token goes only to the preview's own host, so no other host
+	// (an API, a font server) gets it or has to answer a CORS preflight for it.
 	const token = process.env.COMPARE_BYPASS_TOKEN;
-	const previewHeaders = token
-		? {
-				'x-vercel-protection-bypass': token,
-				'x-vercel-set-bypass-cookie': 'true'
-			}
-		: {};
+	const previewHost = new URL(opts.preview).host;
+	async function withBypass(context) {
+		if (!token) return;
+		await context.route('**/*', (route) => {
+			const request = route.request();
+			if (new URL(request.url()).host !== previewHost) return route.continue();
+			return route.continue({
+				headers: {
+					...request.headers(),
+					'x-vercel-protection-bypass': token,
+					'x-vercel-set-bypass-cookie': 'true'
+				}
+			});
+		});
+	}
 
 	const chromium = await loadChromium();
 	const browser = await chromium.launch();
@@ -184,10 +209,8 @@ async function main() {
 		for (const viewport of VIEWPORTS) {
 			const size = { width: viewport.width, height: viewport.height };
 			const live = await browser.newContext({ viewport: size });
-			const preview = await browser.newContext({
-				viewport: size,
-				extraHTTPHeaders: previewHeaders
-			});
+			const preview = await browser.newContext({ viewport: size });
+			await withBypass(preview);
 			for (const pagePath of paths) {
 				try {
 					const [a, b] = await Promise.all([

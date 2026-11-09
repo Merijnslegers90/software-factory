@@ -10,7 +10,7 @@ import { KNOWN_ISSUES } from './known-issues';
 // reader are still checked by hand.
 //
 // Issues that were there when the site was taken in are in known-issues.ts,
-// excluded one by one, so nothing new can be added.
+// excluded by page, rule and preferably element (see that file).
 
 const VIEWPORTS = [
 	{ name: 'phone', width: 390, height: 844 },
@@ -30,8 +30,11 @@ async function scrollThrough(page: Page) {
 	await page.waitForTimeout(800);
 }
 
-function isKnown(path: string, rule: string) {
-	return KNOWN_ISSUES.some((issue) => issue.page === path && issue.rule === rule);
+function isKnown(path: string, rule: string, target: string) {
+	return KNOWN_ISSUES.some(
+		(issue) =>
+			issue.page === path && issue.rule === rule && (!issue.target || issue.target === target)
+	);
 }
 
 const pages = await pagesToCheck();
@@ -46,8 +49,12 @@ for (const viewport of VIEWPORTS) {
 				.withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
 				.analyze();
 			const found = result.violations
-				.filter((v) => !isKnown(path, v.id))
-				.map((v) => ({ rule: v.id, help: v.help, where: v.nodes.map((n) => n.target.join(' ')) }));
+				.map((v) => ({
+					rule: v.id,
+					help: v.help,
+					where: v.nodes.map((n) => n.target.join(' ')).filter((t) => !isKnown(path, v.id, t))
+				}))
+				.filter((v) => v.where.length > 0);
 			expect(found).toEqual([]);
 		});
 	}

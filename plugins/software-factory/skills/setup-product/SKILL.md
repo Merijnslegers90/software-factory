@@ -105,7 +105,10 @@ it reads, and any `AGENTS.md`, `README.md` or notes.
 Nothing a visitor sees changes in this pull request. It adds the factory
 around the site:
 
-- **`CLAUDE.md`** from `templates/CLAUDE.md`, with the kind of F-0013. An
+- **`CLAUDE.md`** from `templates/CLAUDE.md`, with the kind of F-0013. Until
+  pull request 2, its "Stack" section describes the stack the site has now
+  (SvelteKit 2, variables through `$env/dynamic`), and the move to the
+  factory's stack goes under "Not yet like the factory". An
   `AGENTS.md` with useful content moves into `CLAUDE.md`; `AGENTS.md` then
   points to it, as in route A.
 - **`.claude/settings.json`** with the plugin, as in route A.
@@ -117,10 +120,12 @@ around the site:
   `$env/dynamic/public`, never `$env/static/*` (F-0005). Every one is in
   `.env.example` with a fake value. A feature without its variable is off,
   and the build does not break.
-- **The fixed tests** (below). Run the accessibility test once against the
-  live site (`E2E_BASE_URL=<live address>`), and put every issue it finds in
-  `e2e/known-issues.ts`, one line per page and rule, with a short note. The
-  take-in does not wait for them.
+- **The fixed tests** (below). Run the accessibility test twice: once
+  against the live site (`E2E_BASE_URL=<live address>`, with
+  `E2E_FROM_SITEMAP=1` for a CMS site), and once locally, as CI runs it, with
+  the fake values and no CMS content. Put every issue either run finds in
+  `e2e/known-issues.ts`, with the element (`target`) where axe names one, and
+  a short note. The take-in does not wait for them.
 - **"Not yet like the factory"** in `CLAUDE.md`: every place the site differs
   from the decisions. For each, say whether pull request 2 fixes it, a project
   decision covers it (skill `write-adr`), or it is a point for later.
@@ -176,7 +181,11 @@ Every product has them, run by `test:e2e` in CI (F-0007, F-0010).
    checked too. A preview behind Vercel's deployment protection needs
    `E2E_BYPASS_TOKEN` (Vercel, project settings, Deployment Protection,
    Protection Bypass for Automation), passed in when you run it and never
-   written down.
+   written down. Playwright then sends that header on every request, also to
+   other hosts; if a page calls an API or font host from the browser, that
+   host may refuse it and the test reports a console error that is not the
+   site's fault. The screenshot comparison sends it to the preview's own host
+   only.
 
 ## The screenshot comparison
 
@@ -188,11 +197,13 @@ page. Run it from the product's repo, where Playwright is installed:
 ```bash
 node <this skill>/compare/compare.mjs \
   --live https://www.<domain> --preview https://<preview address> \
-  --pages e2e/pages.txt --out compare-report
+  --pages e2e/pages.ts --out compare-report
 ```
 
-- `--pages` is a text file with one path per line (copy the list from
-  `e2e/pages.ts`); `--sitemap` reads the live site's sitemap instead.
+- `--pages e2e/pages.ts` reads the `PAGES` list the tests use, so there is no
+  copy to keep up to date; a text file with one path per line works too.
+  `--sitemap` reads the live site's sitemap instead (an index is followed one
+  level down).
 - A protected preview: `COMPARE_BYPASS_TOKEN=<token>` in front of the
   command, never in a file.
 - It exits with 1 when something differs or could not be compared. Read

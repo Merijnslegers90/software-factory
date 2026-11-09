@@ -6,7 +6,9 @@ import {
 	normalisePath,
 	pageUrl,
 	parsePageList,
+	parsePagesModule,
 	parseSitemap,
+	sitemapChildren,
 	renderReport,
 	screenshotName
 } from '../plugins/software-factory/skills/setup-product/compare/pages.mjs';
@@ -31,6 +33,31 @@ test('a sitemap gives its paths, whatever host it names', () => {
 	assert.deepEqual(parseSitemap(xml), ['/', '/en/about', '/a?b=1&c=2']);
 });
 
+test('a sitemap index gives its child sitemaps, and no pages', () => {
+	const index = `<sitemapindex><sitemap><loc>https://x.nl/sitemap-pages.xml</loc></sitemap></sitemapindex>`;
+	assert.deepEqual(sitemapChildren(index), ['https://x.nl/sitemap-pages.xml']);
+	assert.deepEqual(parseSitemap(index), []);
+	assert.deepEqual(sitemapChildren('<urlset><url><loc>https://x.nl/</loc></url></urlset>'), []);
+});
+
+test('a sitemap skips addresses of other sitemaps', () => {
+	const xml =
+		'<urlset><url><loc>https://x.nl/</loc></url><url><loc>https://x.nl/more.xml</loc></url></urlset>';
+	assert.deepEqual(parseSitemap(xml), ['/']);
+});
+
+test('the page list is read from the PAGES list of e2e/pages.ts, without commented lines', () => {
+	const source = `export const PAGES: string[] = [
+	'/',
+	"/contact",
+	// '/hidden',
+	\`/en/about\`
+];
+export const OTHER = ['/not-this'];`;
+	assert.deepEqual(parsePagesModule(source), ['/', '/contact', '/en/about']);
+	assert.deepEqual(parsePagesModule('const x = 1;'), []);
+});
+
 test('a path is normalised the same way from a list and from a sitemap', () => {
 	assert.equal(normalisePath('over/'), '/over');
 	assert.equal(normalisePath('https://x.nl'), '/');
@@ -43,8 +70,17 @@ test('a page address keeps the path of the site it is on', () => {
 });
 
 test('a screenshot name is safe on every file system and names the width', () => {
-	assert.equal(screenshotName('/', 'phone'), 'home--phone.png');
-	assert.equal(screenshotName('/en/Over Ons?x=1', 'desktop'), 'en-over-ons-x-1--desktop.png');
+	assert.match(screenshotName('/', 'phone'), /^home-[a-z0-9]+--phone\.png$/);
+	assert.match(
+		screenshotName('/en/Over Ons?x=1', 'desktop'),
+		/^en-over-ons-x-1-[a-z0-9]+--desktop\.png$/
+	);
+});
+
+test('two paths that read alike never share a screenshot', () => {
+	assert.notEqual(screenshotName('/a-b', 'phone'), screenshotName('/a/b', 'phone'));
+	assert.notEqual(screenshotName('/a?x=1', 'phone'), screenshotName('/a?x=2', 'phone'));
+	assert.equal(screenshotName('/a/b', 'phone'), screenshotName('/a/b', 'phone'));
 });
 
 test('a page differs when its height differs', () => {
