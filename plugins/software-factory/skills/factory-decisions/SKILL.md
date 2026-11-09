@@ -1,6 +1,6 @@
 ---
 name: factory-decisions
-description: The decisions that hold for every product built by the factory (stack, database, migrations, keys, tests, CI, images, one project per product, the admin login, content and CMS). Use this before making a choice about architecture, the database, an external service, environment variables, tests or CI, and in every review.
+description: The decisions that hold for every product built by the factory (stack, database, migrations, keys, tests, CI, images, one project per product, the admin login, content and CMS, Storyblok). Use this before making a choice about architecture, the database, an external service, environment variables, tests or CI, and in every review.
 ---
 
 # Factory decisions
@@ -30,6 +30,7 @@ as your work touches it.
 | F-0010 | SvelteKit 3 (Svelte 5), TypeScript 6, Tailwind 4, Vercel, Supabase, pnpm, Node 22.17+. Variables in `src/env.ts`. Fixed scripts: `lint`, `check`, `test`, `build`, `test:e2e`.                                                                                                                                                     | `adr/F-0010-sveltekit-3.md`              |
 | F-0011 | Admin login through `@merijnslegers/admin`: Supabase Auth, one account per person, access by `ADMIN_EMAILS` checked on every request. Cookie on the admin path only; writes must come from the own origin; webhooks never under the admin path.                                                                                    | `adr/F-0011-admin-login.md`              |
 | F-0013 | Every product is one of three kinds: a site that hardly changes (content in code), a site the customer edits (Sanity, in the customer's name), or a product with a shop (its own database). Name, price, stock and orders always in the database; a CMS refers by product code. Prerendered; Sanity down at build fails the build. | `adr/F-0013-content-cms-and-database.md` |
+| F-0014 | A site already on Storyblok stays on it. The token only on the server, at runtime, never in the code or the browser; a public token for production, a separate preview token for drafts; a token that leaked is replaced; types generated.                                                                                         | `adr/F-0014-storyblok.md`                |
 
 ## When your work touches a decision
 

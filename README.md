@@ -20,6 +20,7 @@ plugins/software-factory/
   skills/new-migration/           a Supabase migration with grants and RLS
   skills/write-adr/               record a decision in the right layer
   skills/add-sanity/              moves a site's content from code to Sanity (F-0013)
+  skills/setup-product/           starts a new product, or takes an existing site in (F-0014)
   skills/way-of-working/          loads the way of working (the loop, specs, writing, pull requests)
   agents/factory-review.md        checks a change against its spec, the rules and decisions
   hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
@@ -34,8 +35,7 @@ tests/                            checks on this repo itself
 ```
 
 Still to build: a hook for lint and format after a change, the package
-`mail`, and skills for an admin screen, a mail type and a new
-product.
+`mail`, and skills for an admin screen and a mail type.
 
 ## Connecting a project
 
