@@ -180,7 +180,8 @@ SvelteKit 3, a product uses the part without SvelteKit and does in
 
 	// What @vercel/analytics/sveltekit does, on $app/state: that part still
 	// imports $app/stores in 2.0.1. basePath and the config come from Vercel
-	// at build time; without them the script loads from the wrong path.
+	// at build time; without them the script loads from /_vercel/insights,
+	// which ad blockers often block, so those visitors are not counted.
 	if (browser) {
 		inject(
 			{
