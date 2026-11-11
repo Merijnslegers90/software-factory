@@ -8,7 +8,8 @@
 //
 // Instead of --pages, --sitemap reads the paths from the live site's
 // sitemap.xml. A preview behind Vercel's deployment protection needs a bypass
-// token in COMPARE_BYPASS_TOKEN; it is read at run time and never written
+// token in COMPARE_BYPASS_TOKEN, or a share link in COMPARE_SHARE_URL (from
+// the Vercel connector); both are read at run time and never written
 // anywhere. The report and the images go to --out (default compare-report).
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -200,6 +201,16 @@ async function main() {
 		});
 	}
 
+	// A share link sets a cookie for the preview's host when it is opened, so
+	// it is opened once per browser context, before the first screenshot.
+	const shareUrl = process.env.COMPARE_SHARE_URL;
+	async function withShareLink(context) {
+		if (!shareUrl) return;
+		const page = await context.newPage();
+		await page.goto(shareUrl, { waitUntil: 'networkidle' });
+		await page.close();
+	}
+
 	const chromium = await loadChromium();
 	const browser = await chromium.launch();
 	const results = [];
@@ -211,6 +222,7 @@ async function main() {
 			const live = await browser.newContext({ viewport: size });
 			const preview = await browser.newContext({ viewport: size });
 			await withBypass(preview);
+			await withShareLink(preview);
 			for (const pagePath of paths) {
 				try {
 					const [a, b] = await Promise.all([
