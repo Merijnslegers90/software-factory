@@ -145,6 +145,9 @@ Check: CI is green, the site behaves as before, and the owner has seen the
 
 - `npx sv migrate sveltekit-3`, then TypeScript 6, Node 22.17 or later, and
   `@merijnslegers/config` 1.x with its tsconfig next to `$app/tsconfig`.
+  The migration also replaces `$lib` with `#lib` in Markdown, so check
+  `CLAUDE.md` and other docs afterwards. It leaves a `MIGRATION_TASKS.md`;
+  work through it and remove it.
 - The Svelte and Kit settings from `svelte.config.js` into `vite.config.ts`;
   remove `svelte.config.js`.
 - Every variable in `src/env.ts` with `defineEnvVars`, read from
@@ -156,7 +159,11 @@ Check: CI is green, the site behaves as before, and the owner has seen the
 
 **A dependency without a version for SvelteKit 3:** stop, name it to the
 owner, and leave the site on pull request 1 until there is one. Record it
-under "Not yet like the factory".
+under "Not yet like the factory". A peer range that only names SvelteKit 2
+counts too, even when the code would work. Run the migration locally first
+(without pushing), so you can tell the owner whether the dependency really
+breaks, which part of it, and what a way around it would look like. The
+owner decides whether to go ahead; put that decision in the pull request.
 
 Before merging, the screenshot comparison (below) runs against the preview
 of this pull request, and every difference is explained or fixed.
@@ -186,6 +193,10 @@ Every product has them, run by `test:e2e` in CI (F-0007, F-0010).
    host may refuse it and the test reports a console error that is not the
    site's fault. The screenshot comparison sends it to the preview's own host
    only.
+6. `E2E_FROM_SITEMAP=1` fetches the sitemap with Node's own `fetch`, which
+   ignores `HTTPS_PROXY`. Behind a proxy, such as in a cloud session, add
+   `NODE_USE_ENV_PROXY=1`. The same holds for `--sitemap` in the screenshot
+   comparison.
 
 ## The screenshot comparison
 
@@ -205,7 +216,11 @@ node <this skill>/compare/compare.mjs \
   `--sitemap` reads the live site's sitemap instead (an index is followed one
   level down).
 - A protected preview: `COMPARE_BYPASS_TOKEN=<token>` in front of the
-  command, never in a file.
+  command, never in a file. Without a bypass token, a share link works too:
+  `COMPARE_SHARE_URL=<link>`, from `get_access_to_vercel_url` of the Vercel
+  connector. The comparison opens it once in the preview's browser, which
+  then has the cookie. The link gives anyone access for 23 hours, so it is
+  never written down or posted either.
 - It exits with 1 when something differs or could not be compared. Read
   `compare-report/report.md`, and look at every image. A difference can also
   be content edited on the live site in between; judge each one, and tell the
