@@ -165,6 +165,47 @@ counts too, even when the code would work. Run the migration locally first
 breaks, which part of it, and what a way around it would look like. The
 owner decides whether to go ahead; put that decision in the pull request.
 
+**Vercel Analytics** is such a dependency, and the owner has decided how to
+handle it (issue #18). `@vercel/analytics/sveltekit` 2.0.1 imports
+`$app/stores`, which SvelteKit 3 removed: every page then throws in the
+browser, and the fixed page test fails. Until a stable version supports
+SvelteKit 3, a product uses the part without SvelteKit and does in
+`src/routes/+layout.svelte` what `/sveltekit` does, on `$app/state`:
+
+```svelte
+<script lang="ts">
+	import { browser, dev } from '$app/env';
+	import { page } from '$app/state';
+	import { inject, pageview } from '@vercel/analytics';
+
+	// What @vercel/analytics/sveltekit does, on $app/state: that part still
+	// imports $app/stores in 2.0.1. basePath and the config come from Vercel
+	// at build time; without them the script loads from /_vercel/insights,
+	// which ad blockers often block, so those visitors are not counted.
+	if (browser) {
+		inject(
+			{
+				mode: dev ? 'development' : 'production',
+				framework: 'sveltekit',
+				disableAutoTrack: true,
+				basePath: import.meta.env.VITE_VERCEL_OBSERVABILITY_BASEPATH
+			},
+			import.meta.env.VITE_VERCEL_OBSERVABILITY_CLIENT_CONFIG
+		);
+	}
+
+	$effect(() => {
+		if (page.route.id) pageview({ route: page.route.id, path: page.url.pathname });
+	});
+</script>
+```
+
+Pages that should not be counted (an admin) are left out with `beforeSend` in
+the `inject()` options. Record it under "Not yet like the factory". Once a
+stable `@vercel/analytics` names SvelteKit 3 in its peer range, the product
+goes back to `injectAnalytics` from `@vercel/analytics/sveltekit`, and this
+paragraph goes.
+
 Before merging, the screenshot comparison (below) runs against the preview
 of this pull request, and every difference is explained or fixed.
 
