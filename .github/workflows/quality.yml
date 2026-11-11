@@ -89,10 +89,17 @@ jobs:
         if: inputs.build
         run: pnpm run build
 
-      # Chromium only: the e2e tests do not run per browser.
+      # Chromium only: the e2e tests do not run per browser. --with-deps
+      # installs system packages through apt; when Ubuntu's package servers
+      # cannot be reached from the runner, that step hangs for about ten
+      # minutes and then fails. So it gets three minutes, and after that only
+      # the browser is installed: the runner image ships Google Chrome, and with
+      # it the libraries Chromium needs.
       - name: Install browser
         if: inputs.e2e
-        run: pnpm exec playwright install --with-deps chromium
+        run: |
+          timeout 180 pnpm exec playwright install --with-deps chromium \
+            || pnpm exec playwright install chromium
 
       - name: End-to-end tests
         if: inputs.e2e
