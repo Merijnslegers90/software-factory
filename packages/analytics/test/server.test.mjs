@@ -61,6 +61,15 @@ test('series and breakdown use the aggregate endpoint with "by"', async () => {
 	assert.equal(calls[1].url.searchParams.has('filter'), false);
 });
 
+test('the same period asked twice within the hour is fetched once', async () => {
+	const { fetch, calls } = fakeFetch([{ body: { data: { visitors: 1, pageviews: 2 } } }]);
+	const analytics = createAnalytics({ ...keys, fetch });
+	await analytics.totals(periodRange(30, new Date('2026-11-12T15:30:00Z')));
+	const again = await analytics.totals(periodRange(30, new Date('2026-11-12T15:30:07Z')));
+	assert.deepEqual(again, { ok: true, data: { visitors: 1, pageviews: 2 } });
+	assert.equal(calls.length, 1);
+});
+
 test('an answer is kept for an hour; a failure is not kept', async () => {
 	let clock = 0;
 	const { fetch, calls } = fakeFetch([
@@ -91,6 +100,17 @@ test('each failure gives its reason', async () => {
 		[{ status: 200, body: 'no json' }, 'unexpected-response'],
 		[{ status: 200, body: { nothing: true } }, 'unexpected-response']
 	];
+	// The time runs out while the answer is still coming in.
+	const late = async () => ({
+		ok: true,
+		json: async () => {
+			throw new DOMException('timed out', 'TimeoutError');
+		}
+	});
+	assert.deepEqual(await createAnalytics({ ...keys, fetch: late }).totals(range), {
+		ok: false,
+		reason: 'unavailable'
+	});
 	for (const [answer, reason] of cases) {
 		const { fetch } = fakeFetch([answer]);
 		const analytics = createAnalytics({ ...keys, fetch });

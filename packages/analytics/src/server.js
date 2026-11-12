@@ -68,8 +68,10 @@ export function createAnalytics({
 		let body;
 		try {
 			body = await response.json();
-		} catch {
-			return { ok: false, reason: 'unexpected-response' };
+		} catch (error) {
+			// The time ran out while the answer was still coming in.
+			const late = error?.name === 'TimeoutError' || error?.name === 'AbortError';
+			return { ok: false, reason: late ? 'unavailable' : 'unexpected-response' };
 		}
 		const data = body?.data;
 		const fits = kind === 'aggregate' ? Array.isArray(data) : data && typeof data === 'object';

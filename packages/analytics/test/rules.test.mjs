@@ -28,27 +28,33 @@ test('parsePeriod takes 7, 30 or 90 and falls back to 30', () => {
 test('periodRange counts today as a day, and compares with the same length before', () => {
 	const range = periodRange(7, at('2026-11-12T15:30:00Z'));
 	assert.equal(range.since.toISOString(), '2026-11-06T00:00:00.000Z');
-	assert.equal(range.until.toISOString(), '2026-11-12T15:30:00.000Z');
+	assert.equal(range.until.toISOString(), '2026-11-12T15:59:59.999Z');
 	assert.equal(range.previous.since.toISOString(), '2026-10-30T00:00:00.000Z');
-	assert.equal(range.previous.until.toISOString(), '2026-11-05T15:30:00.000Z');
+	assert.equal(range.previous.until.toISOString(), '2026-11-05T15:59:59.999Z');
+});
+
+test('periodRange is the same range all through the hour, so it can be cached', () => {
+	assert.deepEqual(periodRange(30, at('2026-11-12T15:00:01Z')), periodRange(30, at('2026-11-12T15:59:59Z')));
+	assert.notDeepEqual(periodRange(30, at('2026-11-12T15:59:59Z')), periodRange(30, at('2026-11-12T16:00:00Z')));
 });
 
 test('monthToDate compares with the same days of the previous month', () => {
 	const range = monthToDate(at('2026-11-12T15:30:00Z'));
 	assert.equal(range.since.toISOString(), '2026-11-01T00:00:00.000Z');
 	assert.equal(range.previous.since.toISOString(), '2026-10-01T00:00:00.000Z');
-	assert.equal(range.previous.until.toISOString(), '2026-10-12T15:30:00.000Z');
+	assert.equal(range.until.toISOString(), '2026-11-12T15:59:59.999Z');
+	assert.equal(range.previous.until.toISOString(), '2026-10-12T15:59:59.999Z');
 });
 
 test('monthToDate stops at the last day of a shorter previous month', () => {
 	const range = monthToDate(at('2026-03-31T10:00:00Z'));
-	assert.equal(range.previous.until.toISOString(), '2026-02-28T10:00:00.000Z');
+	assert.equal(range.previous.until.toISOString(), '2026-02-28T10:59:59.999Z');
 });
 
 test('monthToDate in January looks back at December', () => {
 	const range = monthToDate(at('2027-01-05T08:00:00Z'));
 	assert.equal(range.previous.since.toISOString(), '2026-12-01T00:00:00.000Z');
-	assert.equal(range.previous.until.toISOString(), '2026-12-05T08:00:00.000Z');
+	assert.equal(range.previous.until.toISOString(), '2026-12-05T08:59:59.999Z');
 });
 
 test('granularityFor: per day up to 30 days, per week beyond', () => {
@@ -79,6 +85,8 @@ test('buckets: one per day, or per week starting on Monday', () => {
 	// 6 November 2026 is a Friday; its week starts on Monday 2 November.
 	assert.deepEqual(buckets(range, 'week'), ['2026-11-02', '2026-11-09']);
 	assert.equal(buckets(periodRange(30, at('2026-11-12T00:00:00Z')), 'day').length, 30);
+	// Late in the evening the range ends at 23:59:59.999, still the same day.
+	assert.equal(buckets(periodRange(7, at('2026-11-12T23:30:00Z')), 'day').length, 7);
 });
 
 test('fillSeries puts the days without visits back as zero', () => {
@@ -97,6 +105,24 @@ test('fillSeries puts the days without visits back as zero', () => {
 	assert.deepEqual(series[1], { start: '2026-11-07', visitors: 4, pageviews: 9 });
 	assert.deepEqual(series[6], { start: '2026-11-12', visitors: 2, pageviews: 3 });
 	assert.deepEqual(fillSeries(undefined, range, 'day')[3], { start: '2026-11-09', visitors: 0, pageviews: 0 });
+});
+
+test('fillSeries puts a row in the bucket its time falls in', () => {
+	const range = periodRange(90, at('2026-11-12T15:30:00Z'));
+	// A week that Vercel would start on Sunday instead of Monday.
+	const series = fillSeries(
+		[{ timestamp: '2026-11-08T00:00:00.000Z', visitors: 7, pageviews: 20 }],
+		range,
+		'week'
+	);
+	assert.deepEqual(series.find((point) => point.start === '2026-11-02'), {
+		start: '2026-11-02',
+		visitors: 7,
+		pageviews: 20
+	});
+	// A row from before the first bucket counts in the first.
+	const early = fillSeries([{ timestamp: '2026-08-01T00:00:00.000Z', visitors: 1, pageviews: 1 }], range, 'week');
+	assert.equal(early[0].visitors, 1);
 });
 
 test('totalsFrom gives zero for what is missing or wrong', () => {

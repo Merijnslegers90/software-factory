@@ -4,7 +4,8 @@
 // Days are UTC days, because that is how Vercel buckets them. Totals, series
 // and the dashboard then agree with each other.
 
-const DAY = 24 * 60 * 60 * 1000;
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
 
 export const PERIODS = Object.freeze([7, 30, 90]);
 export const DEFAULT_PERIOD = 30;
@@ -20,6 +21,13 @@ function startOfDay(date) {
 	return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
+// The end of the current hour. A range ends there and not at this very
+// millisecond, so the same question asked twice within the hour is the same
+// question, and the server's hour of caching works.
+function endOfHour(date) {
+	return new Date(Math.floor(date.getTime() / HOUR) * HOUR + HOUR - 1);
+}
+
 function startOfWeek(date) {
 	const day = startOfDay(date);
 	// Vercel's weeks start on Monday; getUTCDay() is 0 on Sunday.
@@ -28,19 +36,20 @@ function startOfWeek(date) {
 }
 
 /**
- * The last `days` days up to now, today included, and the period of the same
- * length before it. The previous period ends at the same time of day as now,
- * so half a day today is compared with half a day back then.
+ * The last `days` days up to the end of this hour, today included, and the
+ * period of the same length before it. The previous period ends at the same
+ * hour, so half a day today is compared with half a day back then.
  */
 export function periodRange(days, now = new Date()) {
 	const since = new Date(startOfDay(now).getTime() - (days - 1) * DAY);
+	const until = endOfHour(now);
 	const shift = days * DAY;
 	return {
 		since,
-		until: now,
+		until,
 		previous: {
 			since: new Date(since.getTime() - shift),
-			until: new Date(now.getTime() - shift)
+			until: new Date(until.getTime() - shift)
 		}
 	};
 }
@@ -54,22 +63,13 @@ export function monthToDate(now = new Date()) {
 	const month = now.getUTCMonth();
 	const daysInPrevious = new Date(Date.UTC(year, month, 0)).getUTCDate();
 	const day = Math.min(now.getUTCDate(), daysInPrevious);
+	const until = endOfHour(now);
 	return {
 		since: new Date(Date.UTC(year, month, 1)),
-		until: now,
+		until,
 		previous: {
 			since: new Date(Date.UTC(year, month - 1, 1)),
-			until: new Date(
-				Date.UTC(
-					year,
-					month - 1,
-					day,
-					now.getUTCHours(),
-					now.getUTCMinutes(),
-					now.getUTCSeconds(),
-					now.getUTCMilliseconds()
-				)
-			)
+			until: new Date(Date.UTC(year, month - 1, day, until.getUTCHours(), 59, 59, 999))
 		}
 	};
 }
@@ -101,17 +101,30 @@ function count(value) {
 	return Number.isFinite(number) && number > 0 ? number : 0;
 }
 
-/** Vercel leaves out the days without visits; this puts them back as zero. */
+/**
+ * Vercel leaves out the days without visits; this puts them back as zero.
+ * Each row goes into the bucket its time falls in, not the one with the same
+ * date, so a week Vercel starts on another day still lands somewhere.
+ */
 export function fillSeries(rows, range, granularity) {
-	const byStart = new Map();
+	const series = buckets(range, granularity).map((start) => ({
+		start,
+		from: Date.parse(`${start}T00:00:00Z`),
+		visitors: 0,
+		pageviews: 0
+	}));
 	for (const row of rows ?? []) {
-		if (typeof row?.timestamp !== 'string') continue;
-		byStart.set(row.timestamp.slice(0, 10), row);
+		const time = typeof row?.timestamp === 'string' ? Date.parse(row.timestamp) : NaN;
+		if (Number.isNaN(time)) continue;
+		let bucket = null;
+		for (const candidate of series) if (candidate.from <= time) bucket = candidate;
+		// A row from before the first bucket (Vercel snapped `since` back) counts in the first.
+		bucket ??= series[0];
+		if (!bucket) continue;
+		bucket.visitors += count(row.visitors);
+		bucket.pageviews += count(row.pageviews);
 	}
-	return buckets(range, granularity).map((start) => {
-		const row = byStart.get(start);
-		return { start, visitors: count(row?.visitors), pageviews: count(row?.pageviews) };
-	});
+	return series.map(({ start, visitors, pageviews }) => ({ start, visitors, pageviews }));
 }
 
 /** The totals from the count endpoint, with zero for what is missing. */

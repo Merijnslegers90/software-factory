@@ -68,10 +68,17 @@ export async function load({ url }) {
 		analytics.totals(range),
 		analytics.totals(range.previous),
 		analytics.series(range, granularityFor(days)),
-		analytics.breakdown(range, 'requestPath')
+		// Ask for more than you show: Vercel picks the top on its own measure.
+		analytics.breakdown(range, 'requestPath', { limit: 50 })
 	]);
 	// Each is { ok: true, data } or { ok: false, reason }.
-	return { days, totals, before, series, pages: pages.ok ? topList(pages.data, 'requestPath') : [] };
+	return {
+		days,
+		totals,
+		before,
+		series,
+		pages: pages.ok ? topList(pages.data, 'requestPath', { sortBy: 'pageviews' }) : []
+	};
 }
 ```
 
@@ -101,7 +108,9 @@ the limit, in one row with `other: true` at the bottom. An empty referrer is
 to exactly 100.
 
 **Periods.** `periodRange(days)` is the last 7, 30 or 90 days, today
-included, with `previous` the same length before it. `monthToDate()` is this
+included, with `previous` the same length before it. A range ends at the end
+of the current hour, not at this very moment, so the same question within the
+hour hits the cache instead of Vercel. `monthToDate()` is this
 month so far, with the same days of the previous month. Days are UTC days,
 as Vercel buckets them. `change(current, previous)` gives whole percent, or
 `'new'` when there was nothing before.
