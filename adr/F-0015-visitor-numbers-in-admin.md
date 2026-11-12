@@ -31,6 +31,10 @@ project of that team.
   day or week and the top lists, and the call to Vercel. The screen, its
   words and its colours belong to the project, as with the admin login
   (F-0011).
+- **The admin is left out of every number**, by `beforeSend` in the root
+  layout and again with `excludePaths` when the numbers are read. Visits
+  measured before `beforeSend` was in place stay in Vercel for as long as the
+  plan keeps them; in the first product they were half of all pageviews.
 - **Days are Vercel's days, in UTC**, so the totals, the graph and Vercel's
   dashboard agree.
 - **The token:**

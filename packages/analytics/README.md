@@ -49,7 +49,9 @@ export function bezoekers() {
 	analytics ??= createAnalytics({
 		token: VERCEL_ANALYTICS_TOKEN,
 		projectId: VERCEL_ANALYTICS_PROJECT_ID,
-		teamId: VERCEL_ANALYTICS_TEAM_ID
+		teamId: VERCEL_ANALYTICS_TEAM_ID,
+		// Visits from before the admin was kept out stay in Vercel's numbers.
+		excludePaths: ['/admin']
 	});
 	return analytics;
 }
@@ -120,3 +122,7 @@ as Vercel buckets them. `change(current, previous)` gives whole percent, or
 The root layout keeps the admin out of the numbers with `beforeSend`, so the
 people who run the product do not count themselves. See the skill
 `setup-product` for the whole snippet.
+
+Pass `excludePaths: ['/admin']` as well. Visits measured before `beforeSend`
+was in place stay in Vercel's numbers for as long as the plan keeps them; the
+first product counted its own admin for weeks, half of its pageviews.

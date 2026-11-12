@@ -2,7 +2,7 @@
 // (F-0015), so it never leaves the server and nothing here sends it anywhere
 // but api.vercel.com.
 
-import { fillSeries, totalsFrom } from './rules.js';
+import { fillSeries, pathFilter, totalsFrom } from './rules.js';
 
 const API = 'https://api.vercel.com/v1/query/web-analytics/visits';
 const HOUR = 60 * 60 * 1000;
@@ -28,6 +28,7 @@ export function createAnalytics({
 	token,
 	projectId,
 	teamId,
+	excludePaths = [],
 	fetch: doFetch = globalThis.fetch,
 	cacheMs = HOUR,
 	timeoutMs = 5000,
@@ -93,7 +94,11 @@ export function createAnalytics({
 
 		/** Unique visitors and pageviews in the range, from the count endpoint. */
 		async totals(range) {
-			const result = await query('count', { since: iso(range.since), until: iso(range.until) });
+			const result = await query('count', {
+				since: iso(range.since),
+				until: iso(range.until),
+				filter: pathFilter(excludePaths)
+			});
 			return map(result, totalsFrom);
 		},
 
@@ -103,7 +108,8 @@ export function createAnalytics({
 				by: [granularity],
 				since: iso(range.since),
 				until: iso(range.until),
-				limit: 100
+				limit: 100,
+				filter: pathFilter(excludePaths)
 			});
 			return map(result, (rows) => fillSeries(rows, range, granularity));
 		},
@@ -119,7 +125,7 @@ export function createAnalytics({
 				since: iso(range.since),
 				until: iso(range.until),
 				limit,
-				filter
+				filter: pathFilter(excludePaths, filter)
 			});
 		}
 	};

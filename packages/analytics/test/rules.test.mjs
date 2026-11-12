@@ -7,6 +7,7 @@ import {
 	granularityFor,
 	monthToDate,
 	parsePeriod,
+	pathFilter,
 	periodRange,
 	shares,
 	topList,
@@ -190,4 +191,15 @@ test('shares add up to exactly 100', () => {
 	);
 	assert.equal(three.reduce((sum, item) => sum + item.percent, 0), 100);
 	assert.deepEqual(shares([], 'deviceType'), []);
+});
+
+test('pathFilter leaves out paths and adds an extra filter', () => {
+	assert.equal(pathFilter([]), undefined);
+	assert.equal(pathFilter(), undefined);
+	assert.equal(pathFilter(['/admin']), "not startswith(requestPath, '/admin')");
+	assert.equal(
+		pathFilter(['/admin', "/it's"], "country eq 'NL'"),
+		"not startswith(requestPath, '/admin') and not startswith(requestPath, '/it''s') and (country eq 'NL')"
+	);
+	assert.equal(pathFilter([], "country eq 'NL'"), "(country eq 'NL')");
 });

@@ -61,6 +61,24 @@ test('series and breakdown use the aggregate endpoint with "by"', async () => {
 	assert.equal(calls[1].url.searchParams.has('filter'), false);
 });
 
+test('excludePaths filters every call', async () => {
+	const { fetch, calls } = fakeFetch([
+		{ body: { data: { visitors: 1, pageviews: 1 } } },
+		{ body: { data: [] } },
+		{ body: { data: [] } }
+	]);
+	const analytics = createAnalytics({ ...keys, excludePaths: ['/admin'], fetch });
+	await analytics.totals(range);
+	await analytics.series(range, 'day');
+	await analytics.breakdown(range, 'requestPath', { filter: "country eq 'NL'" });
+	const filters = calls.map((call) => call.url.searchParams.get('filter'));
+	assert.deepEqual(filters, [
+		"not startswith(requestPath, '/admin')",
+		"not startswith(requestPath, '/admin')",
+		"not startswith(requestPath, '/admin') and (country eq 'NL')"
+	]);
+});
+
 test('the same period asked twice within the hour is fetched once', async () => {
 	const { fetch, calls } = fakeFetch([{ body: { data: { visitors: 1, pageviews: 2 } } }]);
 	const analytics = createAnalytics({ ...keys, fetch });

@@ -11,6 +11,11 @@ export interface AnalyticsOptions {
 	projectId: string;
 	/** The Vercel team, `team_...`; empty for a personal account. */
 	teamId?: string;
+	/**
+	 * Paths to leave out of every number, such as `['/admin']`. Vercel keeps
+	 * counting only production; this filter comes on top.
+	 */
+	excludePaths?: string[];
 	/** For tests. */
 	fetch?: typeof fetch;
 	/** How long an answer is kept, one hour by default. */

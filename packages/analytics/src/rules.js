@@ -79,6 +79,20 @@ export function granularityFor(days) {
 	return days > 30 ? 'week' : 'day';
 }
 
+/**
+ * The OData filter that leaves out paths, such as the admin, combined with an
+ * extra filter. Needed because pages that were measured before the admin was
+ * kept out stay in Vercel's numbers for as long as Vercel keeps them.
+ * Returns undefined when there is nothing to filter on.
+ */
+export function pathFilter(excludePaths = [], extra) {
+	const parts = excludePaths
+		.filter((path) => typeof path === 'string' && path)
+		.map((path) => `not startswith(requestPath, '${path.replaceAll("'", "''")}')`);
+	if (extra) parts.push(`(${extra})`);
+	return parts.length > 0 ? parts.join(' and ') : undefined;
+}
+
 /** The change in whole percent, or 'new' when there was nothing before. */
 export function change(current, previous) {
 	if (!previous) return current > 0 ? 'new' : 0;

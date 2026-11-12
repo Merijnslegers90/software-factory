@@ -41,6 +41,7 @@ export function parsePeriod(value: string | null | undefined): number;
 export function periodRange(days: number, now?: Date): PeriodRange;
 export function monthToDate(now?: Date): PeriodRange;
 export function granularityFor(days: number): Granularity;
+export function pathFilter(excludePaths?: string[], extra?: string): string | undefined;
 export function change(current: number, previous: number): Change;
 export function buckets(range: Range, granularity: Granularity): string[];
 export function fillSeries(rows: unknown[], range: Range, granularity: Granularity): SeriesPoint[];
