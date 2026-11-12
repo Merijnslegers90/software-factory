@@ -67,3 +67,4 @@ itself.
 | [F-0012](F-0012-content-cms-and-database.md) | Content in code, a CMS when the customer edits, a database when money is involved | superseded by F-0013 |
 | [F-0013](F-0013-content-cms-and-database.md) | Content in code, a CMS when the customer edits, a database when money is involved | accepted             |
 | [F-0014](F-0014-storyblok.md)                | A site on Storyblok stays on it, with its token on the server                     | accepted             |
+| [F-0015](F-0015-visitor-numbers-in-admin.md) | Visitor numbers in the admin, from Vercel Web Analytics                           | proposed             |

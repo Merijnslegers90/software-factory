@@ -1,0 +1,32 @@
+{
+	"name": "@merijnslegers/analytics",
+	"version": "0.1.0",
+	"description": "The visitor numbers of the software factory: reads Vercel Web Analytics on the server and turns it into totals, a series and top lists for /admin.",
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		"./rules": {
+			"types": "./src/rules.d.ts",
+			"default": "./src/rules.js"
+		},
+		"./server": {
+			"types": "./src/server.d.ts",
+			"default": "./src/server.js"
+		}
+	},
+	"files": [
+		"src",
+		"README.md"
+	],
+	"engines": {
+		"node": ">=22.17"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Merijnslegers90/software-factory.git",
+		"directory": "packages/analytics"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}
