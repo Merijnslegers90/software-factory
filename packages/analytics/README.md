@@ -99,8 +99,11 @@ never throws. The project writes its own sentence for each reason:
 An answer is kept for an hour per server instance; a failure is not kept.
 
 **Dimensions** for `breakdown`: `requestPath`, `route`, `referrerHostname`,
-`utmSource`, `utmMedium`, `utmCampaign`, `deviceType`, `country`,
+`deviceType`, `country`, `utmSource`, `utmMedium`, `utmCampaign`,
 `browserName`, `osName`. Only production is counted, as in Vercel's dashboard.
+The `utm...` dimensions need Enterprise or the Web Analytics Plus add-on; on
+Pro, Vercel answers 402 and the result is `unavailable`. Do not ask for them
+in the same screen as the rest without handling that on its own.
 
 **Top lists.** `topList(rows, dimension, { limit, sortBy })` sorts on visitors
 or pageviews and puts Vercel's own "Others" group, with whatever falls beyond
