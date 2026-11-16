@@ -1,6 +1,6 @@
 # F-0015: Visitor numbers in the admin, from Vercel Web Analytics
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 12 November 2026
 
 ## Context

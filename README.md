@@ -29,6 +29,7 @@ docs/way-of-working.md            the loop, the spec format, how we write and de
 packages/migrations/              @merijnslegers/migrations: migration runner and grant/RLS check
 packages/config/                  @merijnslegers/config: prettier, eslint, tsconfig, em dash check
 packages/admin/                   @merijnslegers/admin: admin login, access rules, image resizing
+packages/analytics/               @merijnslegers/analytics: visitor numbers from Vercel Web Analytics for the admin
 .github/workflows/quality.yml     reusable CI workflow
 .github/workflows/release.yml     publishes a package when its version is new
 tests/                            checks on this repo itself
@@ -61,8 +62,9 @@ To install it on its own, outside a project:
 
 The skills are called `software-factory:plan`,
 `software-factory:preview-check`, `software-factory:factory-decisions`,
-`software-factory:way-of-working`, `software-factory:new-migration` and
-`software-factory:write-adr`, the agent `software-factory:factory-review`.
+`software-factory:way-of-working`, `software-factory:new-migration`,
+`software-factory:write-adr`, `software-factory:add-sanity` and
+`software-factory:setup-product`, the agent `software-factory:factory-review`.
 
 **CI.** Replace the project's own workflow with a call to the central one:
 
