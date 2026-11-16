@@ -124,6 +124,21 @@ The workflow is called on a major version (`@v1`). A change that can break a
 project becomes `v2`; everything else moves along under `v1`. The plugin
 follows `main`.
 
+Every change to the workflow also gets a fixed tag that never moves, such as
+`v1.1.0`: the minor number for a change in what it does, the last number for
+a fix. That tag is the way back. A project that hits a problem after `v1`
+moved calls the previous fixed tag until it is solved, and the owner can put
+`v1` back on it for everyone.
+
+After the merge, in a clone of `main`:
+
+```bash
+git tag v1.2.0                  # the next free number, never an existing one
+git tag -f v1
+git push origin v1.2.0
+git push -f origin v1
+```
+
 ## Because the repo is public
 
 This holds the way of building, never data about a company, a customer or a
