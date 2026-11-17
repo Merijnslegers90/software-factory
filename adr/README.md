@@ -63,8 +63,10 @@ itself.
 | [F-0008](F-0008-resize-images-in-browser.md) | Images are resized in the browser before upload                                   | accepted             |
 | [F-0009](F-0009-one-project-per-product.md)  | Every product its own Supabase project                                            | accepted             |
 | [F-0010](F-0010-sveltekit-3.md)              | One stack for every product, on SvelteKit 3                                       | accepted             |
-| [F-0011](F-0011-admin-login.md)              | One admin login, through Supabase Auth                                            | accepted             |
+| [F-0011](F-0011-admin-login.md)              | One admin login, through Supabase Auth                                            | superseded by F-0016 |
 | [F-0012](F-0012-content-cms-and-database.md) | Content in code, a CMS when the customer edits, a database when money is involved | superseded by F-0013 |
-| [F-0013](F-0013-content-cms-and-database.md) | Content in code, a CMS when the customer edits, a database when money is involved | accepted             |
+| [F-0013](F-0013-content-cms-and-database.md) | Content in code, a CMS when the customer edits, a database when money is involved | superseded by F-0017 |
 | [F-0014](F-0014-storyblok.md)                | A site on Storyblok stays on it, with its token on the server                     | accepted             |
 | [F-0015](F-0015-visitor-numbers-in-admin.md) | Visitor numbers in the admin, from Vercel Web Analytics                           | accepted             |
+| [F-0016](F-0016-admin-login.md)              | One admin login, through Supabase Auth or HTTP Basic per person                   | accepted             |
+| [F-0017](F-0017-content-cms-and-database.md) | Content in code, a CMS when the customer edits, a database when money is involved | accepted             |

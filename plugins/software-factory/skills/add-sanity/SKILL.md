@@ -1,17 +1,17 @@
 ---
 name: add-sanity
-description: Move a site's content from code to Sanity, the factory way (F-0013). Sets up the project in the right owner's name, the Studio in studio/, generated types, a prerendered site that reads published content at build time, a rebuild on every publish, and the move of the content that is live now. Use this when a customer wants to edit their own site, or when someone asks to add Sanity or a CMS to a product.
+description: Move a site's content from code to Sanity, the factory way (F-0017). Sets up the project in the right owner's name, the Studio in studio/, generated types, a prerendered site that reads published content at build time, a rebuild on every publish, and the move of the content that is live now. Use this when a customer wants to edit their own site, or when someone asks to add Sanity or a CMS to a product.
 ---
 
 # Moving a site's content to Sanity
 
-A site the customer edits keeps its content in Sanity (F-0013). The site is
+A site the customer edits keeps its content in Sanity (F-0017). The site is
 prerendered: it reads the published content when it is built, and every
 publish in Sanity starts a new build. Visitors get static pages, Sanity is
 only called while building, and a failed build leaves the previous version
 live.
 
-Read F-0013 in full before you start (skill
+Read F-0017 in full before you start (skill
 `software-factory:factory-decisions`), and F-0005, F-0008 and F-0010 where a
 step names them. Work through the steps in order; each ends with something
 you can check.
@@ -35,7 +35,7 @@ sanity` in the linked project (check the slug with `vercel integration add
   their own name, with their own email address, and invites the builder as an
   administrator. Create the project inside that organization. Do not use the
   Marketplace integration: it ties the project to the builder's Vercel team,
-  and the customer could not take it along (F-0013). When the work ends, the
+  and the customer could not take it along (F-0017). When the work ends, the
   customer keeps the Sanity organization; only the Vercel project is
   transferred.
 
@@ -135,7 +135,7 @@ build time and call the functions above.
 
 - A page with a form action cannot be prerendered. A contact form posts to an
   endpoint under `/api/` instead, which sends the mail and stores nothing
-  (F-0013).
+  (F-0017).
 - `PUBLIC_SITE_URL` and other settings stay in `src/env.ts` as before; this
   step adds no keys and no lines to `.env.example`.
 
@@ -197,7 +197,7 @@ names Sanity, and nothing is published.
 ## 9. Images
 
 - Sanity keeps the original upload and scales it in its image service. The
-  site never loads an original (F-0013, next to F-0008).
+  site never loads an original (F-0017, next to F-0008).
 - One module, `src/lib/sanity/images.ts`, builds the image URL with
   `@sanity/image-url`: a fixed width per kind of image (hero, card, thumbnail)
   as constants, `auto('format')`, with a test for the widths.
@@ -210,7 +210,7 @@ in its URL.
 
 Add a short section:
 
-- The kind: a site the customer edits (F-0013).
+- The kind: a site the customer edits (F-0017).
 - Who owns the Sanity project (the owner's Vercel team, or the customer's
   organization by name) and the Studio's address.
 - How a change goes live: publish in the Studio, rebuilt in about a minute.

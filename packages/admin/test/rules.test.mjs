@@ -29,11 +29,17 @@ const paths = adminPaths();
 const site = 'https://shop.example.org';
 
 test("adminPaths gives defaults and takes a project's own screens", () => {
-	assert.deepEqual(paths, { base: '/admin', login: '/admin/login', password: '/admin/password' });
+	assert.deepEqual(paths, {
+		base: '/admin',
+		login: '/admin/login',
+		password: '/admin/password',
+		logout: '/admin/logout'
+	});
 	assert.deepEqual(adminPaths({ base: '/beheer/', login: '/beheer/inloggen' }), {
 		base: '/beheer',
 		login: '/beheer/inloggen',
-		password: '/beheer/password'
+		password: '/beheer/password',
+		logout: '/beheer/logout'
 	});
 });
 
