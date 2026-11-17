@@ -1,9 +1,15 @@
 # @merijnslegers/admin
 
-The admin login of the software factory (F-0011), and image resizing in the
+The admin login of the software factory (F-0016), and image resizing in the
 browser (F-0008). Each person signs in to `/admin` with their own email address
-and password through Supabase Auth. Who may enter is an allow list the project
-passes in, checked on every request.
+and password, in one of two ways, chosen by the settings:
+
+- **Supabase Auth**, for a product with a database. Who may enter is an allow
+  list, checked on every request. This is the rest of this README, up to
+  [HTTP Basic](#http-basic-for-a-product-without-a-database).
+- **HTTP Basic**, for a product without a database: the browser's own login
+  window, with a password per person in an environment variable. See
+  [HTTP Basic](#http-basic-for-a-product-without-a-database).
 
 The package holds the login, the access rules and the headers. The screens, the
 components, the navigation and every sentence a user reads stay in the project,
@@ -13,10 +19,16 @@ in its own look and language.
 pnpm add @merijnslegers/admin @supabase/ssr @supabase/supabase-js
 ```
 
+A product with HTTP Basic only needs `@merijnslegers/admin`: the Supabase
+packages are loaded only for Supabase Auth. Its build then warns that
+`@supabase/ssr` cannot be found. That is expected and harmless; do not install
+it to silence the warning.
+
 | Import                        | What it holds                                                            | Where it runs |
 | ----------------------------- | ------------------------------------------------------------------------ | ------------- |
 | `@merijnslegers/admin/server` | `createAdmin`: the hook and the functions for the login screens          | server only   |
 | `@merijnslegers/admin/rules`  | The pure rules: allow list, return path, Origin check, headers, password | anywhere      |
+| `@merijnslegers/admin/password` | `hashPassword` and `verifyPassword` for HTTP Basic, with scrypt        | server only   |
 | `@merijnslegers/admin/resize` | `resizeImage` and `resizeFormFiles`                                      | browser       |
 
 ## Connecting a project
@@ -167,6 +179,79 @@ So no screen gives away who has access.
 - Someone signed in sets a new password on the same screen, without a link.
 - A password is at least `PASSWORD_MIN_LENGTH` (10) characters.
 
+## HTTP Basic, for a product without a database
+
+The browser asks for the email address and password in its own window. There
+is no login screen, no cookie and no Supabase.
+
+**The setting.** One variable, `ADMIN_USERS`, declared in `src/env.ts` and
+read at runtime (F-0005): one entry per person, `email:hash`, separated by new
+lines, commas or spaces. Make an entry with:
+
+```bash
+npx @merijnslegers/admin hash <email>
+```
+
+It asks for the password twice (at least 10 characters) and prints the line.
+Put that in Vercel's environment variables; the password itself is stored
+nowhere. A plain password instead of a hash does not count. Removing a line
+locks that person out, changing one changes their password, both from the next
+deploy.
+
+**One module**, `src/lib/server/admin.ts`:
+
+```ts
+import { createAdmin } from '@merijnslegers/admin/server';
+import { ADMIN_USERS } from '$app/env/private';
+
+export const admin = createAdmin({
+	users: ADMIN_USERS,
+	// Optional: the name in the browser's login window.
+	realm: 'Beheer',
+	// Optional: the refusals in the project's own words.
+	responses: {
+		unauthorized: 'U bent niet ingelogd.',
+		forbidden: 'Dit verzoek kwam niet van onze eigen site.',
+		loggedOut: 'U bent uitgelogd.',
+		rateLimited: 'Te veel pogingen. Probeer het over een kwartier opnieuw.',
+		closed: 'De admin is dicht. Deze instelling ontbreekt:'
+	}
+});
+```
+
+The hook and `event.locals.admin` (`{ email }`) are the same as for Supabase
+Auth. For everything under the admin path the hook:
+
+- answers without a valid password with a 401 that makes the browser ask;
+- answers a request that can change something with a 403 when it does not come
+  from the site's own origin;
+- remembers a checked password for five minutes per server instance, by its
+  SHA-256, so not every request pays for scrypt;
+- after ten wrong passwords from one IP address answers with a 429 for a
+  quarter of an hour, per server instance;
+- answers `/admin/logout` (`paths.logout`) with a 401, which makes most
+  browsers forget the password. Some keep it until the browser is closed;
+- puts `ADMIN_HEADERS` on every response.
+
+Without `ADMIN_USERS` nobody gets in, and the 401 names the missing setting
+after `responses.closed`.
+
+**What it cannot do:**
+
+- `currentAdmin`, `signIn`, `sendPasswordLink`, `setPassword` and `signOut`
+  are for Supabase Auth; with HTTP Basic they do nothing. Read
+  `event.locals.admin` instead.
+- **No remote functions.** The browser sends the password only under the
+  admin path, and a remote function runs at `/_app/remote/...`. An admin
+  screen uses form actions and endpoints under the admin path.
+- No password link: a new password is a new line in Vercel and a deploy.
+
+**Which login a product gets.** With `supabaseUrl` or `anonKey` filled it is
+Supabase Auth, even if `users` is filled too (a warning goes to the log).
+Otherwise, with `users` filled, it is HTTP Basic. A half Supabase setup never
+falls back to HTTP Basic: the admin stays closed and names what is missing.
+`admin.method` says which one is in use.
+
 ## Settings in Supabase
 
 Under Authentication:
@@ -221,7 +306,7 @@ tests. A project's own tests use the same rules without Supabase, for instance
 for its own screen names:
 
 ```ts
-// F-0011
+// F-0016
 import { adminPaths, safeReturnPath } from '@merijnslegers/admin/rules';
 
 const paths = adminPaths({ login: '/admin/inloggen', password: '/admin/wachtwoord' });

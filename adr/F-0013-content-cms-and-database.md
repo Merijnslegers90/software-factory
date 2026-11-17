@@ -1,6 +1,6 @@
 # F-0013: Content in code, a CMS when the customer edits, a database when money is involved
 
-- **Status:** accepted
+- **Status:** superseded by F-0017
 - **Date:** 6 November 2026
 - **Supersedes:** F-0012
 

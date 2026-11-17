@@ -7,7 +7,7 @@ description: Start a new product in the factory, or take an existing site into i
 
 Every product of the factory looks the same underneath: the stack of F-0010,
 the shared packages, the central CI, the plugin, a `CLAUDE.md` with its kind
-(F-0013), and the fixed tests. This skill gets a product there, new or
+(F-0017), and the fixed tests. This skill gets a product there, new or
 existing.
 
 Read the factory decisions first (skill `software-factory:factory-decisions`)
@@ -61,14 +61,17 @@ Node 22.17 or later, and `@sveltejs/adapter-vercel` in place of
 
 ### A3. The kind
 
-Ask the owner which kind of F-0013 this product is, and set up what it needs:
+Ask the owner which kind of F-0017 this product is, and set up what it needs:
 
 - **A site that hardly changes:** content in code under `src/lib/content/`.
-  Nothing more.
-- **A site the customer edits:** the skill `add-sanity`, after this skill.
+  Nothing more, unless the owner wants an admin (for the visitor numbers of
+  F-0015): then `@merijnslegers/admin` with HTTP Basic and `ADMIN_USERS`
+  (F-0016), without a database.
+- **A site the customer edits:** the skill `add-sanity`, after this skill. An
+  admin is optional, as above.
 - **A product with a shop or business behind it:** a Supabase project of its
   own (F-0009), `@merijnslegers/migrations` with `vercel-build`, and
-  `@merijnslegers/admin` for the admin (F-0011). Migrations with the skill
+  `@merijnslegers/admin` for the admin (F-0016). Migrations with the skill
   `new-migration`.
 
 ### A4. `CLAUDE.md`
@@ -105,7 +108,7 @@ it reads, and any `AGENTS.md`, `README.md` or notes.
 Nothing a visitor sees changes in this pull request. It adds the factory
 around the site:
 
-- **`CLAUDE.md`** from `templates/CLAUDE.md`, with the kind of F-0013. Until
+- **`CLAUDE.md`** from `templates/CLAUDE.md`, with the kind of F-0017. Until
   pull request 2, its "Stack" section describes the stack the site has now
   (SvelteKit 2, variables through `$env/dynamic`), and the move to the
   factory's stack goes under "Not yet like the factory". An

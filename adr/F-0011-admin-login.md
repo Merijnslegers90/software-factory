@@ -1,6 +1,6 @@
 # F-0011: One admin login, through Supabase Auth with an allow list
 
-- **Status:** accepted
+- **Status:** superseded by F-0016
 - **Date:** 2 November 2026
 
 ## Context

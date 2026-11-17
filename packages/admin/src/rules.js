@@ -1,5 +1,7 @@
-// The rules around the admin login (F-0011). Pure, so they are tested without
-// Supabase or SvelteKit (F-0006). The calls to Supabase are in server.js.
+// The rules around the admin login (F-0016): Supabase Auth with an allow list,
+// or HTTP Basic with a password per person. Pure, so they are tested without
+// Supabase or SvelteKit (F-0006). The calls to Supabase are in server.js, the
+// password hashes in password.js.
 
 /** Longer than the six characters Supabase asks by default. A short sentence or a password manager makes it easily. */
 export const PASSWORD_MIN_LENGTH = 10;
@@ -19,13 +21,17 @@ export const ADMIN_HEADERS = Object.freeze({
 	'Cache-Control': 'private, no-store'
 });
 
-/** The admin path and its two screens that open without a session. */
-export function adminPaths({ base = '/admin', login, password } = {}) {
+/**
+ * The admin path, its two screens that open without a session (Supabase
+ * Auth), and the path that makes the browser forget its password (HTTP Basic).
+ */
+export function adminPaths({ base = '/admin', login, password, logout } = {}) {
 	const root = base.replace(/\/+$/, '') || '/admin';
 	return {
 		base: root,
 		login: login ?? `${root}/login`,
-		password: password ?? `${root}/password`
+		password: password ?? `${root}/password`,
+		logout: logout ?? `${root}/logout`
 	};
 }
 
@@ -154,17 +160,82 @@ export function adminDecision({ url, method, contentType, origin, signedIn, path
 }
 
 /**
- * The answer to an `unauthorized` (401) or `forbidden` (403) decision. The
- * package chooses no words (F-0011): the body is the project's own text from
- * `responses`, or empty when it passes none. `ADMIN_HEADERS` are on it too.
+ * The answer to a refusal, with `ADMIN_HEADERS` on it. The package chooses no
+ * words (F-0016): the body is the project's own text from `responses`, or
+ * empty when it passes none.
+ *
+ * - `unauthorized` (401) and `forbidden` (403), for both logins.
+ * - `challenge` and `logout` (401 with `WWW-Authenticate`), for HTTP Basic.
+ *   `logout` takes `responses.loggedOut`, else `responses.unauthorized`.
+ * - `rate_limited` (429), after too many wrong passwords.
  */
-export function refusal(kind, responses = {}) {
-	const status = kind === 'forbidden' ? 403 : 401;
-	const text = (kind === 'forbidden' ? responses.forbidden : responses.unauthorized) ?? '';
+export function refusal(kind, responses = {}, realm = 'Admin') {
+	const status = { forbidden: 403, rate_limited: 429 }[kind] ?? 401;
+	const text =
+		(kind === 'forbidden'
+			? responses.forbidden
+			: kind === 'rate_limited'
+				? responses.rateLimited
+				: kind === 'logout'
+					? (responses.loggedOut ?? responses.unauthorized)
+					: responses.unauthorized) ?? '';
 	const headers = new Headers(ADMIN_HEADERS);
+	if (kind === 'challenge' || kind === 'logout') {
+		const name = String(realm).replace(/["\\\r\n]/g, '');
+		headers.set('WWW-Authenticate', `Basic realm="${name}", charset="UTF-8"`);
+	}
+	if (kind === 'rate_limited') headers.set('Retry-After', '900');
 	if (!text) return new Response(null, { status, headers });
 	headers.set('Content-Type', 'text/plain; charset=utf-8');
 	return new Response(text, { status, headers });
+}
+
+/**
+ * The shape of a password hash from `hashPassword` in password.js:
+ * `scrypt.<salt>.<key>`, in base64url. A plain password does not have it.
+ */
+export function isPasswordHash(value) {
+	const parts = String(value ?? '').split('.');
+	return (
+		parts.length === 3 &&
+		parts[0] === 'scrypt' &&
+		/^[\w-]{16,}$/.test(parts[1]) &&
+		/^[\w-]{40,}$/.test(parts[2])
+	);
+}
+
+/**
+ * The people of the HTTP Basic login from `ADMIN_USERS`: entries of
+ * `email:hash`, separated by commas, semicolons, spaces or new lines. An entry
+ * without `@`, or with a plain password instead of a hash, does not count;
+ * `skipped` says how many there were, so the server can warn.
+ */
+export function parseUsers(list) {
+	const users = new Map();
+	let skipped = 0;
+	for (const entry of String(list ?? '').split(/[\s,;]+/)) {
+		if (!entry) continue;
+		const at = entry.indexOf(':');
+		const email = normaliseEmail(entry.slice(0, at));
+		const hash = entry.slice(at + 1);
+		if (at > 0 && email.includes('@') && isPasswordHash(hash)) users.set(email, hash);
+		else skipped++;
+	}
+	return { users, skipped };
+}
+
+/**
+ * Which login a product uses, from the settings it has (F-0016):
+ * - `supabase` as soon as one of the two Supabase settings is filled. A half
+ *   setup does not fall back to HTTP Basic: then the admin stays closed and
+ *   names what is missing.
+ * - `basic` when only `ADMIN_USERS` has people.
+ * - null when there is neither, and nobody gets in.
+ */
+export function loginMethod({ supabaseUrl, anonKey, users }) {
+	if (supabaseUrl || anonKey) return 'supabase';
+	if (users && users.size > 0) return 'basic';
+	return null;
 }
 
 /**
@@ -172,13 +243,97 @@ export function refusal(kind, responses = {}) {
  * gave them. Empty when everything is there. Without them nobody gets in
  * (F-0005). The service_role key is not among them: only a password link
  * needs it, and the database has it anyway (F-0004).
+ *
+ * A setting the project does not pass at all (undefined) is a login it does
+ * not offer, and is not named.
  */
 export function missingSettings(settings, names) {
+	const method = loginMethod(settings);
+	if (method === 'basic') return [];
+	const offersSupabase = settings.supabaseUrl !== undefined || settings.anonKey !== undefined;
+	const offersBasic = settings.users !== undefined;
 	const missing = [];
-	if (!settings.supabaseUrl) missing.push(names.supabaseUrl);
-	if (!settings.anonKey) missing.push(names.anonKey);
-	if (settings.allowList.size === 0) missing.push(names.allowList);
+	if (method === 'supabase' || offersSupabase) {
+		if (!settings.supabaseUrl) missing.push(names.supabaseUrl);
+		if (!settings.anonKey) missing.push(names.anonKey);
+		if (!settings.allowList || settings.allowList.size === 0) missing.push(names.allowList);
+	}
+	if (method === null && (offersBasic || !offersSupabase)) missing.push(names.users);
 	return missing;
+}
+
+/**
+ * The name and password in an `Authorization: Basic` header, or null. The
+ * name is read as UTF-8, as the browser sends it with `charset="UTF-8"` in
+ * the challenge.
+ */
+export function parseBasicAuth(header) {
+	const match = /^basic\s+([A-Za-z0-9+/=]+)\s*$/i.exec(String(header ?? ''));
+	if (!match) return null;
+	let text;
+	try {
+		const bytes = Uint8Array.from(atob(match[1]), (c) => c.charCodeAt(0));
+		text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+	} catch {
+		return null;
+	}
+	const colon = text.indexOf(':');
+	if (colon <= 0) return null;
+	return { email: normaliseEmail(text.slice(0, colon)), password: text.slice(colon + 1) };
+}
+
+/**
+ * What the hook does with a request under the admin path, for HTTP Basic.
+ *
+ * - `logout`: the logout path. Always a 401, so the browser forgets the
+ *   password it keeps.
+ * - `challenge`: no valid password; a 401 that makes the browser ask for one.
+ * - `forbidden`: it can change something and does not come from our site.
+ * - `pass`: let it through.
+ */
+export function basicDecision({ url, method, origin, signedIn, paths }) {
+	if (decodePath(url.pathname) === paths.logout) return { kind: 'logout' };
+	if (!signedIn) return { kind: 'challenge' };
+	return fromOtherSite(method, origin, url.origin) ? { kind: 'forbidden' } : { kind: 'pass' };
+}
+
+/**
+ * Counts password attempts per key (the IP address), per server instance.
+ * After `limit` within `windowMs`, the key is blocked until the window has
+ * passed. The hook counts an attempt before it checks the password and takes
+ * it back when the password is right, so attempts sent at the same time are
+ * counted too.
+ * Without a database this is all there is; scrypt makes every attempt slow
+ * besides.
+ */
+export function createAttemptCounter({ limit = 10, windowMs = 15 * 60 * 1000, now = Date.now } = {}) {
+	const attempts = new Map();
+
+	function current(key) {
+		const entry = attempts.get(key);
+		if (entry && now() - entry.since >= windowMs) {
+			attempts.delete(key);
+			return null;
+		}
+		return entry ?? null;
+	}
+
+	return {
+		blocked: (key) => (current(key)?.count ?? 0) >= limit,
+		fail(key) {
+			const entry = current(key);
+			if (entry) entry.count++;
+			else attempts.set(key, { count: 1, since: now() });
+			// A flood of addresses must not fill the memory.
+			if (attempts.size > 10000) attempts.delete(attempts.keys().next().value);
+		},
+		/** Takes back one attempt, for a password that turned out right. */
+		undo(key) {
+			const entry = current(key);
+			if (entry && --entry.count <= 0) attempts.delete(key);
+		},
+		clear: (key) => attempts.delete(key)
+	};
 }
 
 /** The outcome of signing in, from Supabase's error. */

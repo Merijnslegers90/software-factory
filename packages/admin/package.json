@@ -1,9 +1,12 @@
 {
 	"name": "@merijnslegers/admin",
-	"version": "0.2.0",
-	"description": "The admin login of the software factory: Supabase Auth with an allow list, the access rules and headers, and image resizing in the browser.",
+	"version": "0.3.0",
+	"description": "The admin login of the software factory: Supabase Auth with an allow list, or HTTP Basic with a password per person; the access rules and headers, and image resizing in the browser.",
 	"license": "MIT",
 	"type": "module",
+	"bin": {
+		"admin": "./bin/admin.js"
+	},
 	"exports": {
 		"./rules": {
 			"types": "./src/rules.d.ts",
@@ -16,9 +19,14 @@
 		"./resize": {
 			"types": "./src/resize.d.ts",
 			"default": "./src/resize.js"
+		},
+		"./password": {
+			"types": "./src/password.d.ts",
+			"default": "./src/password.js"
 		}
 	},
 	"files": [
+		"bin",
 		"src",
 		"README.md"
 	],
@@ -37,5 +45,13 @@
 	},
 	"publishConfig": {
 		"access": "public"
+	},
+	"peerDependenciesMeta": {
+		"@supabase/ssr": {
+			"optional": true
+		},
+		"@supabase/supabase-js": {
+			"optional": true
+		}
 	}
 }
