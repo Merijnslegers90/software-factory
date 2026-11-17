@@ -271,7 +271,8 @@ Developer settings, Fine-grained tokens):
   `key-refused` and the screen says so.
 
 Put it in Vercel as `ADMIN_GITHUB_TOKEN`, next to `ADMIN_GITHUB_REPO`
-(`owner/name`), read at runtime in `src/env.ts` (F-0005).
+(`owner/name`), read at runtime in `src/env.ts` (F-0005), and list both,
+empty, in `.env.example`.
 
 **One module**, for example `src/lib/server/repo.ts`:
 
@@ -301,7 +302,15 @@ if (result.outcome !== 'ok') return fail(503, { outcome: result.outcome });
 ```
 
 - The same key saved again adds a commit to the same pull request. After a
-  merge or close, the key starts again from the base branch.
+  merge or close, the key starts again from the base branch. The branch is
+  flat: `note/a` becomes `admin/note-a`.
+- **Branches starting with `admin/` belong to the admin.** One without an
+  open pull request is reset when its key is saved, so nobody works on such a
+  branch by hand.
+- Every path is checked, for reads too: a path with `..` never reaches
+  GitHub.
+- `changedBy` puts the address in git history. In a public repo it becomes
+  public; pass a name there instead.
 - `content: null` deletes a file. All files of one call are one commit.
 - `readFile(path)` and `listFiles(dir)` read the base branch;
   `readFile(path, { ref: proposal.branch })` reads an open proposal, so a

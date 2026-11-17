@@ -37,6 +37,7 @@ export function fakeGitHub({ owner = 'acme', files = {} } = {}) {
 			if (answer) return answer;
 		}
 		let m;
+		if (method === 'GET' && path === '') return json(200, { full_name: `${owner}/site` });
 		if (method === 'GET' && (m = /^\/git\/ref\/heads\/(.+)$/.exec(path))) {
 			return refs.has(m[1]) ? json(200, { object: { sha: refs.get(m[1]) } }) : json(404, {});
 		}
@@ -73,8 +74,12 @@ export function fakeGitHub({ owner = 'acme', files = {} } = {}) {
 		}
 		if (method === 'GET' && path === '/pulls') {
 			const head = u.searchParams.get('head');
+			const base = u.searchParams.get('base');
 			const open = pulls.filter(
-				(p) => p.state === 'open' && (!head || `${owner}:${p.head.ref}` === head)
+				(p) =>
+					p.state === 'open' &&
+					(!head || `${owner}:${p.head.ref}` === head) &&
+					(!base || p.base.ref === base)
 			);
 			return json(200, open.toReversed());
 		}
@@ -97,6 +102,7 @@ export function fakeGitHub({ owner = 'acme', files = {} } = {}) {
 			if (m[1] in map) {
 				return json(200, {
 					type: 'file',
+					encoding: 'base64',
 					sha: sha(map[m[1]]),
 					content: Buffer.from(map[m[1]]).toString('base64').replace(/(.{60})/g, '$1\n')
 				});
@@ -126,6 +132,10 @@ export function fakeGitHub({ owner = 'acme', files = {} } = {}) {
 		/** The files on a branch. */
 		filesOn: (branch) => ({ ...trees.get(commits.get(refs.get(branch)).tree) }),
 		commitOn: (branch) => commits.get(refs.get(branch)),
+		/** Points an open pull request at another base. */
+		retarget(number, base) {
+			pulls[number - 1].base.ref = base;
+		},
 		/** Merges a pull request: main gets the branch's commit. */
 		merge(number) {
 			const pull = pulls[number - 1];

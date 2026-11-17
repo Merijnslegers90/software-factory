@@ -70,10 +70,13 @@ test('mayWrite allows only paths inside allowedPaths, and never a way out', () =
 	assert.equal(mayWrite('src/content/notes/x.md', []), false);
 });
 
-test('branchName makes a safe admin branch from a key', () => {
-	assert.equal(branchName('note/Één Café!'), 'admin/note/een-cafe');
+test('branchName makes a flat, safe admin branch from a key', () => {
+	assert.equal(branchName('note/Één Café!'), 'admin/note-een-cafe');
 	assert.equal(branchName('site'), 'admin/site');
 	assert.equal(branchName('  ../..//x  '), 'admin/x');
+	// Flat, so `note` and `note/a` can both exist in git.
+	assert.equal(branchName('note'), 'admin/note');
+	assert.equal(branchName('note/a'), 'admin/note-a');
 	assert.equal(branchName('a'.repeat(200)).length, 'admin/'.length + 80);
 	assert.equal(branchName('!!!'), null);
 	assert.equal(branchName(''), null);
@@ -156,6 +159,7 @@ test('readFile and listFiles read the base branch', async () => {
 	assert.deepEqual(list.files.map((f) => [f.name, f.type]), [['a.md', 'file']]);
 	assert.deepEqual(await repo.listFiles('src/content/empty'), { outcome: 'ok', files: [] });
 	assert.equal(github.calls[0].headers.Authorization, 'Bearer github_pat_test');
+	assert.equal((await repo.listFiles('src/content/notes')).files.length, 1);
 	assert.match(github.calls[0].search, /ref=main/);
 });
 
@@ -178,15 +182,15 @@ test('propose writes one commit on admin/<key> and opens a pull request; main is
 		number: 1,
 		url: 'https://github.com/acme/site/pull/1',
 		title: 'Note: first',
-		branch: 'admin/note/first',
+		branch: 'admin/note-first',
 		updatedAt: '2026-11-17T20:00:00Z'
 	});
-	assert.deepEqual(github.filesOn('admin/note/first'), {
+	assert.deepEqual(github.filesOn('admin/note-first'), {
 		'src/lib/content/site.json': '{"name":"Ann"}',
 		'README.md': 'hi',
 		'src/content/notes/first.md': '# First\n'
 	});
-	assert.equal(github.commitOn('admin/note/first').message, 'Note: first\n\nChanged-by: ann');
+	assert.equal(github.commitOn('admin/note-first').message, 'Note: first\n\nChanged-by: ann');
 	assert.deepEqual(github.filesOn('main'), { 'src/lib/content/site.json': '{}', 'README.md': 'hi' });
 	assert.equal(github.pulls[0].base.ref, 'main');
 	assert.equal(github.pulls[0].body, 'From the admin.');
@@ -202,9 +206,9 @@ test('a second save of the same key adds a commit to the same pull request', asy
 	const second = await repo.propose({ key: 'note/a', title: 'A again', files: file('two') });
 	assert.equal(second.proposal.number, 1);
 	assert.equal(github.pulls.length, 1);
-	assert.equal(github.filesOn('admin/note/a')['src/content/notes/a.md'], 'two');
-	assert.equal(github.commitOn('admin/note/a').parents.length, 1);
-	assert.deepEqual((await repo.openProposals()).proposals.map((p) => p.branch), ['admin/note/a']);
+	assert.equal(github.filesOn('admin/note-a')['src/content/notes/a.md'], 'two');
+	assert.equal(github.commitOn('admin/note-a').parents.length, 1);
+	assert.deepEqual((await repo.openProposals()).proposals.map((p) => p.branch), ['admin/note-a']);
 });
 
 test('a save without a change makes no commit and no pull request', async () => {
@@ -217,7 +221,7 @@ test('a save without a change makes no commit and no pull request', async () => 
 	});
 	assert.deepEqual(result, { outcome: 'ok', changed: false, proposal: null });
 	assert.equal(github.pulls.length, 0);
-	assert.equal(github.refs.has('admin/note/a'), false);
+	assert.equal(github.refs.has('admin/note-a'), false);
 });
 
 test('after a merge, the same key starts again from main in a new pull request', async () => {
@@ -241,7 +245,7 @@ test('deleting a file is a change too', async () => {
 		files: [{ path: 'src/content/notes/old.md', content: null }]
 	});
 	assert.equal(result.outcome, 'ok');
-	assert.deepEqual(github.filesOn('admin/note/old'), { 'README.md': 'hi' });
+	assert.deepEqual(github.filesOn('admin/note-old'), { 'README.md': 'hi' });
 });
 
 test('a path outside allowedPaths is refused before anything goes to GitHub', async () => {
@@ -282,4 +286,84 @@ test('a refused token, a rate limit, a moved branch and a dead network give outc
 		}
 	});
 	assert.deepEqual(await down.readFile('src/lib/content/site.json'), { outcome: 'unavailable' });
+});
+
+test('reads cannot leave the repo: a path with .. is refused before the request', async () => {
+	const github = fakeGitHub();
+	const repo = repoWith(github);
+	assert.deepEqual(await repo.readFile('../../../user'), { outcome: 'not-allowed' });
+	assert.deepEqual(await repo.readFile('/etc/passwd'), { outcome: 'not-allowed' });
+	assert.deepEqual(await repo.listFiles('../../../orgs/acme/repos'), { outcome: 'not-allowed' });
+	assert.equal(github.calls.length, 0);
+});
+
+test('a retargeted pull request still counts as open, so its branch is never reset', async () => {
+	const github = fakeGitHub();
+	const repo = repoWith(github);
+	const file = (content) => [{ path: 'src/content/notes/a.md', content }];
+	await repo.propose({ key: 'note/a', title: 'A', files: file('one') });
+	github.retarget(1, 'develop');
+	const second = await repo.propose({ key: 'note/a', title: 'A', files: file('two') });
+	assert.equal(second.proposal.number, 1);
+	assert.equal(github.pulls.length, 1);
+	// On top of the first commit, not a reset.
+	const head = github.commitOn('admin/note-a');
+	assert.equal(github.filesOn('admin/note-a')['src/content/notes/a.md'], 'two');
+	assert.equal(head.parents.length, 1);
+	assert.equal(
+		github.calls.some((c) => c.method === 'PATCH' && c.body.force === true),
+		false
+	);
+});
+
+test('a tree GitHub does not take is not-allowed, because trying again does not help', async () => {
+	const github = fakeGitHub();
+	const result = await repoWith(github).propose({
+		key: 'note/gone',
+		title: 'Remove',
+		files: [{ path: 'src/content/notes/not-there.md', content: null }]
+	});
+	assert.deepEqual(result, { outcome: 'not-allowed' });
+});
+
+test('a file GitHub sends without content (over 1 MB) is not-allowed, not empty', async () => {
+	const github = fakeGitHub();
+	github.answer(({ path }) =>
+		path.startsWith('/contents/')
+			? new Response(JSON.stringify({ type: 'file', encoding: 'none', content: '', sha: 'x' }), {
+					status: 200
+				})
+			: null
+	);
+	assert.deepEqual(await repoWith(github).readFile('src/content/notes/big.md'), {
+		outcome: 'not-allowed'
+	});
+});
+
+test('a 404 for the repo itself is key-refused, not a missing file', async () => {
+	const github = fakeGitHub();
+	github.answer(() => new Response('{}', { status: 404 }));
+	assert.deepEqual(await repoWith(github).readFile('src/lib/content/site.json'), {
+		outcome: 'key-refused'
+	});
+	assert.deepEqual(await repoWith(github).listFiles('src/content/notes'), { outcome: 'key-refused' });
+});
+
+test('an answer with an odd shape is unavailable, never a thrown error', async () => {
+	const github = fakeGitHub();
+	github.answer(({ path }) => (path === '/pulls' ? new Response('{"not":"a list"}') : null));
+	const errors = console.error;
+	console.error = () => {};
+	try {
+		assert.deepEqual(await repoWith(github).openProposals(), { outcome: 'unavailable' });
+	} finally {
+		console.error = errors;
+	}
+});
+
+test('a token with a new line at the end still works', async () => {
+	const github = fakeGitHub({ files: { 'src/lib/content/site.json': '{}' } });
+	const repo = repoWith(github, { token: ' github_pat_test\n' });
+	assert.equal((await repo.readFile('src/lib/content/site.json')).outcome, 'ok');
+	assert.equal(github.calls[0].headers.Authorization, 'Bearer github_pat_test');
 });

@@ -41,7 +41,10 @@ after the merge.
   is missing (F-0005). GitHub's answers become outcome codes; the words are
   the project's, as in F-0016. Never an error page.
 - **The commit names who changed it** (`Changed-by:`), when the project
-  passes the admin's address.
+  passes it. In a public repo that is a name, not an address.
+- **Branches starting with `admin/` belong to the admin.** A branch with an
+  open pull request only moves forward; one without is reset from the base
+  branch when its key is saved again.
 - **This does not replace the database.** F-0017 still decides which kind a
   product is. Name, price, stock and orders of a product with a shop stay in
   its database, because they change through what customers do, not through a

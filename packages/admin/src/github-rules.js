@@ -26,17 +26,26 @@ export function missingGitHubSettings({ token, repo }, names) {
 }
 
 /**
- * Whether the admin may write this path: inside one of `allowedPaths`, which
- * are folders (ending in `/`) or files. A path with `..`, a backslash, a
- * leading `/`, an empty part or a control character never is.
+ * Whether a path stays inside the repo: no `..` or `.`, no empty part, no
+ * backslash, no leading `/` and no control character. Checked for reads too,
+ * because the URL would otherwise resolve `..` out of the contents API, with
+ * the token on the request.
  */
-export function mayWrite(path, allowedPaths) {
+export function isSafePath(path) {
 	const value = String(path ?? '');
 	if (!value || value.startsWith('/') || value.includes('\\')) return false;
 	// eslint-disable-next-line no-control-regex
 	if (/[\u0000-\u001f\u007f]/.test(value)) return false;
-	const parts = value.split('/');
-	if (parts.some((part) => part === '' || part === '.' || part === '..')) return false;
+	return !value.split('/').some((part) => part === '' || part === '.' || part === '..');
+}
+
+/**
+ * Whether the admin may write this path: a safe path (`isSafePath`) inside
+ * one of `allowedPaths`, which are folders (ending in `/`) or files.
+ */
+export function mayWrite(path, allowedPaths) {
+	const value = String(path ?? '');
+	if (!isSafePath(value)) return false;
 	return (allowedPaths ?? []).some((allowed) =>
 		allowed.endsWith('/') ? value.startsWith(allowed) && value.length > allowed.length : value === allowed
 	);
@@ -44,22 +53,20 @@ export function mayWrite(path, allowedPaths) {
 
 /**
  * The branch for a key: `admin/` and the key in lower case, with anything
- * other than letters, digits and dashes turned into a dash. Null for a key
- * with nothing left.
+ * other than letters and digits turned into a dash, so `note/a` becomes
+ * `admin/note-a`. Flat on purpose: `admin/note` and `admin/note/a` cannot
+ * both exist in git. Keys that differ only in case or punctuation share a
+ * branch. Null for a key with nothing left.
  */
 export function branchName(key) {
 	const slug = String(key ?? '')
 		.normalize('NFKD')
 		.replace(/[̀-ͯ]/g, '')
 		.toLowerCase()
-		.replace(/[^a-z0-9/]+/g, '-')
-		.replace(/\/+/g, '/')
-		.split('/')
-		.map((part) => part.replace(/^-+|-+$/g, ''))
-		.filter(Boolean)
-		.join('/')
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+/, '')
 		.slice(0, 80)
-		.replace(/[-/]+$/, '');
+		.replace(/-+$/, '');
 	return slug ? BRANCH_PREFIX + slug : null;
 }
 

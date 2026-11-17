@@ -11,6 +11,7 @@ import {
 	decodeContent,
 	encodePath,
 	filesProblem,
+	isSafePath,
 	missingGitHubSettings,
 	outcomeFromStatus,
 	parseRepo
@@ -30,11 +31,12 @@ class Refused extends Error {
 export function createContentRepo(options) {
 	const names = { ...DEFAULT_NAMES, ...options.settingNames };
 	const repo = parseRepo(options.repo);
-	const missing = missingGitHubSettings(options, names);
+	const missing = missingGitHubSettings({ token: String(options.token ?? '').trim(), repo: options.repo }, names);
 	const enabled = missing.length === 0;
 	const base = options.baseBranch ?? 'main';
 	const allowedPaths = options.allowedPaths ?? [];
 	const fetcher = options.fetch ?? globalThis.fetch;
+	const token = String(options.token ?? '').trim();
 
 	/** One call to the GitHub API. Throws `Refused` with an outcome code. */
 	async function github(method, path, body, { notFound } = {}) {
@@ -44,7 +46,7 @@ export function createContentRepo(options) {
 				method,
 				headers: {
 					Accept: 'application/vnd.github+json',
-					Authorization: `Bearer ${options.token}`,
+					Authorization: `Bearer ${token}`,
 					'X-GitHub-Api-Version': '2022-11-28',
 					...(body ? { 'Content-Type': 'application/json' } : {})
 				},
@@ -74,7 +76,9 @@ export function createContentRepo(options) {
 			return await work();
 		} catch (error) {
 			if (error instanceof Refused) return { outcome: error.outcome };
-			throw error;
+			// An answer with a shape we did not expect: never an error page.
+			console.error('Admin: unexpected answer from GitHub.', error);
+			return { outcome: 'unavailable' };
 		}
 	}
 
@@ -90,12 +94,22 @@ export function createContentRepo(options) {
 		};
 	}
 
+	/**
+	 * The open pull request from this branch, into any base: a pull request
+	 * that was retargeted still counts, so its branch is never reset.
+	 */
 	async function openPullFor(branch) {
 		const pulls = await github(
 			'GET',
-			`/pulls?state=open&base=${encodeURIComponent(base)}&head=${encodeURIComponent(`${repo.owner}:${branch}`)}`
+			`/pulls?state=open&head=${encodeURIComponent(`${repo.owner}:${branch}`)}`
 		);
 		return pulls[0] ? proposal(pulls[0]) : null;
+	}
+
+	/** A 404 on a read: the file is missing, or the repo is out of the token's reach. */
+	async function notFoundOrRefused() {
+		await github('GET', '');
+		return { outcome: 'not-found' };
 	}
 
 	/**
@@ -105,15 +119,17 @@ export function createContentRepo(options) {
 	 */
 	function readFile(path, { ref = base } = {}) {
 		return guarded(async () => {
+			if (!isSafePath(path)) return { outcome: 'not-allowed' };
 			const file = await github(
 				'GET',
 				`/contents/${encodePath(path)}?ref=${encodeURIComponent(ref)}`,
 				null,
 				{ notFound: NOT_FOUND }
 			);
-			if (file === NOT_FOUND || Array.isArray(file) || file.type !== 'file') {
-				return { outcome: 'not-found' };
-			}
+			if (file === NOT_FOUND) return notFoundOrRefused();
+			if (Array.isArray(file) || file.type !== 'file') return { outcome: 'not-found' };
+			// Over 1 MB GitHub sends no content (`encoding: none`): not for the admin.
+			if (file.encoding !== 'base64') return { outcome: 'not-allowed' };
 			return { outcome: 'ok', content: decodeContent(file.content), sha: file.sha };
 		});
 	}
@@ -121,13 +137,18 @@ export function createContentRepo(options) {
 	/** The files and folders directly in a folder on the base branch. */
 	function listFiles(dir) {
 		return guarded(async () => {
+			const folder = String(dir ?? '').replace(/\/+$/, '');
+			if (!isSafePath(folder)) return { outcome: 'not-allowed' };
 			const entries = await github(
 				'GET',
-				`/contents/${encodePath(String(dir).replace(/\/+$/, ''))}?ref=${encodeURIComponent(base)}`,
+				`/contents/${encodePath(folder)}?ref=${encodeURIComponent(base)}`,
 				null,
 				{ notFound: NOT_FOUND }
 			);
-			if (entries === NOT_FOUND) return { outcome: 'ok', files: [] };
+			if (entries === NOT_FOUND) {
+				await github('GET', '');
+				return { outcome: 'ok', files: [] };
+			}
 			if (!Array.isArray(entries)) return { outcome: 'not-found' };
 			return {
 				outcome: 'ok',
@@ -139,10 +160,16 @@ export function createContentRepo(options) {
 	/** The open pull requests from admin branches, newest first. */
 	function openProposals() {
 		return guarded(async () => {
-			const pulls = await github(
-				'GET',
-				`/pulls?state=open&base=${encodeURIComponent(base)}&sort=updated&direction=desc&per_page=100`
-			);
+			const pulls = [];
+			// Five pages of 100 open pull requests is more than a product has.
+			for (let page = 1; page <= 5; page++) {
+				const batch = await github(
+					'GET',
+					`/pulls?state=open&base=${encodeURIComponent(base)}&sort=updated&direction=desc&per_page=100&page=${page}`
+				);
+				pulls.push(...batch);
+				if (batch.length < 100) break;
+			}
 			return {
 				outcome: 'ok',
 				proposals: pulls.filter((p) => p.head.ref.startsWith(BRANCH_PREFIX)).map(proposal)
@@ -169,6 +196,9 @@ export function createContentRepo(options) {
 				: (await github('GET', `/git/ref/${encodePath(`heads/${base}`)}`)).object.sha;
 			const parentCommit = await github('GET', `/git/commits/${parent}`);
 
+			// GitHub answers 422 for a path it does not take (such as a `.git`
+			// part) or for deleting a file that is not there; trying again does
+			// not help, so that is `not-allowed`, not `conflict`.
 			const tree = await github('POST', '/git/trees', {
 				base_tree: parentCommit.tree.sha,
 				tree: files.map((file) =>
@@ -176,6 +206,10 @@ export function createContentRepo(options) {
 						? { path: file.path, mode: '100644', type: 'blob', sha: null }
 						: { path: file.path, mode: '100644', type: 'blob', content: file.content }
 				)
+			}).catch((error) => {
+				throw error instanceof Refused && error.outcome === 'conflict'
+					? new Refused('not-allowed')
+					: error;
 			});
 			if (tree.sha === parentCommit.tree.sha) {
 				return { outcome: 'ok', changed: false, proposal: open };
@@ -189,8 +223,9 @@ export function createContentRepo(options) {
 			if (existing === NOT_FOUND) {
 				await github('POST', '/git/refs', { ref: `refs/heads/${branch}`, sha: commit.sha });
 			} else {
-				// Only a stale branch is reset; an open one must move forward, or it
-				// is a conflict.
+				// Only a branch without any open pull request is reset; one with an
+				// open pull request must move forward, or it is a conflict. The
+				// `admin/` prefix belongs to the admin (F-0018).
 				await github('PATCH', `/git/refs/${encodePath(`heads/${branch}`)}`, {
 					sha: commit.sha,
 					force: !open
