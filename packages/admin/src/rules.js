@@ -298,8 +298,11 @@ export function basicDecision({ url, method, origin, signedIn, paths }) {
 }
 
 /**
- * Counts wrong passwords per key (the IP address), per server instance. After
- * `limit` within `windowMs`, the key is blocked until the window has passed.
+ * Counts password attempts per key (the IP address), per server instance.
+ * After `limit` within `windowMs`, the key is blocked until the window has
+ * passed. The hook counts an attempt before it checks the password and takes
+ * it back when the password is right, so attempts sent at the same time are
+ * counted too.
  * Without a database this is all there is; scrypt makes every attempt slow
  * besides.
  */
@@ -323,6 +326,11 @@ export function createAttemptCounter({ limit = 10, windowMs = 15 * 60 * 1000, no
 			else attempts.set(key, { count: 1, since: now() });
 			// A flood of addresses must not fill the memory.
 			if (attempts.size > 10000) attempts.delete(attempts.keys().next().value);
+		},
+		/** Takes back one attempt, for a password that turned out right. */
+		undo(key) {
+			const entry = current(key);
+			if (entry && --entry.count <= 0) attempts.delete(key);
 		},
 		clear: (key) => attempts.delete(key)
 	};

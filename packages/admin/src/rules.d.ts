@@ -20,6 +20,7 @@ export type BasicDecision =
 export interface AttemptCounter {
 	blocked(key: string): boolean;
 	fail(key: string): void;
+	undo(key: string): void;
 	clear(key: string): boolean;
 }
 

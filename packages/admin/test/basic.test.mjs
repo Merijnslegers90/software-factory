@@ -177,4 +177,10 @@ test('createAttemptCounter blocks after the limit, until the window has passed',
 	counter.fail('1.2.3.4');
 	counter.clear('1.2.3.4');
 	assert.equal(counter.blocked('1.2.3.4'), false);
+	// undo takes back one attempt.
+	for (let i = 0; i < 3; i++) counter.fail('1.2.3.4');
+	counter.undo('1.2.3.4');
+	assert.equal(counter.blocked('1.2.3.4'), false);
+	counter.undo('5.6.7.8');
+	assert.equal(counter.blocked('5.6.7.8'), false);
 });

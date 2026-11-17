@@ -20,7 +20,9 @@ pnpm add @merijnslegers/admin @supabase/ssr @supabase/supabase-js
 ```
 
 A product with HTTP Basic only needs `@merijnslegers/admin`: the Supabase
-packages are loaded only for Supabase Auth.
+packages are loaded only for Supabase Auth. Its build then warns that
+`@supabase/ssr` cannot be found. That is expected and harmless; do not install
+it to silence the warning.
 
 | Import                        | What it holds                                                            | Where it runs |
 | ----------------------------- | ------------------------------------------------------------------------ | ------------- |
@@ -304,7 +306,7 @@ tests. A project's own tests use the same rules without Supabase, for instance
 for its own screen names:
 
 ```ts
-// F-0011
+// F-0016
 import { adminPaths, safeReturnPath } from '@merijnslegers/admin/rules';
 
 const paths = adminPaths({ login: '/admin/inloggen', password: '/admin/wachtwoord' });

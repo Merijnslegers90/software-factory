@@ -14,7 +14,6 @@
 // string, and then nobody gets in.
 
 import { createHash } from 'node:crypto';
-import { redirect } from '@sveltejs/kit';
 import { verifyPassword } from './password.js';
 import {
 	ADMIN_HEADERS,
@@ -137,17 +136,26 @@ export function createAdmin(options) {
 	 * Who this `Authorization` header belongs to, or null. A checked header is
 	 * remembered for a few minutes by its SHA-256, never as it is.
 	 */
+	function headerKey(header) {
+		return createHash('sha256').update(header).digest('base64url');
+	}
+
+	/** A header checked in the last few minutes, without scrypt. */
+	function knownAdmin(header) {
+		const known = verified.get(headerKey(header));
+		return known && known.until > Date.now() ? { email: known.email } : null;
+	}
+
 	async function basicAdmin(header) {
 		const credentials = parseBasicAuth(header);
 		if (!credentials) return null;
-		const key = createHash('sha256').update(header).digest('base64url');
-		const known = verified.get(key);
-		if (known && known.until > Date.now()) return { email: known.email };
-
 		const hash = settings.users?.get(credentials.email);
 		if (!(await verifyPassword(credentials.password, hash))) return null;
 		if (verified.size > 1000) verified.clear();
-		verified.set(key, { email: credentials.email, until: Date.now() + VERIFIED_FOR_MS });
+		verified.set(headerKey(header), {
+			email: credentials.email,
+			until: Date.now() + VERIFIED_FOR_MS
+		});
 		return { email: credentials.email };
 	}
 
@@ -167,9 +175,10 @@ export function createAdmin(options) {
 	/** The hook for HTTP Basic: the browser asks for the password itself, there is no login screen. */
 	async function handleBasic(event, resolve) {
 		const realm = options.realm ?? 'Admin';
+		// Closed: no password window, because no password can open it.
 		if (!ready) {
 			const text = [options.responses?.closed, missing.join(', ')].filter(Boolean).join(' ');
-			return refusal('challenge', { unauthorized: text }, realm);
+			return refusal('unauthorized', { unauthorized: text });
 		}
 
 		const request = {
@@ -184,12 +193,15 @@ export function createAdmin(options) {
 		}
 
 		const header = event.request.headers.get('authorization');
-		let admin = null;
-		if (header) {
+		let admin = header ? knownAdmin(header) : null;
+		if (header && !admin) {
+			// Counted before the slow check, so attempts sent at the same time
+			// cannot all get past the limit; taken back when it was right.
 			const ip = clientAddress(event);
 			if (attempts.blocked(ip)) return refusal('rate_limited', options.responses, realm);
+			attempts.fail(ip);
 			admin = await basicAdmin(header);
-			if (!admin) attempts.fail(ip);
+			if (admin) attempts.undo(ip);
 		}
 		if (admin) event.locals.admin = admin;
 
@@ -217,7 +229,10 @@ export function createAdmin(options) {
 		// SvelteKit turns this redirect into the right answer for a page load
 		// and for a form with use:enhance. It has no content that could end up
 		// in a frame, a search engine or a cache.
-		if (decision.kind === 'redirect') redirect(303, decision.location);
+		if (decision.kind === 'redirect') {
+			const { redirect } = await import('@sveltejs/kit');
+			redirect(303, decision.location);
+		}
 
 		return decision.kind === 'pass'
 			? withHeaders(await resolve(event))
