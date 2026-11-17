@@ -98,12 +98,16 @@ export function createContentRepo(options) {
 		return pulls[0] ? proposal(pulls[0]) : null;
 	}
 
-	/** A file on the base branch: `{ outcome: 'ok', content, sha }`, or `not-found`. */
-	function readFile(path) {
+	/**
+	 * A file on the base branch, or on `ref` (an admin branch with an open
+	 * proposal, so a second save starts from the first): `{ outcome: 'ok',
+	 * content, sha }`, or `not-found`.
+	 */
+	function readFile(path, { ref = base } = {}) {
 		return guarded(async () => {
 			const file = await github(
 				'GET',
-				`/contents/${encodePath(path)}?ref=${encodeURIComponent(base)}`,
+				`/contents/${encodePath(path)}?ref=${encodeURIComponent(ref)}`,
 				null,
 				{ notFound: NOT_FOUND }
 			);

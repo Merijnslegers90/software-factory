@@ -304,6 +304,8 @@ if (result.outcome !== 'ok') return fail(503, { outcome: result.outcome });
   merge or close, the key starts again from the base branch.
 - `content: null` deletes a file. All files of one call are one commit.
 - `readFile(path)` and `listFiles(dir)` read the base branch;
+  `readFile(path, { ref: proposal.branch })` reads an open proposal, so a
+  second save starts from the first instead of from `main`;
   `openProposals()` lists the open pull requests from `admin/` branches.
 - Every call returns an outcome code, never throws for GitHub's sake:
   `ok`, `no-key`, `key-refused`, `not-allowed`, `conflict`, `unavailable`,

@@ -43,7 +43,8 @@ export interface ContentRepo {
 	baseBranch: string;
 	allowedPaths: readonly string[];
 	missingSettings(): string[];
-	readFile(path: string): Promise<{ outcome: 'ok'; content: string; sha: string } | { outcome: 'not-found' } | Failed>;
+	/** From the base branch, or from `ref`, such as the branch of an open proposal. */
+	readFile(path: string, options?: { ref?: string }): Promise<{ outcome: 'ok'; content: string; sha: string } | { outcome: 'not-found' } | Failed>;
 	listFiles(dir: string): Promise<
 		| { outcome: 'ok'; files: { name: string; path: string; type: 'file' | 'dir'; sha: string }[] }
 		| { outcome: 'not-found' }

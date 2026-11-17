@@ -145,6 +145,13 @@ test('readFile and listFiles read the base branch', async () => {
 	assert.equal(file.outcome, 'ok');
 	assert.equal(file.content, '{"name":"Ann"}');
 	assert.deepEqual(await repo.readFile('nope.json'), { outcome: 'not-found' });
+	await repo.propose({
+		key: 'site',
+		title: 'Site',
+		files: [{ path: 'src/lib/content/site.json', content: '{"name":"Bea"}' }]
+	});
+	assert.equal((await repo.readFile('src/lib/content/site.json', { ref: 'admin/site' })).content, '{"name":"Bea"}');
+	assert.equal((await repo.readFile('src/lib/content/site.json')).content, '{"name":"Ann"}');
 	const list = await repo.listFiles('src/content/notes/');
 	assert.deepEqual(list.files.map((f) => [f.name, f.type]), [['a.md', 'file']]);
 	assert.deepEqual(await repo.listFiles('src/content/empty'), { outcome: 'ok', files: [] });
