@@ -124,20 +124,30 @@ The workflow is called on a major version (`@v1`). A change that can break a
 project becomes `v2`; everything else moves along under `v1`. The plugin
 follows `main`.
 
-Every change to the workflow also gets a fixed tag that never moves, such as
-`v1.1.0`: the minor number for a change in what it does, the last number for
-a fix. That tag is the way back. A project that hits a problem after `v1`
-moved calls the previous fixed tag until it is solved, and the owner can put
-`v1` back on it for everyone.
+Every change to the workflow also gets a fixed version that never moves, such
+as `v1.1.0`: the minor number for a change in what it does, the last number
+for a fix. It is a GitHub release, and the repo has release immutability on
+(Settings, General, Releases), so its tag cannot be moved or deleted. That
+version is the way back. A project that hits a problem after `v1` moved calls
+the previous fixed version until it is solved, and the owner can put `v1` back
+on it for everyone. A mistake in a release is fixed in a new one, never by
+changing the old one.
 
 After the merge, in a clone of `main`:
 
 ```bash
-git tag v1.2.0                  # the next free number, never an existing one
-git tag -f v1
-git push origin v1.2.0
+gh release create v1.2.0 --target main --generate-notes   # the next free number
+git fetch origin --tags
+git tag -f v1 v1.2.0
 git push -f origin v1
 ```
+
+Inside the workflows, every action from outside this repo is pinned to a full
+commit SHA with its version as a comment, so a tag that is moved or taken over
+upstream never runs here. Dependabot (`.github/dependabot.yml`) opens one pull
+request a week that updates them, and `tests/workflows.test.mjs` fails on an
+action that is not pinned. A project calls `quality.yml@v1` by its tag: it is
+this repo, and every change to it goes through the same loop.
 
 ## Because the repo is public
 
@@ -149,7 +159,7 @@ Dutch company and VAT numbers.
 ## Checks
 
 ```bash
-npm test                          # decisions, plugin, public
+npm test                          # decisions, plugin, public, workflows
 claude plugin validate .          # the marketplace
 claude plugin validate plugins/software-factory
 ```
