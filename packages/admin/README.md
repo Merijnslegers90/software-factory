@@ -29,6 +29,7 @@ it to silence the warning.
 | `@merijnslegers/admin/server` | `createAdmin`: the hook and the functions for the login screens          | server only   |
 | `@merijnslegers/admin/rules`  | The pure rules: allow list, return path, Origin check, headers, password | anywhere      |
 | `@merijnslegers/admin/password` | `hashPassword` and `verifyPassword` for HTTP Basic, with scrypt        | server only   |
+| `@merijnslegers/admin/github` | `createContentRepo`: content changes through a pull request (F-0018)     | server only   |
 | `@merijnslegers/admin/resize` | `resizeImage` and `resizeFormFiles`                                      | browser       |
 
 ## Connecting a project
@@ -251,6 +252,78 @@ Supabase Auth, even if `users` is filled too (a warning goes to the log).
 Otherwise, with `users` filled, it is HTTP Basic. A half Supabase setup never
 falls back to HTTP Basic: the admin stays closed and names what is missing.
 `admin.method` says which one is in use.
+
+## Changing content through a pull request
+
+For content that lives in the repo (F-0017), in any kind of product. The
+admin writes one commit on a branch `admin/<key>` and opens a pull request.
+It never merges: the owner does, after the preview and the checks (F-0018).
+This does not replace the database: name, price, stock and orders of a
+product with a shop stay there.
+
+**The token.** A fine-grained personal access token in GitHub (Settings,
+Developer settings, Fine-grained tokens):
+
+- Repository access: only this one repository.
+- Permissions: Contents and Pull requests, read and write. GitHub adds
+  Metadata, read.
+- Expiration: a year at most. When it has expired, the module answers
+  `key-refused` and the screen says so.
+
+Put it in Vercel as `ADMIN_GITHUB_TOKEN`, next to `ADMIN_GITHUB_REPO`
+(`owner/name`), read at runtime in `src/env.ts` (F-0005), and list both,
+empty, in `.env.example`.
+
+**One module**, for example `src/lib/server/repo.ts`:
+
+```ts
+import { createContentRepo } from '@merijnslegers/admin/github';
+import { ADMIN_GITHUB_REPO, ADMIN_GITHUB_TOKEN } from '$app/env/private';
+
+export const repo = createContentRepo({
+	token: ADMIN_GITHUB_TOKEN,
+	repo: ADMIN_GITHUB_REPO,
+	// Where the admin may write; anything else is refused before GitHub.
+	allowedPaths: ['src/content/notes/', 'src/lib/content/site.json']
+});
+```
+
+**In a form action** under the admin path:
+
+```ts
+const result = await repo.propose({
+	key: `note/${slug}`,
+	title: `Note: ${title}`,
+	files: [{ path: `src/content/notes/${slug}.md`, content: markdown }],
+	changedBy: locals.admin?.email
+});
+if (result.outcome !== 'ok') return fail(503, { outcome: result.outcome });
+// result.proposal.url is the pull request; result.changed is false when nothing changed.
+```
+
+- The same key saved again adds a commit to the same pull request. After a
+  merge or close, the key starts again from the base branch. The branch is
+  flat: `note/a` becomes `admin/note-a`.
+- **Branches starting with `admin/` belong to the admin.** One without an
+  open pull request is reset when its key is saved, so nobody works on such a
+  branch by hand.
+- Every path is checked, for reads too: a path with `..` never reaches
+  GitHub.
+- `changedBy` puts the address in git history. In a public repo it becomes
+  public; pass a name there instead.
+- `content: null` deletes a file. All files of one call are one commit.
+- `readFile(path)` and `listFiles(dir)` read the base branch;
+  `readFile(path, { ref: proposal.branch })` reads an open proposal, so a
+  second save starts from the first instead of from `main`;
+  `openProposals()` lists the open pull requests from `admin/` branches.
+- Every call returns an outcome code, never throws for GitHub's sake:
+  `ok`, `no-key`, `key-refused`, `not-allowed`, `conflict`, `unavailable`,
+  and `not-found` for `readFile`. The words belong to the project.
+- Without the token or the repo, `enabled` is false, nothing goes to GitHub,
+  and `missingSettings()` names what is missing.
+- A file over 1 MB is refused: the module is for text.
+- A pull request opened with a personal token starts the workflows and the
+  Vercel preview.
 
 ## Settings in Supabase
 

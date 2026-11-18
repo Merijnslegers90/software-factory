@@ -1,7 +1,7 @@
 {
 	"name": "@merijnslegers/admin",
-	"version": "0.3.0",
-	"description": "The admin login of the software factory: Supabase Auth with an allow list, or HTTP Basic with a password per person; the access rules and headers, and image resizing in the browser.",
+	"version": "0.4.0",
+	"description": "The admin login of the software factory: Supabase Auth with an allow list, or HTTP Basic with a password per person; the access rules and headers; content changes through a pull request; and image resizing in the browser.",
 	"license": "MIT",
 	"type": "module",
 	"bin": {
@@ -23,6 +23,14 @@
 		"./password": {
 			"types": "./src/password.d.ts",
 			"default": "./src/password.js"
+		},
+		"./github": {
+			"types": "./src/github.d.ts",
+			"default": "./src/github.js"
+		},
+		"./github-rules": {
+			"types": "./src/github-rules.d.ts",
+			"default": "./src/github-rules.js"
 		}
 	},
 	"files": [
