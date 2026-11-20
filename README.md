@@ -21,6 +21,7 @@ plugins/software-factory/
   skills/write-adr/               record a decision in the right layer
   skills/add-sanity/              moves a site's content from code to Sanity (F-0017)
   skills/setup-product/           starts a new product, or takes an existing site in (F-0014)
+  skills/seo/                     makes a product findable: head, sitemap, robots.txt, structured data (F-0019)
   skills/way-of-working/          loads the way of working (the loop, specs, writing, pull requests)
   agents/factory-review.md        checks a change against its spec, the rules and decisions
   hooks/session-start.sh          prepares a fresh cloud session (dependencies, .env, sync)
@@ -30,6 +31,7 @@ packages/migrations/              @merijnslegers/migrations: migration runner an
 packages/config/                  @merijnslegers/config: prettier, eslint, tsconfig, em dash check
 packages/admin/                   @merijnslegers/admin: admin login, access rules, image resizing
 packages/analytics/               @merijnslegers/analytics: visitor numbers from Vercel Web Analytics for the admin
+packages/seo/                     @merijnslegers/seo: head, sitemap, robots.txt and structured data on the fixed domain
 .github/workflows/quality.yml     reusable CI workflow
 .github/workflows/release.yml     publishes a package when its version is new
 tests/                            checks on this repo itself
@@ -63,8 +65,8 @@ To install it on its own, outside a project:
 The skills are called `software-factory:plan`,
 `software-factory:preview-check`, `software-factory:factory-decisions`,
 `software-factory:way-of-working`, `software-factory:new-migration`,
-`software-factory:write-adr`, `software-factory:add-sanity` and
-`software-factory:setup-product`, the agent `software-factory:factory-review`.
+`software-factory:write-adr`, `software-factory:add-sanity`,
+`software-factory:setup-product` and `software-factory:seo`, the agent `software-factory:factory-review`.
 
 **CI.** Replace the project's own workflow with a call to the central one:
 

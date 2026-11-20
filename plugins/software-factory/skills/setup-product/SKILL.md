@@ -84,6 +84,11 @@ and remove what does not apply. The kind goes in, with what follows from it.
 See "The fixed tests" below. A new product starts with an empty
 `e2e/known-issues.ts`.
 
+### A5b. Findability
+
+A product with public pages: the skill `seo` (F-0019), with its fixed test
+`e2e/seo.spec.ts`.
+
 ### A6. Vercel
 
 ```bash
@@ -212,14 +217,22 @@ paragraph goes.
 Before merging, the screenshot comparison (below) runs against the preview
 of this pull request, and every difference is explained or fixed.
 
+### B3. Findability
+
+After pull request 2, in a pull request of its own: the skill `seo` (F-0019).
+It replaces whatever the site did for its head, sitemap, `robots.txt` and
+structured data, and adds `e2e/seo.spec.ts`. The package needs SvelteKit 3,
+so it never comes before pull request 2.
+
 ## The fixed tests
 
 Every product has them, run by `test:e2e` in CI (F-0007, F-0010).
 
 1. `pnpm add -D @playwright/test @axe-core/playwright`.
 2. Copy `templates/playwright.config.ts` to the repo root and
-   `templates/e2e/*` to `e2e/`. Translate the comments and test names to the
-   product's language.
+   `templates/e2e/*` to `e2e/`, except `seo.spec.ts`, which comes with the
+   skill `seo`. Translate the comments and test names to the product's
+   language.
 3. Fill `PAGES` in `e2e/pages.ts` with every public page. Leave out pages
    behind a login or that only show a form result, with a comment saying so.
    Name the external services of the product in `EXTERNAL_NOISE` in

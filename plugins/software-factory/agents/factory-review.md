@@ -57,6 +57,11 @@ nothing yourself: no files, no commits, no comments on GitHub.
 - **Logic and tests.** New calculations in a pure module with a test; a rule
   that matters legally, financially or for security pinned down in a test
   (F-0006). A test that enforces a decision names its number.
+- **Findability.** A new public page has its own title and description, one
+  `h1`, and is in the product's list of pages for the sitemap; an admin or
+  utility page is `noindex` and out of the sitemap. The head, sitemap and
+  structured data come from `@merijnslegers/seo`, with the domain from the
+  site details, never the request's domain or a variable (F-0019).
 - **Writing.** The way of working: no em dashes in running text, plain words,
   comments that say why. Plus the project's own writing rules in `CLAUDE.md`.
 - **The rules in `CLAUDE.md`.** Amounts and company details in their fixed
