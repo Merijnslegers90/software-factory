@@ -40,3 +40,7 @@ test('robots.txt keeps admin and API out, adds paths once, and names the sitemap
 	);
 	assert.deepEqual([...DEFAULT_DISALLOW], ['/admin', '/api']);
 });
+
+test('a lastmod that is not a date names the page', () => {
+	assert.throws(() => sitemap(site, [{ path: '/menu', lastmod: 'gisteren' }]), /\/menu/);
+});

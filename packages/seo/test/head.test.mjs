@@ -103,3 +103,18 @@ test('there is exactly one title, description and canonical URL', () => {
 	assert.equal(html.match(/name="description"/g).length, 1);
 	assert.equal(html.match(/rel="canonical"/g).length, 1);
 });
+
+test('a prerendered page is written as on the fixed domain, so it is not noindex there', () => {
+	const head = seoHead(site, page, 'http://sveltekit-prerender/menu', { prerendering: true });
+	assert.equal(tag(head, 'robots'), undefined);
+	assert.equal(head.canonical, 'https://www.example.nl/menu');
+	assert.equal(tag(seoHead(site, page, 'http://sveltekit-prerender/menu'), 'robots'), 'noindex');
+	const marked = seoHead(site, { ...page, noindex: true }, 'http://sveltekit-prerender/', {
+		prerendering: true
+	});
+	assert.equal(tag(marked, 'robots'), 'noindex');
+});
+
+test('a layout that passes no page gets a clear error', () => {
+	assert.throws(() => seoHead(site, undefined, 'https://www.example.nl/'), /no page given/);
+});

@@ -1,6 +1,6 @@
 ---
 name: seo
-description: Make a product findable the factory's way (F-0019) with @merijnslegers/seo - the head with canonical URL and share tags on the fixed domain, noindex on any other host, sitemap.xml, robots.txt, structured data, and the fixed test e2e/seo.spec.ts. Use this for a new product with public pages, for a site that was taken in (after its move to SvelteKit 3), for a new public page, and when someone asks about SEO, search engines, Google, share previews or the sitemap.
+description: Make a product findable the factory's way (F-0019) with @merijnslegers/seo: the head with canonical URL and share tags on the fixed domain, noindex on any other host, sitemap.xml, robots.txt, structured data, and the fixed test e2e/seo.spec.ts. Use this for a new product with public pages, for a site that was taken in (after its move to SvelteKit 3), for a new public page, and when someone asks about SEO, search engines, Google, share previews or the sitemap.
 ---
 
 # Findability
@@ -52,6 +52,7 @@ can write them. In the root layout:
 	import { localBusiness, website } from '@merijnslegers/seo/json-ld';
 	import { site } from '#lib/content/site';
 
+	const business = localBusiness(site, details);
 	const seo = $derived(
 		page.error
 			? { title: 'Pagina niet gevonden', description: '', noindex: true }
@@ -59,7 +60,7 @@ can write them. In the root layout:
 	);
 </script>
 
-<SeoHead {site} page={seo} jsonLd={[website(site, { inLanguage: 'nl', publisher: `${site.url}/#business` }), localBusiness(site, business)]} />
+<SeoHead {site} page={seo} jsonLd={[website(site, { inLanguage: 'nl', publisher: business['@id'] }), business]} />
 ```
 
 - A page's load returns `seo: { title, description }`, from the content where
@@ -69,7 +70,13 @@ can write them. In the root layout:
   tag the pages, the layout or `app.html` wrote themselves.
 - **Admin and utility pages** (sign up, unsubscribe, print): `noindex: true`
   in their `seo`, and in their server load
-  `setHeaders(NOINDEX_HEADERS)` from `@merijnslegers/seo/head`.
+  `setHeaders(NOINDEX_HEADERS)` from `@merijnslegers/seo/head`. Every page
+  under the root layout needs a `seo`, these too: without one the layout
+  throws.
+- **A prerendered page** is written once, as it will be served on the fixed
+  domain, so it carries no `noindex` on a preview or a `vercel.app` alias.
+  Vercel already sends `X-Robots-Tag: noindex` on previews, and the canonical
+  URL points to the domain. The fixed test accepts either.
 
 ## 4. Structured data
 

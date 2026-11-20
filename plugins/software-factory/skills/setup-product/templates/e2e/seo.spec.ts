@@ -12,31 +12,47 @@ const origin = new URL(site.url).origin;
 const pages = await pagesToCheck();
 
 for (const path of pages) {
-	test(`${path} has its title, description and canonical URL`, async ({ page, baseURL }) => {
-		await page.goto(path);
+	test(`${path} has its title, description and canonical URL`, async ({ page }) => {
+		const response = await page.goto(path);
+		// Read every tag at once: a tag that is missing is a finding, not a wait.
+		const tags = await page.evaluate(() => ({
+			descriptions: [...document.head.querySelectorAll('meta[name="description"]')].map(
+				(m) => m.getAttribute('content') ?? ''
+			),
+			canonicals: [...document.head.querySelectorAll('link[rel="canonical"]')].map(
+				(l) => l.getAttribute('href') ?? ''
+			),
+			robots: [...document.head.querySelectorAll('meta[name="robots"]')].map(
+				(m) => m.getAttribute('content') ?? ''
+			),
+			lang: document.documentElement.getAttribute('lang')
+		}));
 
 		const titles = await page.locator('head title').allTextContents();
 		expect(titles, 'one title').toHaveLength(1);
 		expect(titles[0].trim(), 'a title that is not empty').not.toBe('');
 
-		const descriptions = page.locator('head meta[name="description"]');
-		await expect(descriptions, 'one description').toHaveCount(1);
-		expect((await descriptions.getAttribute('content'))?.trim(), 'a description').toBeTruthy();
+		expect(tags.descriptions, 'one description').toHaveLength(1);
+		expect(tags.descriptions[0].trim(), 'a description that is not empty').not.toBe('');
 
-		const canonical = page.locator('head link[rel="canonical"]');
-		await expect(canonical, 'one canonical URL').toHaveCount(1);
-		const href = new URL((await canonical.getAttribute('href')) ?? '');
+		expect(tags.canonicals, 'one canonical URL').toHaveLength(1);
+		const href = new URL(tags.canonicals[0]);
 		expect(href.origin, 'the canonical URL is on the fixed domain').toBe(origin);
 		expect(href.pathname.replace(/\/$/, '') || '/', 'and on this page').toBe(
 			path.replace(/\/$/, '') || '/'
 		);
 
-		expect(await page.locator('html').getAttribute('lang'), 'lang on html').toBeTruthy();
+		expect(tags.lang, 'lang on html').toBeTruthy();
 
-		// Only the fixed domain is indexed; a preview or localhost gets noindex.
-		const robots = await page.locator('head meta[name="robots"]').getAttribute('content');
-		const onSite = new URL(baseURL ?? page.url()).host === new URL(site.url).host;
-		expect(robots?.includes('noindex') ?? false, 'noindex everywhere but the domain').toBe(!onSite);
+		// Only the fixed domain is indexed. The host is where the browser ended
+		// up, after a redirect from the bare domain to www. Elsewhere the page
+		// says noindex itself, or, when it was prerendered as on the domain, the
+		// host does: Vercel sends X-Robots-Tag: noindex on previews.
+		const onSite = new URL(page.url()).host === new URL(site.url).host;
+		const inPage = tags.robots.some((content) => content.includes('noindex'));
+		const inHeader = (response?.headers()['x-robots-tag'] ?? '').includes('noindex');
+		if (onSite) expect(inPage || inHeader, 'no noindex on the fixed domain').toBe(false);
+		else expect(inPage || inHeader, 'noindex everywhere but the fixed domain').toBe(true);
 
 		for (const block of await page
 			.locator('script[type="application/ld+json"]')

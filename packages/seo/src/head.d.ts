@@ -43,6 +43,11 @@ export function canonicalPath(path: string | undefined): string;
 export function absoluteUrl(site: Site, pathOrUrl: string): string;
 export function isIndexable(site: Site, url: URL | string, page?: Pick<Page, 'noindex'>): boolean;
 export const NOINDEX_HEADERS: Readonly<{ 'X-Robots-Tag': 'noindex' }>;
-export function seoHead(site: Site, page: Page, url: URL | string): Head;
+export interface HeadOptions {
+	/** True while SvelteKit prerenders (`building` from `$app/environment`): the page is written as on the fixed domain. */
+	prerendering?: boolean;
+}
+
+export function seoHead(site: Site, page: Page, url: URL | string, options?: HeadOptions): Head;
 export function escapeHtml(text: string): string;
-export function headTags(site: Site, page: Page, url: URL | string): string;
+export function headTags(site: Site, page: Page, url: URL | string, options?: HeadOptions): string;

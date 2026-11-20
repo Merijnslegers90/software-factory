@@ -18,7 +18,7 @@ export function sitemap(site, pages) {
 		const loc = absoluteUrl(site, canonicalPath(path));
 		if (seen.has(loc)) continue;
 		seen.add(loc);
-		const date = lastmod ? new Date(lastmod).toISOString().slice(0, 10) : null;
+		const date = lastmod ? isoDate(lastmod, path) : null;
 		entries.push(
 			`  <url>\n    <loc>${escapeHtml(loc)}</loc>${date ? `\n    <lastmod>${date}</lastmod>` : ''}\n  </url>`
 		);
@@ -30,6 +30,14 @@ export function sitemap(site, pages) {
 		'</urlset>',
 		''
 	].join('\n');
+}
+
+function isoDate(value, path) {
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) {
+		throw new Error(`sitemap: lastmod of ${path} is not a date: ${value}`);
+	}
+	return date.toISOString().slice(0, 10);
 }
 
 /** robots.txt: everything allowed except admin, API and what the product adds, and the sitemap. */

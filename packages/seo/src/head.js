@@ -37,10 +37,14 @@ export const NOINDEX_HEADERS = Object.freeze({ 'X-Robots-Tag': 'noindex' });
 
 /**
  * The tags for one page. `url` is the address the page was requested on; it
- * only decides `noindex`, never the canonical URL.
+ * only decides `noindex`, never the canonical URL. While prerendering
+ * (`prerendering: true`) the request has no real host, and the page is
+ * written as it will be served on the fixed domain.
  */
-export function seoHead(site, page, url) {
+export function seoHead(site, page, url, { prerendering = false } = {}) {
+	if (!page) throw new Error('seoHead: no page given; every page passes its seo (F-0019).');
 	if (!page.title?.trim()) throw new Error('seoHead: a page needs a title (F-0019).');
+	if (prerendering) url = absoluteUrl(site, new URL(url).pathname);
 	const canonical = absoluteUrl(site, canonicalPath(page.path ?? new URL(url).pathname));
 	const image = page.image || site.image;
 	const meta = [
@@ -71,8 +75,8 @@ export function escapeHtml(text) {
 }
 
 /** The tags of seoHead as HTML, for `{@html}` in `<svelte:head>`. */
-export function headTags(site, page, url) {
-	const head = seoHead(site, page, url);
+export function headTags(site, page, url, options) {
+	const head = seoHead(site, page, url, options);
 	const meta = head.meta.map((tag) => {
 		const [key, value] = tag.name ? ['name', tag.name] : ['property', tag.property];
 		return `<meta ${key}="${escapeHtml(value)}" content="${escapeHtml(tag.content)}">`;

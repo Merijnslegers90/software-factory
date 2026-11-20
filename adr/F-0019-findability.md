@@ -30,7 +30,10 @@ one user no longer holds it back. The spec is issue #32.
   `og:url`, the sitemap and `robots.txt` all use it.
 - **Any other host gets `noindex`**: a preview, a `vercel.app` alias of
   production, localhost. The page still works there and its canonical URL
-  stays on the real domain. Nothing redirects.
+  stays on the real domain. Nothing redirects. A prerendered page is written
+  once, as on the fixed domain, so it has no `noindex` elsewhere; the
+  canonical URL still points to the domain, and Vercel sends
+  `X-Robots-Tag: noindex` on previews.
 - **Out of the index:** admin pages and utility pages (sign up, unsubscribe,
   print) get `noindex` and the `X-Robots-Tag` header (`NOINDEX_HEADERS`); 404
   pages get `noindex`. None of them is in the sitemap. `robots.txt` keeps

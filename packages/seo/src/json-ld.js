@@ -97,7 +97,7 @@ export function website(site, details = {}) {
 
 /**
  * The complete `<script type="application/ld+json">` tag for one node or
- * several (then as a `@graph`). A `<` in the data becomes `<`, so text in
+ * several (then as a `@graph`). A `<` in the data becomes `\u003c`, so text in
  * the data can never close the tag.
  */
 export function jsonLd(...nodes) {
