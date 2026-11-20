@@ -1,7 +1,7 @@
 {
 	"name": "@merijnslegers/admin",
-	"version": "0.4.0",
-	"description": "The admin login of the software factory: Supabase Auth with an allow list, or HTTP Basic with a password per person; the access rules and headers; content changes through a pull request; and image resizing in the browser.",
+	"version": "0.5.0",
+	"description": "The admin of the software factory: the login (Supabase Auth or HTTP Basic per person), the access rules and headers, content changes through a pull request with a form block, the admin building blocks as Svelte components, and image resizing in the browser.",
 	"license": "MIT",
 	"type": "module",
 	"bin": {
@@ -31,6 +31,28 @@
 		"./github-rules": {
 			"types": "./src/github-rules.d.ts",
 			"default": "./src/github-rules.js"
+		},
+		"./content-form": {
+			"types": "./src/content-form.d.ts",
+			"default": "./src/content-form.js"
+		},
+		"./content-form-server": {
+			"types": "./src/content-form-server.d.ts",
+			"default": "./src/content-form-server.js"
+		},
+		"./ui": {
+			"types": "./src/ui/index.d.ts",
+			"svelte": "./src/ui/index.js",
+			"default": "./src/ui/index.js"
+		},
+		"./github/ui": {
+			"types": "./src/ui/github.d.ts",
+			"svelte": "./src/ui/github.js",
+			"default": "./src/ui/github.js"
+		},
+		"./ui/text": {
+			"types": "./src/ui/text.d.ts",
+			"default": "./src/ui/text.js"
 		}
 	},
 	"files": [
@@ -44,7 +66,8 @@
 	"peerDependencies": {
 		"@supabase/ssr": "^0.12.7",
 		"@supabase/supabase-js": "^2.118.0",
-		"@sveltejs/kit": "^3.0.0"
+		"@sveltejs/kit": "^3.0.0",
+		"svelte": "^5.0.0"
 	},
 	"repository": {
 		"type": "git",
@@ -59,6 +82,9 @@
 			"optional": true
 		},
 		"@supabase/supabase-js": {
+			"optional": true
+		},
+		"svelte": {
 			"optional": true
 		}
 	}

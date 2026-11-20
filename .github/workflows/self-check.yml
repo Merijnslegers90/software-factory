@@ -24,6 +24,10 @@ jobs:
         with:
           node-version: 22
 
+      # Only svelte, to render the admin blocks in their tests (F-0020).
+      - name: Install
+        run: npm ci
+
       - name: Tests
         run: npm test
 
