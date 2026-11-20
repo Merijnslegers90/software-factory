@@ -1,6 +1,6 @@
 ---
 name: factory-decisions
-description: The decisions that hold for every product built by the factory (stack, database, migrations, keys, tests, CI, images, one project per product, the admin login, content and CMS, Storyblok, visitor numbers). Use this before making a choice about architecture, the database, an external service, environment variables, tests or CI, and in every review.
+description: The decisions that hold for every product built by the factory (stack, database, migrations, keys, tests, CI, images, one project per product, the admin login, content and CMS, Storyblok, visitor numbers, findability). Use this before making a choice about architecture, the database, an external service, environment variables, tests or CI, and in every review.
 ---
 
 # Factory decisions
@@ -33,6 +33,7 @@ as your work touches it.
 | F-0016 | Admin login through `@merijnslegers/admin`, chosen by the settings: Supabase Auth with `ADMIN_EMAILS` when `SUPABASE_URL`/`SUPABASE_ANON_KEY` are set, otherwise HTTP Basic with a scrypt hash per person in `ADMIN_USERS` (`npx @merijnslegers/admin hash`). Writes must come from the own origin; webhooks never under the admin path; no remote functions with HTTP Basic. | `adr/F-0016-admin-login.md` |
 | F-0017 | Every product is one of three kinds: a site that hardly changes (content in code), a site the customer edits (Sanity, in the customer's name), or a product with a shop (its own database, Supabase Auth). A site without a database may have an admin with HTTP Basic. Name, price, stock and orders always in the database; a CMS refers by product code. Prerendered; Sanity down at build fails the build. | `adr/F-0017-content-cms-and-database.md` |
 | F-0018 | An admin changes content in the repo by opening a pull request through `@merijnslegers/admin/github` (branch `admin/<key>`, one commit), never by committing to `main`; the owner merges. Writes only inside the project's `allowedPaths`. Fine-grained token for one repo (`ADMIN_GITHUB_TOKEN`, `ADMIN_GITHUB_REPO`), a year at most. Does not replace the database (F-0017). No Blob or Edge Config for now. | `adr/F-0018-content-through-a-pull-request.md` |
+| F-0019 | Findability through `@merijnslegers/seo`: `SeoHead` in the root layout writes title, description, canonical URL and share tags on one fixed domain, a constant in the content (never a variable or the request's domain); any other host gets `noindex`. Sitemap and `robots.txt` from `sitemap()` and `robots()`; structured data through `jsonLd()`. Admin and utility pages `noindex`. Every page: server-rendered, its own title and description, one `h1`, `lang` set. Fixed test `e2e/seo.spec.ts`. | `adr/F-0019-findability.md` |
 
 ## When your work touches a decision
 

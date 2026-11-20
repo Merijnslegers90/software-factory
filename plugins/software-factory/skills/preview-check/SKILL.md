@@ -62,6 +62,12 @@ needs a browser as not checked.
   scroll, contrast.
 - **What the spec asks**: try the behaviour itself (hover, focus, a click, a
   form with fake values), as far as it is safe on a preview.
+- **The head**, on a page the change touches or a new page (F-0019): one
+  title and description, the canonical URL on the product's fixed domain and
+  not on the preview's, and `noindex` (it is a preview). When the change
+  touches pages or the site details, also `sitemap.xml` and `robots.txt`:
+  only the fixed domain, every public page listed. `web_fetch_vercel_url` is
+  enough for these.
 - **Runtime errors** of the deployment, after the pages have been visited:
   `get_runtime_logs` with the project ID, the team ID, the deployment ID and
   level `error`; `get_runtime_errors` for the project gives them grouped.

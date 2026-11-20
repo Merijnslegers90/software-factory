@@ -1,0 +1,53 @@
+{
+	"name": "@merijnslegers/seo",
+	"version": "0.1.0",
+	"description": "Findability for every product of the software factory: the head with canonical URL and share tags on the fixed domain, sitemap and robots.txt, and structured data (F-0019).",
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		"./head": {
+			"types": "./src/head.d.ts",
+			"default": "./src/head.js"
+		},
+		"./sitemap": {
+			"types": "./src/sitemap.d.ts",
+			"default": "./src/sitemap.js"
+		},
+		"./json-ld": {
+			"types": "./src/json-ld.d.ts",
+			"default": "./src/json-ld.js"
+		},
+		"./SeoHead.svelte": {
+			"types": "./src/SeoHead.svelte.d.ts",
+			"svelte": "./src/SeoHead.svelte",
+			"default": "./src/SeoHead.svelte"
+		}
+	},
+	"files": [
+		"src",
+		"README.md"
+	],
+	"peerDependencies": {
+		"@sveltejs/kit": "^3.0.0",
+		"svelte": "^5.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@sveltejs/kit": {
+			"optional": true
+		},
+		"svelte": {
+			"optional": true
+		}
+	},
+	"engines": {
+		"node": ">=22.17"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Merijnslegers90/software-factory.git",
+		"directory": "packages/seo"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

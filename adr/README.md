@@ -71,3 +71,4 @@ itself.
 | [F-0016](F-0016-admin-login.md)              | One admin login, through Supabase Auth or HTTP Basic per person                   | accepted             |
 | [F-0017](F-0017-content-cms-and-database.md) | Content in code, a CMS when the customer edits, a database when money is involved | accepted             |
 | [F-0018](F-0018-content-through-a-pull-request.md) | The admin changes content through a pull request                                  | accepted             |
+| [F-0019](F-0019-findability.md)              | Findability through one package                                                   | accepted             |

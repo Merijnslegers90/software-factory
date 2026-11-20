@@ -59,6 +59,11 @@ Tailwind CSS 4, adapter-vercel, pnpm. Svelte and Kit settings are in
 never at build time (F-0005), and a missing one is an empty string. A new key
 goes in `src/env.ts` first, then in `.env.example`.
 
+**Findability** (F-0019): the site details for `@merijnslegers/seo` (the fixed
+domain, name and share image) are in `<file>`; every page sets its title and
+description through `SeoHead` in the root layout. A new public page also goes
+in the list for the sitemap and in `e2e/pages.ts`.
+
 <External services, each with what it is for. A service that handles personal data also goes on the privacy page.>
 
 ## Not yet like the factory
@@ -83,5 +88,7 @@ pnpm run build
 - **Unit** (`src/**/*.test.ts`, vitest): <what is pure and tested>.
 - **E2E** (`e2e/`, Playwright): `pages.spec.ts` opens every page in
   `e2e/pages.ts`; `accessibility.spec.ts` puts them through axe against WCAG
-  2.2 AA, on a phone and a desktop width. Known issues from the take-in are in
-  `e2e/known-issues.ts`; a new page is added to `e2e/pages.ts`.
+  2.2 AA, on a phone and a desktop width; `seo.spec.ts` checks the title,
+  description and canonical URL of every page, the sitemap and `robots.txt`
+  (F-0019). Known issues from the take-in are in `e2e/known-issues.ts`; a new
+  page is added to `e2e/pages.ts`.
