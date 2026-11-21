@@ -35,7 +35,7 @@ to this product.
 
 - <A site that hardly changes: content in code, in `src/lib/content/`. A change goes through a commit and a preview.>
 - <A site the customer edits: Sanity (skill `add-sanity`) or Storyblok (F-0014). Who owns the account, where the customer edits, how a change goes live.>
-- <A product with a shop or business behind it: its own Supabase project (F-0009), the admin login (F-0016), and the parts in docs/modules/.>
+- <A product with a shop or business behind it: its own Supabase project (F-0009), the admin login and its building blocks (F-0020), and the parts in docs/modules/.>
 
 ## Writing
 

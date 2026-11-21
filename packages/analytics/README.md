@@ -4,8 +4,8 @@ The visitor numbers of the software factory (F-0015). It reads Vercel Web
 Analytics on the server and turns the answers into totals, a series per day
 or week and top lists, for a screen in the admin.
 
-The package fetches and calculates. The screen, its words and its colours stay
-in the project, in its own look and language.
+The package fetches and calculates, and has the blocks that show it in an
+admin (F-0020): `AdminVisitors` and `AdminVisitorsSummary`.
 
 ```bash
 pnpm add @merijnslegers/analytics
@@ -15,6 +15,8 @@ pnpm add @merijnslegers/analytics
 | --------------------------------- | -------------------------------------------------------------- | ------------- |
 | `@merijnslegers/analytics/server` | `createAnalytics`: the call to Vercel, kept for an hour        | server only   |
 | `@merijnslegers/analytics/rules`  | The pure rules: periods, change, series, top lists, shares     | anywhere      |
+| `@merijnslegers/analytics/visitors` | `loadVisitors` and `loadVisitorsSummary`: the data for the blocks | server only |
+| `@merijnslegers/analytics/ui`     | `AdminVisitors` and `AdminVisitorsSummary`                     | Svelte        |
 
 ## Connecting a project
 
@@ -83,6 +85,33 @@ export async function load({ url }) {
 	};
 }
 ```
+
+## The blocks
+
+```ts
+// src/routes/admin/bezoekers/+page.server.ts
+import { loadVisitors } from '@merijnslegers/analytics/visitors';
+import { analytics } from '#lib/server/analytics';
+
+export const load = ({ url }) => loadVisitors(analytics, url);
+```
+
+```svelte
+<!-- src/routes/admin/bezoekers/+page.svelte -->
+<script lang="ts">
+	import { AdminVisitors } from '@merijnslegers/analytics/ui';
+	let { data } = $props();
+</script>
+
+<AdminVisitors {data} />
+```
+
+- The period comes from `?periode=7`, `30` or `90`; `loadVisitors` takes
+  `{ param }` for another name.
+- `loadVisitorsSummary(analytics)` gives this month against the same days of
+  last month, for `AdminVisitorsSummary` on the overview. Without the
+  settings the summary is left out, and the full block says what is missing.
+- The words are Dutch; a product passes its own through `text`.
 
 ## What comes back
 

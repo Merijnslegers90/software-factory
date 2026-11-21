@@ -64,14 +64,17 @@ Node 22.17 or later, and `@sveltejs/adapter-vercel` in place of
 Ask the owner which kind of F-0017 this product is, and set up what it needs:
 
 - **A site that hardly changes:** content in code under `src/lib/content/`.
-  Nothing more, unless the owner wants an admin (for the visitor numbers of
-  F-0015): then `@merijnslegers/admin` with HTTP Basic and `ADMIN_USERS`
-  (F-0016), without a database.
+  Nothing more, unless the owner wants an admin: then `@merijnslegers/admin`
+  with HTTP Basic and `ADMIN_USERS`, without a database, and the screens from
+  its building blocks (F-0020): `AdminShell`, `AdminOverview`, the visitors
+  of F-0015, and `AdminContentForm` for content the owner's customer changes
+  now and then, saved as a pull request (F-0018).
 - **A site the customer edits:** the skill `add-sanity`, after this skill. An
   admin is optional, as above.
 - **A product with a shop or business behind it:** a Supabase project of its
   own (F-0009), `@merijnslegers/migrations` with `vercel-build`, and
-  `@merijnslegers/admin` for the admin (F-0016). Migrations with the skill
+  `@merijnslegers/admin` for the admin, with the building blocks of F-0020.
+  Migrations with the skill
   `new-migration`.
 
 ### A4. `CLAUDE.md`

@@ -6,7 +6,7 @@ import type { AdminPaths, AdminResponses, LoginMethod, SettingNames } from './ru
  * Read at runtime in the project's src/env.ts (F-0005). An empty string means
  * missing; leaving an option out means the project does not offer that login.
  * With `supabaseUrl` or `anonKey` filled the login is Supabase Auth, otherwise
- * with `users` filled it is HTTP Basic (F-0016).
+ * with `users` filled it is HTTP Basic (F-0020).
  */
 export interface AdminOptions {
 	/** Supabase Auth. */

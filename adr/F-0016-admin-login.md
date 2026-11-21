@@ -1,6 +1,6 @@
 # F-0016: One admin login, through Supabase Auth or HTTP Basic per person
 
-- **Status:** accepted
+- **Status:** superseded by F-0020
 - **Date:** 17 November 2026
 - **Supersedes:** F-0011
 

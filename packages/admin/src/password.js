@@ -1,4 +1,4 @@
-// Passwords for the HTTP Basic login (F-0016), hashed with scrypt from
+// Passwords for the HTTP Basic login (F-0020), hashed with scrypt from
 // node:crypto, so no extra dependency. Server-only.
 //
 // A hash looks like `scrypt.<salt>.<key>`, both in base64url. It has no `$`,

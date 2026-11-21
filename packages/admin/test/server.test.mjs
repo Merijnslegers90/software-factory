@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createAdmin } from '../src/server.js';
 import { hashPassword } from '../src/password.js';
 
-// F-0016: the hook with HTTP Basic, without SvelteKit or Supabase installed.
+// F-0020: the hook with HTTP Basic, without SvelteKit or Supabase installed.
 
 // Built here, so this public repo holds no address (tests/public.test.mjs).
 const email = ['ann', 'example.org'].join('@');

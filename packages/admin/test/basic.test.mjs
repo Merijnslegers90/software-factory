@@ -15,7 +15,7 @@ import {
 	refusal
 } from '../src/rules.js';
 
-// F-0016: HTTP Basic with a password per person, for a product without a
+// F-0020: HTTP Basic with a password per person, for a product without a
 // database, next to Supabase Auth for a product with one.
 
 // Built here, so this public repo holds no address (tests/public.test.mjs).
@@ -66,7 +66,7 @@ test('parseUsers reads email:hash entries and skips typos and plain passwords', 
 	assert.deepEqual(parseUsers(undefined), { users: new Map(), skipped: 0 });
 });
 
-test('loginMethod: Supabase as soon as one of its settings is there, HTTP Basic otherwise (F-0016)', () => {
+test('loginMethod: Supabase as soon as one of its settings is there, HTTP Basic otherwise (F-0020)', () => {
 	const users = new Map([[mail('ann'), 'hash']]);
 	assert.equal(loginMethod({ supabaseUrl: 'https://db.example.org', anonKey: 'anon', users }), 'supabase');
 	// Half a Supabase setup does not fall back to HTTP Basic.
@@ -115,7 +115,7 @@ test('parseBasicAuth reads the header, in UTF-8, and refuses what it cannot read
 	assert.equal(parseBasicAuth('Basic ' + Buffer.from([0xff, 0x3a, 0x61]).toString('base64')), null);
 });
 
-test('basicDecision: a challenge without a password, the Origin check with one (F-0016)', () => {
+test('basicDecision: a challenge without a password, the Origin check with one (F-0020)', () => {
 	const at = (path) => new URL(path, site);
 	const ask = (path, method, origin, signedIn) =>
 		basicDecision({ url: at(path), method, origin, signedIn, paths }).kind;

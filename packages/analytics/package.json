@@ -1,7 +1,7 @@
 {
 	"name": "@merijnslegers/analytics",
-	"version": "0.1.0",
-	"description": "The visitor numbers of the software factory: reads Vercel Web Analytics on the server and turns it into totals, a series and top lists for /admin.",
+	"version": "0.2.0",
+	"description": "The visitor numbers of the software factory: reads Vercel Web Analytics on the server, turns it into totals, a series and top lists, and shows them in the admin with ready-made blocks.",
 	"license": "MIT",
 	"type": "module",
 	"exports": {
@@ -12,6 +12,15 @@
 		"./server": {
 			"types": "./src/server.d.ts",
 			"default": "./src/server.js"
+		},
+		"./visitors": {
+			"types": "./src/visitors.d.ts",
+			"default": "./src/visitors.js"
+		},
+		"./ui": {
+			"types": "./src/ui/index.d.ts",
+			"svelte": "./src/ui/index.js",
+			"default": "./src/ui/index.js"
 		}
 	},
 	"files": [
@@ -28,5 +37,17 @@
 	},
 	"publishConfig": {
 		"access": "public"
+	},
+	"peerDependencies": {
+		"@sveltejs/kit": "^3.0.0",
+		"svelte": "^5.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@sveltejs/kit": {
+			"optional": true
+		},
+		"svelte": {
+			"optional": true
+		}
 	}
 }

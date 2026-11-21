@@ -1,6 +1,7 @@
 # @merijnslegers/admin
 
-The admin login of the software factory (F-0016), and image resizing in the
+The admin login of the software factory and the building blocks of its
+screens (F-0020), and image resizing in the
 browser (F-0008). Each person signs in to `/admin` with their own email address
 and password, in one of two ways, chosen by the settings:
 
@@ -11,9 +12,11 @@ and password, in one of two ways, chosen by the settings:
   window, with a password per person in an environment variable. See
   [HTTP Basic](#http-basic-for-a-product-without-a-database).
 
-The package holds the login, the access rules and the headers. The screens, the
-components, the navigation and every sentence a user reads stay in the project,
-in its own look and language.
+The package holds the login, the access rules and the headers, and the
+building blocks for the screens: the frame, the overview, the open proposals
+and a form block for content in the repo. See
+[The admin blocks](#the-admin-blocks). The navigation, special editors and the
+refusals of the login stay in the project.
 
 ```bash
 pnpm add @merijnslegers/admin @supabase/ssr @supabase/supabase-js
@@ -31,6 +34,10 @@ it to silence the warning.
 | `@merijnslegers/admin/password` | `hashPassword` and `verifyPassword` for HTTP Basic, with scrypt        | server only   |
 | `@merijnslegers/admin/github` | `createContentRepo`: content changes through a pull request (F-0018)     | server only   |
 | `@merijnslegers/admin/resize` | `resizeImage` and `resizeFormFiles`                                      | browser       |
+| `@merijnslegers/admin/ui`     | `AdminShell`, `AdminOverview`, `AdminMessage`, `AdminCard`, `AdminField` | Svelte        |
+| `@merijnslegers/admin/github/ui` | `AdminProposals` and the form block `AdminContentForm`                | Svelte        |
+| `@merijnslegers/admin/content-form-server` | `loadContentForm`, `contentFormAction`, `loadProposals`     | server only   |
+| `@merijnslegers/admin/content-form` | The pure rules of the form: fields, prices, checks                 | anywhere      |
 
 ## Connecting a project
 
@@ -325,6 +332,171 @@ if (result.outcome !== 'ok') return fail(503, { outcome: result.outcome });
 - A pull request opened with a personal token starts the workflows and the
   Vercel preview.
 
+## The admin blocks
+
+The screens of every admin come from here (F-0020): Svelte components that
+the product's SvelteKit 3 compiles, with their own scoped CSS, in Dutch by
+default. A product passes its brand colour and logo, and its own words where
+it wants other ones through the `text` prop of a block.
+
+**The frame**, in `src/routes/admin/+layout.svelte`:
+
+```svelte
+<script lang="ts">
+	import { AdminShell } from '@merijnslegers/admin/ui';
+	import { theme } from '#lib/admin/theme';
+	let { children, data } = $props();
+</script>
+
+<AdminShell
+	name="Frietwagen Someren"
+	logo="/images/logo.png"
+	{theme}
+	nav={[
+		{ href: '/admin', label: 'Overzicht' },
+		{ href: '/admin/prijzen', label: 'Prijzen' },
+		{ href: '/admin/bezoekers', label: 'Bezoekers' }
+	]}
+	message={data.message}
+>
+	{@render children()}
+</AdminShell>
+```
+
+**The theme.** A product sets its own look in one place, through `theme`
+on `AdminShell`: colours, fonts and rounding. What it leaves out keeps the
+calm default. The layout of the blocks is shared; there is no way to restyle
+one block, and what a product misses becomes a new key here, for every
+product.
+
+```ts
+// src/lib/admin/theme.ts
+export const theme = {
+	scheme: 'dark', // 'auto' follows the device (the default), 'light' or 'dark' fixes one
+	accent: '#f2b705',
+	onAccent: '#000',
+	headingFont: "'Oswald Variable', sans-serif",
+	headingTransform: 'uppercase',
+	dark: { bg: '#000', surface: '#141414', text: '#fff', muted: '#c4c4c4', border: '#333' }
+};
+```
+
+| Key                       | What it sets                                               |
+| ------------------------- | ---------------------------------------------------------- |
+| `bg`, `surface`           | The page and the cards                                     |
+| `text`, `muted`           | Text, and the lighter text of hints and labels             |
+| `border`, `inputBorder`   | Lines, and the edge of an input (3:1 against its background) |
+| `accent`, `onAccent`      | Buttons, the current page, bars; and the text on them      |
+| `headerBg`, `headerText`  | The bar at the top, for a logo that needs its own colour   |
+| `error`, `errorBg`, `warningBg`, `okBg` | Messages                                     |
+| `font`, `headingFont`, `headingTransform` | The fonts, and capitals for headings       |
+| `radius`                  | The rounding of corners                                    |
+| `dark`                    | The same keys for the dark version                         |
+
+A value may hold colours, font names and lengths only; anything that could
+end the declaration throws. The fonts must be loaded by the product.
+
+**Options.** A block can leave parts out: `AdminShell` takes
+`showSiteLink={false}`, `AdminVisitors` takes `show={{ referrers: false }}`
+(also `series`, `pages`, `periods`), and a list field takes `fixed: true` to
+allow changing its items but not adding, removing or moving them. The server
+checks that too.
+
+The product's own styles for headings (a display font, wide letters) stay
+out of the blocks.
+
+Check the accent colour: `--admin-on-accent` is the text on it (buttons, the
+chosen period) and needs a contrast of 4.5:1 with it; the accent itself is
+also the colour of the chart bars and the border of a message, which want
+3:1 against the background (`#f6f6f4` light, `#151514` dark). The focus ring
+follows the text colour, not the accent. The blocks are meant inside
+`AdminShell`, which defines the colours; outside it they fall back to the
+light ones.
+
+**The overview**, with the visitors of this month and the open proposals:
+
+```svelte
+<AdminOverview facts={[{ label: 'Domein', value: 'www.example.nl' }]} links={[{ label: 'Vercel', href: 'https://vercel.com/...' }]}>
+	<AdminVisitorsSummary data={data.visitors} />
+	{#if data.proposals.outcome !== 'no-key'}
+		<AdminProposals data={data.proposals} />
+	{/if}
+</AdminOverview>
+```
+
+The summary leaves itself out without its settings; the proposals block says
+what is missing, which is right on a page of its own but not on the
+overview.
+
+**The form block** fills one JSON file in the repo, inside `allowedPaths` of
+the content repo (F-0018). The product describes the fields once and uses
+them in the load, the action and the component:
+
+```ts
+// src/lib/admin/prijzen.ts
+import type { Field } from '@merijnslegers/admin/content-form';
+
+export const path = 'src/lib/content/menu.json';
+export const fields: Field[] = [
+	{
+		key: 'kaarten',
+		type: 'list',
+		label: 'Menukaarten',
+		itemLabel: 'Kaart',
+		titleKey: 'titel',
+		fields: [
+			{ key: 'titel', type: 'text', label: 'Naam', required: true },
+			{ key: 'prijs', type: 'price', label: 'Prijs per persoon', required: true }
+		]
+	}
+];
+```
+
+```ts
+// src/routes/admin/prijzen/+page.server.ts
+import { contentFormAction, loadContentForm } from '@merijnslegers/admin/content-form-server';
+import { repo } from '#lib/server/repo';
+import menu from '#lib/content/menu.json';
+import { fields, path } from '#lib/admin/prijzen';
+
+const options = { path, key: 'prijzen', fields, current: menu };
+
+export const load = () => loadContentForm(repo, options);
+export const actions = {
+	default: contentFormAction(repo, {
+		...options,
+		title: 'Prijzen bijgewerkt',
+		changedBy: (event) => event.locals.admin?.email
+	})
+};
+```
+
+```svelte
+<!-- src/routes/admin/prijzen/+page.svelte -->
+<AdminContentForm {data} {form} {fields} />
+```
+
+- Field types: `text`, `longtext`, `price` (shown as `4,50`, saved as a
+  number), `toggle`, `link` (a path, an anchor, or an http, mailto or tel
+  address) and `list`, whose items have their own `fields`. `required`,
+  `maxLength`, `min` and `max` are checked on the server too.
+- The form starts from the open proposal for its `key`, and saving again adds
+  to it. Keys in the file that the fields do not name are kept.
+- A file that no longer matches the fields (a price that became text) is
+  refused with the path where it went wrong; nothing is overwritten.
+- Without `ADMIN_GITHUB_TOKEN` or `ADMIN_GITHUB_REPO` the form shows `current`
+  and says what is missing; saving is off (F-0005).
+- A key inside a list item that the fields do not name counts as a mismatch,
+  because saving would lose it. At the top of the file such keys are kept.
+- A file that does not exist yet starts empty, and saving creates it.
+- Call `checkFields(fields)` where the fields are defined: a wrong field
+  list then fails at once, in the tests, instead of in the admin.
+- One form per page: the ids of the fields come from their keys.
+
+**Accessible:** every block works by keyboard and on a narrow screen, with
+touch targets of 44 pixels. Put the admin pages in the product's
+accessibility test, after logging in with a test user from `.env.example`.
+
 ## Settings in Supabase
 
 Under Authentication:
@@ -379,7 +551,7 @@ tests. A project's own tests use the same rules without Supabase, for instance
 for its own screen names:
 
 ```ts
-// F-0016
+// F-0020
 import { adminPaths, safeReturnPath } from '@merijnslegers/admin/rules';
 
 const paths = adminPaths({ login: '/admin/inloggen', password: '/admin/wachtwoord' });

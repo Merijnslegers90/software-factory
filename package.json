@@ -7,5 +7,8 @@
 	},
 	"scripts": {
 		"test": "node --test \"tests/**/*.test.mjs\" \"packages/*/test/*.test.mjs\""
+	},
+	"devDependencies": {
+		"svelte": "^5.59.0"
 	}
 }

@@ -8,7 +8,7 @@ copy, and Dependabot or Renovate opens a pull request for each new version.
 | --------------------------- | ---------------------------------------------------------------------- |
 | `@merijnslegers/migrations` | The migration runner for `vercel-build` (F-0003) and the grant and RLS check (F-0004) |
 | `@merijnslegers/config`     | The shared prettier, eslint and TypeScript settings (F-0010), and the em dash check   |
-| `@merijnslegers/admin`      | The admin login, Supabase Auth or HTTP Basic per person (F-0016); content through a pull request (F-0018), and image resizing in the browser (F-0008); see its [README](admin/README.md) |
+| `@merijnslegers/admin`      | The admin login, Supabase Auth or HTTP Basic per person, and the admin building blocks with the form block (F-0020); content through a pull request (F-0018), and image resizing in the browser (F-0008); see its [README](admin/README.md) |
 | `@merijnslegers/analytics`  | The visitor numbers from Vercel Web Analytics for the admin (F-0015); see its [README](analytics/README.md) |
 | `@merijnslegers/seo`        | The head with canonical URL and share tags, sitemap, robots.txt and structured data on one fixed domain (F-0019); see its [README](seo/README.md) and the skill `seo` |
 
