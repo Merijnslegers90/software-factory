@@ -1,6 +1,8 @@
 export const SHELL_TEXT: Readonly<Record<'admin' | 'menu' | 'closeMenu' | 'viewSite' | 'logout' | 'newWindow', string>>;
 export const OVERVIEW_TEXT: Readonly<Record<'facts' | 'links', string>>;
-export const PROPOSALS_TEXT: Readonly<Record<'title' | 'none' | 'intro' | 'updated' | 'open' | 'off', string>>;
+export const PROPOSALS_TEXT: Readonly<
+	Record<'title' | 'none' | 'intro' | 'updated' | 'open' | 'off', string> & { outcomes: Readonly<Record<string, string>> }
+>;
 export const FORM_TEXT: Readonly<
 	Record<
 		| 'save'

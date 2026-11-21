@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Makes a line for ADMIN_USERS (F-0016):
+// Makes a line for ADMIN_USERS (F-0020):
 //
 //   npx @merijnslegers/admin hash <email>
 //

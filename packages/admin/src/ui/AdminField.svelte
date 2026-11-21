@@ -58,7 +58,7 @@
 		box-sizing: border-box;
 		min-height: 2.75rem;
 		padding: 0.55rem 0.7rem;
-		border: 1px solid var(--ms-border, #dcdcd6);
+		border: 1px solid var(--ms-input-border, #85857e);
 		border-radius: calc(var(--ms-radius, 0.6rem) * 0.7);
 		background: var(--ms-bg, #f6f6f4);
 		color: inherit;

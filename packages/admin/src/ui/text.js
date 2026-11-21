@@ -22,7 +22,11 @@ export const PROPOSALS_TEXT = Object.freeze({
 	intro: 'Deze wijzigingen wachten op een merge. Pas daarna staan ze live.',
 	updated: 'bijgewerkt',
 	open: 'Bekijk op GitHub',
-	off: 'Voorstellen zijn niet te zien: {missing} ontbreekt.'
+	off: 'Voorstellen zijn niet te zien: {missing} ontbreekt.',
+	outcomes: Object.freeze({
+		'key-refused': 'GitHub weigert de sleutel. Er is een nieuwe nodig.',
+		unavailable: 'GitHub is nu niet bereikbaar. Probeer het straks opnieuw.'
+	})
 });
 
 export const FORM_TEXT = Object.freeze({
@@ -55,7 +59,7 @@ export const FORM_TEXT = Object.freeze({
 	}),
 	outcomes: Object.freeze({
 		'no-key': 'Opslaan staat uit: {missing} ontbreekt.',
-		'key-refused': 'GitHub weigert de sleutel. Vraag Merijn om een nieuwe.',
+		'key-refused': 'GitHub weigert de sleutel. Er is een nieuwe nodig.',
 		'not-allowed': 'Dit bestand mag de admin niet aanpassen.',
 		conflict: 'Iemand anders sloeg tegelijk iets op. Probeer het opnieuw.',
 		unavailable: 'GitHub is nu niet bereikbaar. Probeer het straks opnieuw.',

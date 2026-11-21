@@ -21,7 +21,7 @@ import {
 	signInOutcome
 } from '../src/rules.js';
 
-// F-0016 (from F-0011): one admin login for every product; here the rules
+// F-0020 (from F-0011): one admin login for every product; here the rules
 // shared by both ways, and those of Supabase Auth with an allow list.
 
 // Built here, so this public repo holds no address (tests/public.test.mjs).
@@ -51,7 +51,7 @@ test('isAdminPath holds the admin path and below, not a path that only starts al
 	assert.equal(isAdminPath('/', paths), false);
 });
 
-test('isAdminPath decodes the path the way SvelteKit does, so encoding is no way around the hook (F-0016)', () => {
+test('isAdminPath decodes the path the way SvelteKit does, so encoding is no way around the hook (F-0020)', () => {
 	assert.equal(isAdminPath('/%61dmin/orders', paths), true);
 	assert.equal(isAdminPath('/%61%64min', paths), true);
 	assert.equal(isAdminPath('/admin/%6Frders', paths), true);
@@ -184,7 +184,7 @@ test('adminDecision: a fetch without a session gets a 401', () => {
 	});
 });
 
-test('refusal: without the project\'s words the 401 and 403 have an empty body (F-0016)', async () => {
+test('refusal: without the project\'s words the 401 and 403 have an empty body (F-0020)', async () => {
 	for (const [kind, status] of [
 		['unauthorized', 401],
 		['forbidden', 403]
@@ -201,7 +201,7 @@ test('refusal: without the project\'s words the 401 and 403 have an empty body (
 	}
 });
 
-test('refusal: the project\'s own words, intact outside ASCII (F-0016)', async () => {
+test('refusal: the project\'s own words, intact outside ASCII (F-0020)', async () => {
 	const responses = {
 		unauthorized: 'U bent niet ingelogd.',
 		forbidden: 'Dit verzoek kwam niet van onze eigen site, café’s ook niet.'

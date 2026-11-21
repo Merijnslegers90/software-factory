@@ -31,9 +31,9 @@ export function parsePrice(input) {
 	if (typeof input === 'number') return Number.isFinite(input) && input >= 0 ? round(input) : null;
 	if (typeof input !== 'string') return null;
 	const clean = input
-		.replace(/€/g, '')
+		.trim()
+		.replace(/^€\s*/, '')
 		.replace(/,-$/, '')
-		.replace(/\s/g, '')
 		.replace(',', '.');
 	if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
 	return round(Number(clean));
@@ -51,6 +51,8 @@ export function formatPrice(n) {
 /** A link: a path on the site (`/contact`), an anchor, or an http(s), mailto or tel address. */
 export function isLink(value) {
 	if (typeof value !== 'string' || value.trim() === '') return false;
+	// A backslash or a space can turn a path into //host in a browser.
+	if (/[\\\s\u0000-\u001f\u007f]/.test(value.replace(/^tel:[+\d][\d\s-]*$/i, ''))) return false;
 	if (/^\/(?!\/)/.test(value) || value.startsWith('#')) return true;
 	return /^(https?:\/\/[^\s]+|mailto:[^\s]+|tel:[+\d][\d\s-]*)$/i.test(value);
 }
@@ -91,8 +93,15 @@ function readValue(field, raw, path) {
 	}
 }
 
-function readObject(fields, data, prefix) {
+function readObject(fields, data, prefix, { strict = true } = {}) {
 	if (!data || typeof data !== 'object' || Array.isArray(data)) return { ok: false, at: prefix };
+	// Inside a list item a key the fields do not name would be lost on saving,
+	// so it counts as a mismatch. At the top of the file such keys are kept.
+	if (strict) {
+		const known = new Set(fields.map((f) => f.key));
+		const extra = Object.keys(data).find((key) => !known.has(key));
+		if (extra) return { ok: false, at: prefix ? `${prefix}.${extra}` : extra };
+	}
 	const values = {};
 	for (const field of fields) {
 		const path = prefix ? `${prefix}.${field.key}` : field.key;
@@ -109,7 +118,7 @@ function readObject(fields, data, prefix) {
  * form can refuse instead of overwriting what it does not understand.
  */
 export function valuesFromFile(fields, data) {
-	const read = readObject(fields, data, '');
+	const read = readObject(fields, data, '', { strict: false });
 	return read.ok ? read : { ok: false, problem: 'mismatch', at: read.at || '(file)' };
 }
 
@@ -173,6 +182,9 @@ export function checkValues(fields, input) {
 		} catch {
 			return { ok: false, errors: { '': 'not-readable' } };
 		}
+	}
+	if (!data || typeof data !== 'object' || Array.isArray(data)) {
+		return { ok: false, errors: { '': 'not-readable' } };
 	}
 	const errors = [];
 	const values = checkObject(fields, data, '', errors);

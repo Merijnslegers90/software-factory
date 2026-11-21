@@ -363,17 +363,28 @@ it wants other ones through the `text` prop of a block.
 </div>
 ```
 
-Check the accent colour against white and black: `--admin-on-accent` is the
-text on it (buttons, the chosen period), and must have a contrast of 4.5:1.
+Check the accent colour: `--admin-on-accent` is the text on it (buttons, the
+chosen period) and needs a contrast of 4.5:1 with it; the accent itself is
+also the colour of the chart bars and the border of a message, which want
+3:1 against the background (`#f6f6f4` light, `#151514` dark). The focus ring
+follows the text colour, not the accent. The blocks are meant inside
+`AdminShell`, which defines the colours; outside it they fall back to the
+light ones.
 
 **The overview**, with the visitors of this month and the open proposals:
 
 ```svelte
 <AdminOverview facts={[{ label: 'Domein', value: 'www.example.nl' }]} links={[{ label: 'Vercel', href: 'https://vercel.com/...' }]}>
 	<AdminVisitorsSummary data={data.visitors} />
-	<AdminProposals data={data.proposals} />
+	{#if data.proposals.outcome !== 'no-key'}
+		<AdminProposals data={data.proposals} />
+	{/if}
 </AdminOverview>
 ```
+
+The summary leaves itself out without its settings; the proposals block says
+what is missing, which is right on a page of its own but not on the
+overview.
 
 **The form block** fills one JSON file in the repo, inside `allowedPaths` of
 the content repo (F-0018). The product describes the fields once and uses
@@ -433,6 +444,12 @@ export const actions = {
   refused with the path where it went wrong; nothing is overwritten.
 - Without `ADMIN_GITHUB_TOKEN` or `ADMIN_GITHUB_REPO` the form shows `current`
   and says what is missing; saving is off (F-0005).
+- A key inside a list item that the fields do not name counts as a mismatch,
+  because saving would lose it. At the top of the file such keys are kept.
+- A file that does not exist yet starts empty, and saving creates it.
+- Call `checkFields(fields)` where the fields are defined: a wrong field
+  list then fails at once, in the tests, instead of in the admin.
+- One form per page: the ids of the fields come from their keys.
 
 **Accessible:** every block works by keyboard and on a narrow screen, with
 touch targets of 44 pixels. Put the admin pages in the product's

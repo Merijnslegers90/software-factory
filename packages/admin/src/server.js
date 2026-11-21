@@ -1,4 +1,4 @@
-// The admin login (F-0016). Server-only. Two ways, chosen by the settings:
+// The admin login (F-0020). Server-only. Two ways, chosen by the settings:
 //
 // - Supabase Auth with an allow list, for a product with a database. The keys
 //   and the cookie stay on the server, the browser never talks to Supabase.

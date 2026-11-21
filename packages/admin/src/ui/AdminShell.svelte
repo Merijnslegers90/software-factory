@@ -65,7 +65,7 @@
 						>
 					</li>
 					<li>
-						<!-- A full page load: the 401 there makes the browser forget the password (F-0016). -->
+						<!-- A full page load: the 401 there makes the browser forget the password (F-0020). -->
 						<a href="{base}/logout" data-sveltekit-reload>{t.logout}</a>
 					</li>
 				</ul>
@@ -90,6 +90,7 @@
 		--ms-text: #1c1c1a;
 		--ms-muted: #5c5c57;
 		--ms-border: #dcdcd6;
+		--ms-input-border: #85857e;
 		--ms-warning-bg: #fff4d6;
 		--ms-error-bg: #fde8e6;
 		--ms-ok-bg: #e5f4e8;
@@ -116,6 +117,7 @@
 			--ms-text: #f0f0ec;
 			--ms-muted: #b3b3ac;
 			--ms-border: #3a3a36;
+			--ms-input-border: #8f8f88;
 			--ms-warning-bg: #3d3216;
 			--ms-error-bg: #44201c;
 			--ms-ok-bg: #1c3a24;
@@ -124,13 +126,17 @@
 		}
 	}
 
-	.ms-admin :global(a) {
-		color: inherit;
+	/* One focus ring for every block and for what the product puts inside the
+	   shell. It follows the text colour, so it stays visible whatever the
+	   brand colour is. */
+	.ms-admin :global(:focus-visible) {
+		outline: 3px solid var(--ms-text);
+		outline-offset: 2px;
 	}
 
-	.ms-admin :global(:focus-visible) {
-		outline: 3px solid var(--ms-accent);
-		outline-offset: 2px;
+	.brand,
+	.menu a {
+		color: inherit;
 	}
 
 	.inner {
@@ -209,6 +215,9 @@
 		min-height: 2.75rem;
 		padding: 0 0.25rem;
 		text-decoration: none;
+	}
+
+	.menu a:not([aria-current='page']) {
 		color: var(--ms-muted);
 	}
 

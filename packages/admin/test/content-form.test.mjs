@@ -78,7 +78,7 @@ test('prices are read the way people type them', () => {
 	]) {
 		assert.equal(parsePrice(input), want, String(input));
 	}
-	for (const bad of ['', 'gratis', '-1', '4,555', '1.000,00', -2, NaN, null]) {
+	for (const bad of ['', 'gratis', '-1', '4,555', '1.000,00', '4 50', -2, NaN, null]) {
 		assert.equal(parsePrice(bad), null, String(bad));
 	}
 	assert.equal(formatPrice(4.5), '4,50');
@@ -89,7 +89,7 @@ test('links are paths, anchors or http, mailto and tel addresses', () => {
 	for (const ok of ['/contact', '#menu', 'https://x.nl/a', 'mailto:a@b', 'tel:+31 6 1234']) {
 		assert.equal(isLink(ok), true, ok);
 	}
-	for (const bad of ['', 'contact', '//evil.com', 'javascript:alert(1)', 'http://', 'ftp://x']) {
+	for (const bad of ['', 'contact', '//evil.com', '/\\evil.com', '/\t/evil.com', '/a b', 'javascript:alert(1)', 'http://', 'ftp://x']) {
 		assert.equal(isLink(bad), false, bad);
 	}
 });
@@ -108,6 +108,11 @@ test('a file that no longer matches says where', () => {
 		{ ok: false, problem: 'mismatch', at: 'kaarten.0.prijzen.0.prijs' }
 	);
 	assert.equal(valuesFromFile(fields, []).ok, false);
+	// A key inside a list item that the fields do not name would be lost on saving.
+	assert.deepEqual(
+		valuesFromFile(fields, { ...file, kaarten: [{ naam: 'B', prijzen: [], foto: '/x.jpg' }] }),
+		{ ok: false, problem: 'mismatch', at: 'kaarten.0.foto' }
+	);
 	assert.equal(valuesFromFile(fields, { zichtbaar: 'ja' }).at, 'zichtbaar');
 });
 
@@ -156,6 +161,9 @@ test('every error is named by its field path', () => {
 		}
 	});
 	assert.deepEqual(checkValues(fields, '{kapot'), { ok: false, errors: { '': 'not-readable' } });
+	for (const notAnObject of [null, undefined, [], 'null', '[]', 3]) {
+		assert.deepEqual(checkValues(fields, notAnObject), { ok: false, errors: { '': 'not-readable' } });
+	}
 	assert.equal(checkValues(fields, { titel: 'x'.repeat(41), kaarten: [] }).errors.titel, 'too-long');
 });
 

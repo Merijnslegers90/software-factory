@@ -1,4 +1,4 @@
-// The rules around the admin login (F-0016): Supabase Auth with an allow list,
+// The rules around the admin login (F-0020): Supabase Auth with an allow list,
 // or HTTP Basic with a password per person. Pure, so they are tested without
 // Supabase or SvelteKit (F-0006). The calls to Supabase are in server.js, the
 // password hashes in password.js.
@@ -161,7 +161,7 @@ export function adminDecision({ url, method, contentType, origin, signedIn, path
 
 /**
  * The answer to a refusal, with `ADMIN_HEADERS` on it. The package chooses no
- * words (F-0016): the body is the project's own text from `responses`, or
+ * words (F-0020): the body is the project's own text from `responses`, or
  * empty when it passes none.
  *
  * - `unauthorized` (401) and `forbidden` (403), for both logins.
@@ -225,7 +225,7 @@ export function parseUsers(list) {
 }
 
 /**
- * Which login a product uses, from the settings it has (F-0016):
+ * Which login a product uses, from the settings it has (F-0020):
  * - `supabase` as soon as one of the two Supabase settings is filled. A half
  *   setup does not fall back to HTTP Basic: then the admin stays closed and
  *   names what is missing.

@@ -161,7 +161,8 @@ Dutch company and VAT numbers.
 ## Checks
 
 ```bash
-npm test                          # decisions, plugin, public, workflows
+npm ci                            # once: svelte, to render the admin blocks
+npm test                          # decisions, plugin, public, workflows, packages
 claude plugin validate .          # the marketplace
 claude plugin validate plugins/software-factory
 ```

@@ -1,6 +1,7 @@
 <script>
 	// One field of the form block, and for a list its items, each with its own
 	// fields. Used by AdminContentForm; it calls itself for nested lists.
+	import { tick } from 'svelte';
 	import AdminField from './AdminField.svelte';
 	import AdminFieldEditor from './AdminFieldEditor.svelte';
 	import { emptyItem, toFormValues } from '../content-form.js';
@@ -19,19 +20,36 @@
 	const id = $derived(`f-${path.replace(/[^\w-]/g, '-')}`);
 	const error = $derived(errors[path] ? (t.errors[errors[path]] ?? errors[path]) : undefined);
 
+	// After a change in the list, focus goes where the person can go on: the
+	// moved item's button, the next item, or the add button.
+	async function focus(target) {
+		await tick();
+		const element = document.getElementById(target);
+		if (element && !element.hasAttribute('disabled')) element.focus();
+		else document.getElementById(`${id}-remove-${target.split('-').at(-1)}`)?.focus();
+	}
+
 	function add() {
 		value = [...value, toFormValues(field.fields, emptyItem(field))];
+		focus(`${id}-remove-${value.length - 1}`);
 	}
 
 	function remove(i) {
 		value = value.filter((_, n) => n !== i);
+		focus(value.length === 0 ? `${id}-add` : `${id}-remove-${Math.min(i, value.length - 1)}`);
 	}
 
 	function move(i, by) {
 		const next = [...value];
 		[next[i], next[i + by]] = [next[i + by], next[i]];
 		value = next;
+		focus(`${id}-${by < 0 ? 'up' : 'down'}-${i + by}`);
 	}
+
+	const listDescribedby = $derived(
+		[field.hint ? `${id}-hint` : null, error ? `${id}-error` : null].filter(Boolean).join(' ') ||
+			undefined
+	);
 
 	function itemTitle(item, i) {
 		const named = field.titleKey ? item?.[field.titleKey] : '';
@@ -40,9 +58,9 @@
 </script>
 
 {#if field.type === 'list'}
-	<fieldset class="list" aria-describedby={error ? `${id}-error` : undefined}>
+	<fieldset class="list" aria-describedby={listDescribedby}>
 		<legend>{field.label}</legend>
-		{#if field.hint}<p class="hint">{field.hint}</p>{/if}
+		{#if field.hint}<p class="hint" id="{id}-hint">{field.hint}</p>{/if}
 		{#if error}<p class="error" id="{id}-error">{error}</p>{/if}
 		{#if value.length === 0}<p class="hint">{t.empty}</p>{/if}
 		<ol>
@@ -53,17 +71,19 @@
 						<span class="actions">
 							<button
 								type="button"
+								id="{id}-up-{i}"
 								onclick={() => move(i, -1)}
 								disabled={i === 0}
 								aria-label="{t.up}: {itemTitle(item, i)}">↑</button
 							>
 							<button
 								type="button"
+								id="{id}-down-{i}"
 								onclick={() => move(i, 1)}
 								disabled={i === value.length - 1}
 								aria-label="{t.down}: {itemTitle(item, i)}">↓</button
 							>
-							<button type="button" class="remove" onclick={() => remove(i)}
+							<button type="button" class="remove" id="{id}-remove-{i}" onclick={() => remove(i)}
 								>{t.remove}<span class="sr">: {itemTitle(item, i)}</span></button
 							>
 						</span>
@@ -74,15 +94,20 @@
 				</li>
 			{/each}
 		</ol>
-		<button type="button" class="add" onclick={add}
+		<button type="button" class="add" id="{id}-add" onclick={add}
 			>{t.add}<span class="sr">: {field.itemLabel ?? field.label}</span></button
 		>
 	</fieldset>
 {:else if field.type === 'toggle'}
 	<div class="toggle">
-		<input type="checkbox" {id} bind:checked={value} />
+		<input
+			type="checkbox"
+			{id}
+			bind:checked={value}
+			aria-describedby={field.hint ? `${id}-hint` : undefined}
+		/>
 		<label for={id}>{field.label}</label>
-		{#if field.hint}<p class="hint">{field.hint}</p>{/if}
+		{#if field.hint}<p class="hint" id="{id}-hint">{field.hint}</p>{/if}
 	</div>
 {:else}
 	<AdminField {id} label={field.label} hint={field.type === 'price' ? (field.hint ?? t.priceHint) : field.hint} {error}>

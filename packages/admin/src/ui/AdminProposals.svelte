@@ -3,7 +3,7 @@
 	// waits for a merge. Without the GitHub settings it says what is missing.
 	import AdminCard from './AdminCard.svelte';
 	import AdminMessage from './AdminMessage.svelte';
-	import { FORM_TEXT, PROPOSALS_TEXT, fill, joinNames, shortDate, withText } from './text.js';
+	import { PROPOSALS_TEXT, fill, joinNames, shortDate, withText } from './text.js';
 
 	/**
 	 * @type {{
@@ -20,7 +20,7 @@
 	{#if data.outcome === 'no-key'}
 		<AdminMessage tone="warning" text={fill(t.off, { missing: joinNames(data.missing) })} />
 	{:else if data.outcome !== 'ok'}
-		<AdminMessage tone="error" text={FORM_TEXT.outcomes[data.outcome] ?? data.outcome} />
+		<AdminMessage tone="error" text={t.outcomes[data.outcome] ?? data.outcome} />
 	{:else if data.proposals.length === 0}
 		<p class="none">{t.none}</p>
 	{:else}
@@ -60,8 +60,10 @@
 	}
 
 	li a {
+		display: inline-flex;
+		align-items: center;
 		font-weight: 600;
-		min-height: 1.75rem;
+		min-height: 2.75rem;
 	}
 
 	.when {

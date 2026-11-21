@@ -21,7 +21,6 @@ built per product. The spec is issue #31.
 
 **The login stays as F-0016 decided it:**
 
-
 - Every product logs in to its admin through `@merijnslegers/admin`, in one
   of two ways. **The settings choose the way:**
   - `SUPABASE_URL` or `SUPABASE_ANON_KEY` is set: **Supabase Auth**, with an
@@ -92,6 +91,10 @@ built per product. The spec is issue #31.
   export condition, and the product's SvelteKit 3 compiles them.
 - **Special editors** (a Markdown blog) stay the product's, built from the
   parts.
+- **This replaces what F-0015 and F-0018 say about the screen**: that the
+  screen, its words and its colours belong to the project. The rest of both
+  holds: how the visitor numbers are fetched and counted (F-0015), and how a
+  change becomes a pull request (F-0018).
 
 ## Consequences
 

@@ -23,7 +23,8 @@ const STUBS = {
 globalThis.__msPage = page;
 
 function stubUrl(name) {
-	const file = path.join(OUT, '_stubs', `${name.replace(/\W/g, '_')}.js`);
+	// One folder per process: the test files run in parallel.
+	const file = path.join(OUT, `_stubs-${process.pid}`, `${name.replace(/\W/g, '_')}.js`);
 	mkdirSync(path.dirname(file), { recursive: true });
 	writeFileSync(file, STUBS[name]);
 	return pathToFileURL(file).href;

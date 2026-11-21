@@ -43,7 +43,9 @@ export function contentFormAction(
 		/** Who saved, for the commit message; a function gets the request event. */
 		changedBy?: string | ((event: { locals: App.Locals }) => string | undefined);
 	}
-): (event: { request: Request; locals: App.Locals }) => Promise<SaveResult | unknown>;
+): (
+	event: { request: Request; locals: App.Locals }
+) => Promise<SaveResult | import('@sveltejs/kit').ActionFailure<SaveResult>>;
 
 export interface ProposalsData {
 	outcome: 'ok' | Exclude<GitHubOutcome, 'not-found'>;
