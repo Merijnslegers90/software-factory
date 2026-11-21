@@ -1,7 +1,7 @@
 // Renders the Svelte components of the packages on the server, for their
 // tests (F-0020). The products compile the source with SvelteKit; here the
 // compiler of the factory's own dev dependency does it, into .svelte-test/.
-// $app/state and $app/forms are replaced by small stand-ins.
+// $app/state, $app/forms and $app/navigation are replaced by small stand-ins.
 
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -17,7 +17,8 @@ export const page = { url: new URL('http://localhost/admin'), route: { id: '/adm
 
 const STUBS = {
 	'$app/state': `export const page = globalThis.__msPage;`,
-	'$app/forms': `export function enhance() { return { destroy() {} }; }`
+	'$app/forms': `export function enhance() { return { destroy() {} }; }`,
+	'$app/navigation': `export function beforeNavigate() {}`
 };
 
 globalThis.__msPage = page;

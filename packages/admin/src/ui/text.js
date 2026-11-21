@@ -44,6 +44,7 @@ export const FORM_TEXT = Object.freeze({
 	saved: 'Opgeslagen. Je voorstel staat klaar om te mergen.',
 	unchanged: 'Er was niets veranderd.',
 	viewProposal: 'Bekijk het voorstel',
+	leave: 'Je wijzigingen zijn nog niet opgeslagen. Toch weggaan?',
 	fixErrors: 'Niet opgeslagen: kijk naar de velden met een melding.',
 	priceHint: 'In euro, bijvoorbeeld 4,50',
 	errors: Object.freeze({
@@ -67,6 +68,11 @@ export const FORM_TEXT = Object.freeze({
 		mismatch:
 			'Het bestand past niet meer bij dit formulier ({at}). Opslaan staat uit, zodat er niets verloren gaat.'
 	})
+});
+
+export const CONTENT_TEXT = Object.freeze({
+	sections: 'Onderdelen',
+	proposal: 'voorstel open'
 });
 
 /** The defaults with the product's own words over them, one level deep for groups. */

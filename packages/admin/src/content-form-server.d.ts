@@ -54,3 +54,49 @@ export interface ProposalsData {
 }
 
 export function loadProposals(repo: ContentRepo): Promise<ProposalsData>;
+
+export interface ContentSection extends ContentFormOptions {
+	/** The tab's name, such as `Menu`. */
+	label: string;
+	/** The title of the pull request this section opens. */
+	title: string;
+}
+
+export interface ContentData {
+	content: {
+		sections: { key: string; label: string; href: string; proposal: boolean }[];
+		/** The key of the section on screen. */
+		active: string;
+		fields: Field[];
+		form: ContentFormData;
+	};
+}
+
+export interface ContentOptions {
+	/** Where the route is, `/admin/content` by default. */
+	base?: string;
+	/** The name of the optional route parameter, `section` by default (`[[section]]`). */
+	param?: string;
+	/** Who saved, for the commit message; a function gets the request event. */
+	changedBy?: string | ((event: { locals: App.Locals }) => string | undefined);
+}
+
+/**
+ * One Content page with a tab per section (#37). Throws when the list is not
+ * right: an empty list, a key or file twice, a key that is not a-z, 0-9 and
+ * -, or fields that checkFields refuses.
+ */
+export function defineContent(
+	repo: ContentRepo,
+	sections: ContentSection[],
+	options?: ContentOptions
+): {
+	load(event: { params: Record<string, string | undefined> }): Promise<ContentData>;
+	actions: {
+		default(event: {
+			request: Request;
+			locals: App.Locals;
+			params: Record<string, string | undefined>;
+		}): Promise<SaveResult | import('@sveltejs/kit').ActionFailure<SaveResult>>;
+	};
+};

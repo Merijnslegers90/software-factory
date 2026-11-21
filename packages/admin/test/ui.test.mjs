@@ -225,7 +225,7 @@ test('the types name every prop the blocks take, so a product can pass it', asyn
 	const { propsOf, typedPropsOf } = await import('../../../tests/svelte-types.mjs');
 	const blocks = {
 		'packages/admin/src/ui/index.d.ts': ['AdminShell', 'AdminOverview', 'AdminMessage', 'AdminCard', 'AdminField'],
-		'packages/admin/src/ui/github.d.ts': ['AdminProposals', 'AdminContentForm']
+		'packages/admin/src/ui/github.d.ts': ['AdminProposals', 'AdminContentForm', 'AdminContent']
 	};
 	for (const [dts, names] of Object.entries(blocks)) {
 		for (const name of names) {
@@ -248,4 +248,44 @@ test('the theme types name the same keys as the theme itself', async () => {
 	const body = dts.slice(dts.indexOf('interface AdminThemeValues {'), dts.indexOf('interface AdminTheme '));
 	const typed = [...body.matchAll(/^\s*(\w+)\?:/gm)].map((m) => m[1]);
 	assert.deepEqual(typed.sort(), Object.keys(THEME_KEYS).sort());
+});
+
+test('the Content page shows a tab per section, the active one marked, and its form', async () => {
+	const content = {
+		sections: [
+			{ key: 'menu', label: 'Menu', href: '/admin/content/menu', proposal: false },
+			{ key: 'contact', label: 'Contactgegevens', href: '/admin/content/contact', proposal: true }
+		],
+		active: 'menu',
+		fields,
+		form: data
+	};
+	const html = await renderComponent(ui('AdminContent'), { data: { content } });
+	assert.match(html, /<nav class="tabs[^"]*" aria-label="Onderdelen">/);
+	assert.match(html, /<a href="\/admin\/content\/menu" aria-current="page"[^>]*>/);
+	assert.doesNotMatch(html, /href="\/admin\/content\/contact" aria-current/);
+	assert.match(textOf(html), /Contactgegevens\s*voorstel open/);
+	assert.match(html, /id="f-titel"[^>]*value="Menu"/);
+
+	const own = await renderComponent(ui('AdminContent'), {
+		data: { content },
+		text: { sections: 'Delen', proposal: 'wacht op Merijn' }
+	});
+	assert.match(own, /aria-label="Delen"/);
+	assert.match(textOf(own), /wacht op Merijn/);
+});
+
+test('a Content page with one section has no tabs, just the form', async () => {
+	const html = await renderComponent(ui('AdminContent'), {
+		data: {
+			content: {
+				sections: [{ key: 'menu', label: 'Menu', href: '/admin/content/menu', proposal: false }],
+				active: 'menu',
+				fields,
+				form: data
+			}
+		}
+	});
+	assert.doesNotMatch(html, /class="tabs/);
+	assert.match(html, /id="f-titel"/);
 });

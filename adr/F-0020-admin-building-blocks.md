@@ -123,8 +123,9 @@ built per product. The spec is issue #31.
 
 - `packages/admin`: the login as in F-0016 (`src/server.js`, `src/rules.js`,
   `src/password.js`, `bin/admin.js`); `src/content-form.js` and
-  `src/content-form-server.js` for the form block; `src/ui/` for the
-  components. Tests in `test/`, including `content-form.test.mjs` and
+  `src/content-form-server.js` for the form block and the Content page with
+  a tab per section (`defineContent`, `AdminContent`, #37); `src/ui/` for
+  the components. Tests in `test/`, including `content-form.test.mjs` and
   `ui.test.mjs`.
 - `packages/analytics`: `src/visitors.js` and `src/ui/`, tested in
   `test/ui.test.mjs`.

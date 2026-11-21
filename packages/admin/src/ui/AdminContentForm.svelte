@@ -4,6 +4,7 @@
 	// whole value goes along as JSON in one field; the server checks it again.
 	import { untrack } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { beforeNavigate } from '$app/navigation';
 	import AdminFieldEditor from './AdminFieldEditor.svelte';
 	import AdminMessage from './AdminMessage.svelte';
 	import { toFormValues } from '../content-form.js';
@@ -24,7 +25,20 @@
 	// The form keeps its own copy, so a failed save keeps what was typed. It
 	// starts from the data once; after a save it is set again below.
 	let value = $state(untrack(() => toFormValues(fields, data.values)));
+	let saved = $state(untrack(() => JSON.stringify(value)));
 	let saving = $state(false);
+
+	// Leaving with changes that are not saved asks first (#37), also when
+	// switching to another tab of the Content page.
+	const dirty = $derived(data.canSave && JSON.stringify(value) !== saved);
+	beforeNavigate((navigation) => {
+		if (!dirty || saving) return;
+		if (navigation.type === 'leave') {
+			navigation.cancel();
+			return;
+		}
+		if (!confirm(t.leave)) navigation.cancel();
+	});
 
 	const errors = $derived(form?.errors ?? {});
 	const outcome = $derived(!data.canSave ? data.outcome : (form?.outcome ?? null));
@@ -45,7 +59,10 @@
 			saving = false;
 			// After a save, start from the saved version; after an error, keep the input.
 			await update({ reset: false, invalidateAll: result.type === 'success' });
-			if (result.type === 'success') value = toFormValues(fields, data.values);
+			if (result.type === 'success') {
+				value = toFormValues(fields, data.values);
+				saved = JSON.stringify(value);
+			}
 		};
 	}
 </script>
