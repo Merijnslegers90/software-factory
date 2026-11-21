@@ -82,7 +82,9 @@ test('the visitors block shows totals, the change, the top lists and the periods
 	assert.match(text, /Bezoekers 120 \+20% ten opzichte van de periode ervoor/);
 	assert.match(text, /\/menu-en-prijzen 90/);
 	assert.match(text, /Direct of onbekend 30/);
-	assert.match(html, /href="\?periode=30" aria-current="true"/);
+	assert.match(html, /href="\?periode=30" aria-current="true" data-sveltekit-reset="false"/);
+	// SvelteKit 3 replaced data-sveltekit-noscroll; the old name only warns.
+	assert.doesNotMatch(html, /noscroll|keepfocus/);
 	assert.match(html, /<table/);
 });
 
