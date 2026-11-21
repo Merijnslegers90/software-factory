@@ -332,7 +332,7 @@ test('the Content page opens the first section, or the one in the URL, with a ta
 	assert.equal(moved.sections[0].href, '/admin/inhoud/menu');
 });
 
-test('an unknown section is a 404', async () => {
+test('an unknown section asks for a 404 (the real 404 is in the product e2e)', async () => {
 	const repo = createContentRepo({ token: '', repo: '', allowedPaths: [path, contactPath] });
 	const content = defineContent(repo, sections);
 	await assert.rejects(content.load({ params: { section: 'prijzen' } }), (e) => {

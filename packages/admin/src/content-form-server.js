@@ -37,6 +37,7 @@ async function readSource(repo, { path, key, current }, open) {
  * The data for AdminContentForm: the values, the open proposal, and whether
  * saving is possible (and if not, why).
  */
+// `open` is internal, for defineContent, and not in the types.
 export async function loadContentForm(repo, { path, key, fields, current }, open) {
 	const source = await readSource(repo, { path, key, current }, open);
 	const read = source.data === null ? null : valuesFromFile(fields, source.data);
