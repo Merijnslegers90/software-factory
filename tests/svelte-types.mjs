@@ -10,10 +10,21 @@ export function propsOf(file) {
 	const source = readFileSync(file, 'utf8');
 	const match = source.match(/let\s*\{([\s\S]*?)\}\s*=\s*\$props\(\)/);
 	if (!match) return [];
-	return match[1]
-		.split(',')
-		.map((part) => part.trim().split(/[\s=:]/)[0])
-		.filter(Boolean);
+	// Split on commas at the top level only, so a default such as
+	// `show = { a: true, b: false }` stays one prop.
+	const names = [];
+	let level = 0;
+	let part = '';
+	for (const char of `${match[1]},`) {
+		if ('{([<'.includes(char)) level++;
+		if ('})]>'.includes(char)) level--;
+		if (char === ',' && level === 0) {
+			const name = part.trim().split(/[\s=:]/)[0];
+			if (name) names.push(name);
+			part = '';
+		} else part += char;
+	}
+	return names;
 }
 
 /** The prop names the .d.ts gives a component: `export const Name: Component<{ ... }>`. */

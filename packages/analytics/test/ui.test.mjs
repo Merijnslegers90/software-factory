@@ -115,6 +115,7 @@ test('the types name every prop the blocks take, so a product can pass it', asyn
 	for (const name of ['AdminVisitors', 'AdminVisitorsSummary']) {
 		const typed = typedPropsOf('packages/analytics/src/ui/index.d.ts', name);
 		assert.ok(typed, `${name} is not in the types`);
+		assert.ok(propsOf(`packages/analytics/src/ui/${name}.svelte`).length > 0, `${name}: no props found`);
 		assert.deepEqual(
 			propsOf(`packages/analytics/src/ui/${name}.svelte`).filter((prop) => !typed.includes(prop)),
 			[],

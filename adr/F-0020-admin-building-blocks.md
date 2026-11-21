@@ -113,7 +113,9 @@ built per product. The spec is issue #31.
 - A block's props change only in a major version.
 - The factory has a dev dependency for the first time: `svelte`, to render the
   components in their tests (`tests/svelte-render.mjs`). Axe runs in the
-  products, which have a browser.
+  products, which have a browser. The types of the blocks are written by
+  hand; a test compares them with the props each block takes
+  (`tests/svelte-types.mjs`).
 - Everything F-0016 says about the login holds unchanged, including its
   weaknesses with HTTP Basic.
 

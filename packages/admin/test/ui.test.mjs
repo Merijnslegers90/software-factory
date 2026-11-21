@@ -231,6 +231,7 @@ test('the types name every prop the blocks take, so a product can pass it', asyn
 		for (const name of names) {
 			const typed = typedPropsOf(dts, name);
 			assert.ok(typed, `${name} is not in ${dts}`);
+			assert.ok(propsOf(ui(name)).length > 0, `${name}: no props found to compare`);
 			assert.deepEqual(
 				propsOf(ui(name)).filter((prop) => !typed.includes(prop)),
 				[],
@@ -238,4 +239,13 @@ test('the types name every prop the blocks take, so a product can pass it', asyn
 			);
 		}
 	}
+});
+
+test('the theme types name the same keys as the theme itself', async () => {
+	const { readFileSync } = await import('node:fs');
+	const { THEME_KEYS } = await import('../src/ui/theme.js');
+	const dts = readFileSync('packages/admin/src/ui/index.d.ts', 'utf8');
+	const body = dts.slice(dts.indexOf('interface AdminThemeValues {'), dts.indexOf('interface AdminTheme '));
+	const typed = [...body.matchAll(/^\s*(\w+)\?:/gm)].map((m) => m[1]);
+	assert.deepEqual(typed.sort(), Object.keys(THEME_KEYS).sort());
 });
