@@ -82,7 +82,8 @@ built per product. The spec is issue #31.
   prop of a block.
 - **Look:** one calm style for every admin, light and dark following the
   device. A product passes its brand colour as `--admin-accent` (and the text
-  colour on it as `--admin-on-accent`) and its logo. The blocks bring their
+  colour on it as `--admin-on-accent`), its logo, and if the logo needs it a
+  colour for the bar at the top (`--admin-header-bg`, `--admin-header-text`). The blocks bring their
   own scoped CSS, so they need no Tailwind setup in the product.
 - **Phone first and accessible:** every block works on a narrow screen and by
   keyboard, with touch targets of at least 44 pixels, and passes axe against

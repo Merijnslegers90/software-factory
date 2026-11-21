@@ -347,7 +347,7 @@ it wants other ones through the `text` prop of a block.
 	let { children, data } = $props();
 </script>
 
-<div style="--admin-accent: #f2b705; --admin-on-accent: #000">
+<div style="--admin-accent: #f2b705; --admin-on-accent: #000; --admin-header-bg: #000; --admin-header-text: #fff">
 	<AdminShell
 		name="Frietwagen Someren"
 		logo="/images/logo.png"
@@ -362,6 +362,18 @@ it wants other ones through the `text` prop of a block.
 	</AdminShell>
 </div>
 ```
+
+What a product can set, and nothing more:
+
+| Variable              | What it colours                                          |
+| --------------------- | -------------------------------------------------------- |
+| `--admin-accent`      | Buttons, the current menu item, the chosen period, bars  |
+| `--admin-on-accent`   | The text on the accent                                   |
+| `--admin-header-bg`   | The bar at the top, for a logo that needs its own colour |
+| `--admin-header-text` | The text and links in that bar                           |
+
+The product's own styles for headings (a display font, wide letters) stay
+out of the blocks.
 
 Check the accent colour: `--admin-on-accent` is the text on it (buttons, the
 chosen period) and needs a contrast of 4.5:1 with it; the accent itself is

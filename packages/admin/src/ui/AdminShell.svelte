@@ -107,6 +107,8 @@
 			sans-serif;
 		font-size: 1rem;
 		line-height: 1.5;
+		letter-spacing: normal;
+		text-transform: none;
 		color-scheme: light;
 	}
 
@@ -139,14 +141,26 @@
 		color: inherit;
 	}
 
+	/* The product's own styles for headings (a display font, wide letters,
+	   capitals) stay out of the admin. */
+	.ms-admin :global(:where(h1, h2, h3, h4)) {
+		font-family: inherit;
+		letter-spacing: normal;
+		text-transform: none;
+		line-height: 1.3;
+	}
+
 	.inner {
 		max-width: 62rem;
 		margin: 0 auto;
 		padding: 0 1.25rem;
 	}
 
+	/* The bar can take the product's own colour, so a light logo stays
+	   visible: --admin-header-bg and --admin-header-text. */
 	.bar {
-		background: var(--ms-surface);
+		background: var(--admin-header-bg, var(--ms-surface));
+		color: var(--admin-header-text, var(--ms-text));
 		border-bottom: 1px solid var(--ms-border);
 	}
 
@@ -178,13 +192,13 @@
 		font-size: 0.8rem;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: var(--ms-muted);
+		color: var(--admin-header-text, var(--ms-muted));
 	}
 
 	.toggle {
 		min-height: 2.75rem;
 		padding: 0 1rem;
-		border: 1px solid var(--ms-border);
+		border: 1px solid currentColor;
 		border-radius: var(--ms-radius);
 		background: transparent;
 		color: inherit;
@@ -218,12 +232,11 @@
 	}
 
 	.menu a:not([aria-current='page']) {
-		color: var(--ms-muted);
+		color: var(--admin-header-text, var(--ms-muted));
 	}
 
-	.menu a:hover,
 	.menu a[aria-current='page'] {
-		color: var(--ms-text);
+		color: inherit;
 	}
 
 	.menu a[aria-current='page'] {
