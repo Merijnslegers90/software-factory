@@ -220,3 +220,32 @@ test('a fixed list can be changed but not grown, shrunk or moved', async () => {
 	assert.doesNotMatch(html, /id="f-kaarten-remove-0"/);
 	assert.match(html, /id="f-kaarten-0-regels-add"/);
 });
+
+test('the types name every prop the blocks take, so a product can pass it', async () => {
+	const { propsOf, typedPropsOf } = await import('../../../tests/svelte-types.mjs');
+	const blocks = {
+		'packages/admin/src/ui/index.d.ts': ['AdminShell', 'AdminOverview', 'AdminMessage', 'AdminCard', 'AdminField'],
+		'packages/admin/src/ui/github.d.ts': ['AdminProposals', 'AdminContentForm']
+	};
+	for (const [dts, names] of Object.entries(blocks)) {
+		for (const name of names) {
+			const typed = typedPropsOf(dts, name);
+			assert.ok(typed, `${name} is not in ${dts}`);
+			assert.ok(propsOf(ui(name)).length > 0, `${name}: no props found to compare`);
+			assert.deepEqual(
+				propsOf(ui(name)).filter((prop) => !typed.includes(prop)),
+				[],
+				`${name}: props missing from ${dts}`
+			);
+		}
+	}
+});
+
+test('the theme types name the same keys as the theme itself', async () => {
+	const { readFileSync } = await import('node:fs');
+	const { THEME_KEYS } = await import('../src/ui/theme.js');
+	const dts = readFileSync('packages/admin/src/ui/index.d.ts', 'utf8');
+	const body = dts.slice(dts.indexOf('interface AdminThemeValues {'), dts.indexOf('interface AdminTheme '));
+	const typed = [...body.matchAll(/^\s*(\w+)\?:/gm)].map((m) => m[1]);
+	assert.deepEqual(typed.sort(), Object.keys(THEME_KEYS).sort());
+});
