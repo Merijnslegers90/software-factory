@@ -34,7 +34,7 @@
 						<a
 							href="?{data.param}={days}"
 							aria-current={days === data.days ? 'true' : undefined}
-							data-sveltekit-noscroll>{fill(t.days, { n: days })}</a
+							data-sveltekit-reset="false">{fill(t.days, { n: days })}</a
 						>
 					</li>
 				{/each}
