@@ -220,3 +220,22 @@ test('a fixed list can be changed but not grown, shrunk or moved', async () => {
 	assert.doesNotMatch(html, /id="f-kaarten-remove-0"/);
 	assert.match(html, /id="f-kaarten-0-regels-add"/);
 });
+
+test('the types name every prop the blocks take, so a product can pass it', async () => {
+	const { propsOf, typedPropsOf } = await import('../../../tests/svelte-types.mjs');
+	const blocks = {
+		'packages/admin/src/ui/index.d.ts': ['AdminShell', 'AdminOverview', 'AdminMessage', 'AdminCard', 'AdminField'],
+		'packages/admin/src/ui/github.d.ts': ['AdminProposals', 'AdminContentForm']
+	};
+	for (const [dts, names] of Object.entries(blocks)) {
+		for (const name of names) {
+			const typed = typedPropsOf(dts, name);
+			assert.ok(typed, `${name} is not in ${dts}`);
+			assert.deepEqual(
+				propsOf(ui(name)).filter((prop) => !typed.includes(prop)),
+				[],
+				`${name}: props missing from ${dts}`
+			);
+		}
+	}
+});

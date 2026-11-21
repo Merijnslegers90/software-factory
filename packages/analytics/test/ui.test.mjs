@@ -109,3 +109,16 @@ test('a product switches parts of the visitors block off', async () => {
 	assert.doesNotMatch(html, /\?periode=/);
 	assert.match(textOf(html), /Meest bekeken pagina/);
 });
+
+test('the types name every prop the blocks take, so a product can pass it', async () => {
+	const { propsOf, typedPropsOf } = await import('../../../tests/svelte-types.mjs');
+	for (const name of ['AdminVisitors', 'AdminVisitorsSummary']) {
+		const typed = typedPropsOf('packages/analytics/src/ui/index.d.ts', name);
+		assert.ok(typed, `${name} is not in the types`);
+		assert.deepEqual(
+			propsOf(`packages/analytics/src/ui/${name}.svelte`).filter((prop) => !typed.includes(prop)),
+			[],
+			`${name}: props missing from the types`
+		);
+	}
+});
