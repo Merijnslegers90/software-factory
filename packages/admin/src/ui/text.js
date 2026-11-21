@@ -55,7 +55,8 @@ export const FORM_TEXT = Object.freeze({
 		'not-a-list': 'Dit is geen lijst.',
 		'too-few': 'Er zijn te weinig items.',
 		'too-many': 'Er zijn te veel items.',
-		'not-readable': 'Het formulier kwam niet goed aan. Probeer het opnieuw.'
+		'not-readable': 'Het formulier kwam niet goed aan. Probeer het opnieuw.',
+		'fixed-list': 'Hier kun je niets toevoegen of weghalen. Laad de pagina opnieuw.'
 	}),
 	outcomes: Object.freeze({
 		'no-key': 'Opslaan staat uit: {missing} ontbreekt.',

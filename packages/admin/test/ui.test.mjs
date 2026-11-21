@@ -173,3 +173,50 @@ test('the form after a save, with an open proposal, and without its settings', a
 	});
 	assert.match(textOf(mismatch), /past niet meer bij dit formulier \(regels\.2\.prijs\)/);
 });
+
+test('a theme becomes CSS variables, light and dark, and refuses what could break out', async () => {
+	const { themeStyle, schemeClass } = await import('../src/ui/theme.js');
+	assert.equal(
+		themeStyle({ accent: '#f2b705', headingFont: "'Oswald', sans-serif", dark: { bg: '#000' } }),
+		"--admin-accent: #f2b705; --admin-heading-font: 'Oswald', sans-serif; --admin-dark-bg: #000"
+	);
+	assert.equal(themeStyle({ accent: '', text: null }), '');
+	assert.equal(themeStyle(), '');
+	assert.throws(() => themeStyle({ colour: 'red' }), /unknown key colour/);
+	assert.throws(() => themeStyle({ accent: 'red; } body { display: none' }), /not allowed/);
+	assert.throws(() => themeStyle({ font: 'x</style>' }), /not allowed/);
+	assert.equal(schemeClass({ scheme: 'dark' }), 'dark');
+	assert.equal(schemeClass({}), 'auto');
+});
+
+test('the shell carries the theme, and the site link can go', async () => {
+	const html = await renderComponent(ui('AdminShell'), {
+		name: 'Frietwagen Someren',
+		theme: { accent: '#f2b705', onAccent: '#000', bg: '#000', text: '#fff', scheme: 'dark' },
+		showSiteLink: false
+	});
+	assert.match(html, /class="ms-admin dark[^"]*" style="--admin-accent: #f2b705; --admin-on-accent: #000; --admin-bg: #000; --admin-text: #fff"/);
+	assert.doesNotMatch(textOf(html), /Bekijk site/);
+	assert.match(textOf(html), /Uitloggen/);
+});
+
+test('a fixed list can be changed but not grown, shrunk or moved', async () => {
+	const { checkFields, fixedListsKept } = await import('../src/content-form.js');
+	const list = checkFields([
+		{ key: 'kaarten', type: 'list', label: 'K', fixed: true, fields: [
+			{ key: 'naam', type: 'text', label: 'N' },
+			{ key: 'regels', type: 'list', label: 'R', fields: [{ key: 'p', type: 'price', label: 'P' }] }
+		] }
+	]);
+	const before = { kaarten: [{ naam: 'A', regels: [] }, { naam: 'B', regels: [] }] };
+	assert.equal(fixedListsKept(list, before, { kaarten: [{ naam: 'X', regels: [{ p: 1 }] }, { naam: 'B', regels: [] }] }), true);
+	assert.equal(fixedListsKept(list, before, { kaarten: [{ naam: 'A', regels: [] }] }), false);
+	assert.throws(() => checkFields([{ key: 't', type: 'text', label: 'T', fixed: true }]), /only a list/);
+	const html = await renderComponent(ui('AdminContentForm'), {
+		data: { values: before, proposal: null, canSave: true, outcome: 'ok', mismatchAt: null, missing: [] },
+		fields: list
+	});
+	assert.doesNotMatch(html, /id="f-kaarten-add"/);
+	assert.doesNotMatch(html, /id="f-kaarten-remove-0"/);
+	assert.match(html, /id="f-kaarten-0-regels-add"/);
+});

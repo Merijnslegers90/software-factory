@@ -274,3 +274,15 @@ test('the action returns a fail with the errors', async () => {
 	assert.equal(result.status, 400);
 	assert.deepEqual(result.data.errors, { titel: 'required' });
 });
+
+test('the server refuses a fixed list that grew, even when the browser allowed it', async () => {
+	const fixed = checkFields([
+		{ key: 'kaarten', type: 'list', label: 'K', fixed: true, fields: [{ key: 'naam', type: 'text', label: 'N' }] }
+	]);
+	const github = fakeGitHub({ files: { [path]: fileContent({ kaarten: [{ naam: 'A' }] }) } });
+	const saved = await saveContentForm(repoFor(github), {
+		path, key: 'menu', title: 'x', fields: fixed, value: { kaarten: [{ naam: 'A' }, { naam: 'B' }] }
+	});
+	assert.deepEqual(saved, { ok: false, errors: { '': 'fixed-list' } });
+	assert.equal(github.pulls.length, 0);
+});

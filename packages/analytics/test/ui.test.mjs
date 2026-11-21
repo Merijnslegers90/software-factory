@@ -101,3 +101,11 @@ test('the summary is left out without the settings, and links to the full block'
 	assert.match(textOf(html), /Bezoekers: deze maand Bezoekers 120 \+20%/);
 	assert.match(html, /href="\/admin\/bezoekers"/);
 });
+
+test('a product switches parts of the visitors block off', async () => {
+	const data = await loadVisitors(fakeAnalytics(), new URL('http://x/?periode=30'));
+	const html = await renderComponent(ui('AdminVisitors'), { data, show: { referrers: false, periods: false } });
+	assert.doesNotMatch(textOf(html), /Waar bezoekers vandaan komen/);
+	assert.doesNotMatch(html, /\?periode=/);
+	assert.match(textOf(html), /Meest bekeken pagina/);
+});

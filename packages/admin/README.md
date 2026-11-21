@@ -344,33 +344,63 @@ it wants other ones through the `text` prop of a block.
 ```svelte
 <script lang="ts">
 	import { AdminShell } from '@merijnslegers/admin/ui';
+	import { theme } from '#lib/admin/theme';
 	let { children, data } = $props();
 </script>
 
-<div style="--admin-accent: #f2b705; --admin-on-accent: #000; --admin-header-bg: #000; --admin-header-text: #fff">
-	<AdminShell
-		name="Frietwagen Someren"
-		logo="/images/logo.png"
-		nav={[
-			{ href: '/admin', label: 'Overzicht' },
-			{ href: '/admin/prijzen', label: 'Prijzen' },
-			{ href: '/admin/bezoekers', label: 'Bezoekers' }
-		]}
-		message={data.message}
-	>
-		{@render children()}
-	</AdminShell>
-</div>
+<AdminShell
+	name="Frietwagen Someren"
+	logo="/images/logo.png"
+	{theme}
+	nav={[
+		{ href: '/admin', label: 'Overzicht' },
+		{ href: '/admin/prijzen', label: 'Prijzen' },
+		{ href: '/admin/bezoekers', label: 'Bezoekers' }
+	]}
+	message={data.message}
+>
+	{@render children()}
+</AdminShell>
 ```
 
-What a product can set, and nothing more:
+**The theme.** A product sets its own look in one place, through `theme`
+on `AdminShell`: colours, fonts and rounding. What it leaves out keeps the
+calm default. The layout of the blocks is shared; there is no way to restyle
+one block, and what a product misses becomes a new key here, for every
+product.
 
-| Variable              | What it colours                                          |
-| --------------------- | -------------------------------------------------------- |
-| `--admin-accent`      | Buttons, the current menu item, the chosen period, bars  |
-| `--admin-on-accent`   | The text on the accent                                   |
-| `--admin-header-bg`   | The bar at the top, for a logo that needs its own colour |
-| `--admin-header-text` | The text and links in that bar                           |
+```ts
+// src/lib/admin/theme.ts
+export const theme = {
+	scheme: 'dark', // 'auto' follows the device (the default), 'light' or 'dark' fixes one
+	accent: '#f2b705',
+	onAccent: '#000',
+	headingFont: "'Oswald Variable', sans-serif",
+	headingTransform: 'uppercase',
+	dark: { bg: '#000', surface: '#141414', text: '#fff', muted: '#c4c4c4', border: '#333' }
+};
+```
+
+| Key                       | What it sets                                               |
+| ------------------------- | ---------------------------------------------------------- |
+| `bg`, `surface`           | The page and the cards                                     |
+| `text`, `muted`           | Text, and the lighter text of hints and labels             |
+| `border`, `inputBorder`   | Lines, and the edge of an input (3:1 against its background) |
+| `accent`, `onAccent`      | Buttons, the current page, bars; and the text on them      |
+| `headerBg`, `headerText`  | The bar at the top, for a logo that needs its own colour   |
+| `error`, `errorBg`, `warningBg`, `okBg` | Messages                                     |
+| `font`, `headingFont`, `headingTransform` | The fonts, and capitals for headings       |
+| `radius`                  | The rounding of corners                                    |
+| `dark`                    | The same keys for the dark version                         |
+
+A value may hold colours, font names and lengths only; anything that could
+end the declaration throws. The fonts must be loaded by the product.
+
+**Options.** A block can leave parts out: `AdminShell` takes
+`showSiteLink={false}`, `AdminVisitors` takes `show={{ referrers: false }}`
+(also `series`, `pages`, `periods`), and a list field takes `fixed: true` to
+allow changing its items but not adding, removing or moving them. The server
+checks that too.
 
 The product's own styles for headings (a display font, wide letters) stay
 out of the blocks.

@@ -70,7 +70,7 @@
 	{/if}
 
 	{#if errors['']}
-		<AdminMessage tone="error" text={t.errors['not-readable']} />
+		<AdminMessage tone="error" text={t.errors[errors['']] ?? t.errors['not-readable']} />
 	{/if}
 
 	<fieldset class="fields" disabled={!data.canSave || saving}>

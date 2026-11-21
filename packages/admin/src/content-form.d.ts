@@ -17,6 +17,8 @@ export interface Field {
 	itemLabel?: string;
 	/** `list`: the field whose value names an item in the form. */
 	titleKey?: string;
+	/** `list`: items can be changed, but not added, removed or moved. */
+	fixed?: boolean;
 	/** `list`. */
 	min?: number;
 	max?: number;
@@ -36,7 +38,8 @@ export type FieldError =
 	| 'not-a-list'
 	| 'too-few'
 	| 'too-many'
-	| 'not-readable';
+	| 'not-readable'
+	| 'fixed-list';
 
 export const FIELD_TYPES: readonly FieldType[];
 export function checkFields(fields: Field[], where?: string): Field[];
@@ -55,3 +58,4 @@ export function checkValues(
 export function mergeIntoFile(data: unknown, fields: Field[], values: Values): Record<string, unknown>;
 export function fileContent(data: unknown): string;
 export function toFormValues(fields: Field[], values: Values | null | undefined): Values;
+export function fixedListsKept(fields: Field[], before: Values | null | undefined, after: Values): boolean;

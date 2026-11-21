@@ -13,6 +13,8 @@ type TextOverride = { [K in keyof VisitorsText]?: K extends 'reasons' ? Partial<
 export const AdminVisitors: Component<{
 	/** From loadVisitors in the page's load. */
 	data: VisitorsData;
+	/** Parts to switch off, such as `{ referrers: false }`; all are on by default. */
+	show?: { series?: boolean; pages?: boolean; referrers?: boolean; periods?: boolean };
 	text?: TextOverride;
 }>;
 

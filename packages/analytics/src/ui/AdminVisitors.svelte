@@ -8,10 +8,14 @@
 	/**
 	 * @type {{
 	 *   data: import('../visitors.js').VisitorsData,
+	 *   show?: { series?: boolean, pages?: boolean, referrers?: boolean, periods?: boolean },
 	 *   text?: Partial<typeof VISITORS_TEXT>
 	 * }}
 	 */
-	let { data, text } = $props();
+	let { data, show = {}, text } = $props();
+
+	// Every part is on unless the product switches it off.
+	const on = $derived({ series: true, pages: true, referrers: true, periods: true, ...show });
 
 	const t = $derived(withText(VISITORS_TEXT, text));
 	const maxSeries = $derived(Math.max(0, ...data.series.map((p) => p.visitors)));
@@ -22,6 +26,7 @@
 <section class="visitors" aria-labelledby="ms-visitors-title">
 	<div class="head">
 		<h2 id="ms-visitors-title">{t.title}</h2>
+		{#if on.periods}
 		<nav aria-label={t.period}>
 			<ul class="periods">
 				{#each data.periods as days (days)}
@@ -35,6 +40,7 @@
 				{/each}
 			</ul>
 		</nav>
+		{/if}
 	</div>
 
 	{#if data.reason}
@@ -56,6 +62,7 @@
 		{#if data.totals.visitors === 0}
 			<p class="message">{t.none}</p>
 		{:else}
+			{#if on.series}
 			<div class="block">
 				<h3>{data.granularity === 'week' ? t.seriesWeek : t.series}</h3>
 				<div class="chart" aria-hidden="true">
@@ -75,8 +82,11 @@
 					</table>
 				</details>
 			</div>
+			{/if}
 
+			{#if on.pages || on.referrers}
 			<div class="lists">
+				{#if on.pages}
 				<div class="block">
 					<h3>{t.pages}</h3>
 					<ol class="top">
@@ -88,6 +98,8 @@
 						{/each}
 					</ol>
 				</div>
+				{/if}
+				{#if on.referrers}
 				<div class="block">
 					<h3>{t.referrers}</h3>
 					<ol class="top">
@@ -99,7 +111,9 @@
 						{/each}
 					</ol>
 				</div>
+				{/if}
 			</div>
+			{/if}
 		{/if}
 	{/if}
 </section>

@@ -80,11 +80,17 @@ built per product. The spec is issue #31.
   through `propose()` of F-0018; the owner merges.
 - **Words:** Dutch by default. A product replaces any text through the `text`
   prop of a block.
-- **Look:** one calm style for every admin, light and dark following the
-  device. A product passes its brand colour as `--admin-accent` (and the text
-  colour on it as `--admin-on-accent`), its logo, and if the logo needs it a
-  colour for the bar at the top (`--admin-header-bg`, `--admin-header-text`). The blocks bring their
-  own scoped CSS, so they need no Tailwind setup in the product.
+- **Look: the product's own style through a theme**, without custom work
+  per block. The layout of the blocks is shared; a product sets in one place
+  (`theme` on `AdminShell`) its colours, its fonts for text and headings, the
+  rounding, and a light and a dark version or one of them. What it leaves out
+  keeps a calm default. What a product misses becomes a new key in the
+  theme, for every product. The blocks bring their own scoped CSS, so they
+  need no Tailwind setup in the product, and the product's own heading styles
+  do not reach them.
+- **Features per product:** a product chooses its pages, its blocks and the
+  fields of its forms, and switches parts of a block off through options
+  (the referrers in the visitors, adding and removing items in a list).
 - **Phone first and accessible:** every block works on a narrow screen and by
   keyboard, with touch targets of at least 44 pixels, and passes axe against
   WCAG 2.2 AA in the product's e2e tests.
@@ -102,8 +108,8 @@ built per product. The spec is issue #31.
 - A product without a database gets an admin with overview, visitors and
   content forms in a few files. A fix or improvement to a block reaches every
   product with a new version of the package.
-- The admins look alike. A product cannot restyle a block beyond its accent
-  colour and logo; that is the point.
+- Every admin has the same layout in the product's own look. A product
+  cannot restyle one block beyond the theme; that is the point.
 - A block's props change only in a major version.
 - The factory has a dev dependency for the first time: `svelte`, to render the
   components in their tests (`tests/svelte-render.mjs`). Axe runs in the

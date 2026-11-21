@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import AdminMessage from './AdminMessage.svelte';
 	import { SHELL_TEXT, isCurrent, withText } from './text.js';
+	import { schemeClass, themeStyle } from './theme.js';
 
 	/**
 	 * @type {{
@@ -15,18 +16,33 @@
 	 *   siteUrl?: string,
 	 *   message?: string,
 	 *   base?: string,
+	 *   theme?: Record<string, any>,
+	 *   showSiteLink?: boolean,
 	 *   text?: Partial<typeof SHELL_TEXT>,
 	 *   children?: import('svelte').Snippet
 	 * }}
 	 */
-	let { name, logo, nav = [], siteUrl = '/', message, base = '/admin', text, children } = $props();
+	let {
+		name,
+		logo,
+		nav = [],
+		siteUrl = '/',
+		message,
+		base = '/admin',
+		theme,
+		showSiteLink = true,
+		text,
+		children
+	} = $props();
 
 	const t = $derived(withText(SHELL_TEXT, text));
+	const style = $derived(themeStyle(theme));
+	const scheme = $derived(schemeClass(theme));
 	let open = $state(false);
 	const path = $derived(page.url.pathname);
 </script>
 
-<div class="ms-admin">
+<div class="ms-admin {scheme}" style={style || undefined}>
 	<header class="bar">
 		<div class="inner">
 			<a class="brand" href={base}>
@@ -59,11 +75,13 @@
 							>
 						</li>
 					{/each}
-					<li>
-						<a href={siteUrl} target="_blank" rel="noopener"
-							>{t.viewSite} <span aria-hidden="true">↗</span><span class="sr">{t.newWindow}</span></a
-						>
-					</li>
+					{#if showSiteLink}
+						<li>
+							<a href={siteUrl} target="_blank" rel="noopener"
+								>{t.viewSite} <span aria-hidden="true">↗</span><span class="sr">{t.newWindow}</span></a
+							>
+						</li>
+					{/if}
 					<li>
 						<!-- A full page load: the 401 there makes the browser forget the password (F-0020). -->
 						<a href="{base}/logout" data-sveltekit-reload>{t.logout}</a>
@@ -82,29 +100,36 @@
 </div>
 
 <style>
+	/* The theme (theme.js): every colour, the fonts and the rounding come from
+	   --admin-* variables the product sets, with a calm default for each. The
+	   dark version reads --admin-dark-*; scheme 'light' or 'dark' fixes one. */
 	.ms-admin {
 		--ms-accent: var(--admin-accent, #2f5bd3);
 		--ms-on-accent: var(--admin-on-accent, #ffffff);
-		--ms-bg: #f6f6f4;
-		--ms-surface: #ffffff;
-		--ms-text: #1c1c1a;
-		--ms-muted: #5c5c57;
-		--ms-border: #dcdcd6;
-		--ms-input-border: #85857e;
-		--ms-warning-bg: #fff4d6;
-		--ms-error-bg: #fde8e6;
-		--ms-ok-bg: #e5f4e8;
-		--ms-error: #a3261b;
-		--ms-radius: 0.6rem;
-		min-height: 100vh;
-		background: var(--ms-bg);
-		color: var(--ms-text);
-		font-family:
+		--ms-radius: var(--admin-radius, 0.6rem);
+		--ms-bg: var(--admin-bg, #f6f6f4);
+		--ms-surface: var(--admin-surface, #ffffff);
+		--ms-text: var(--admin-text, #1c1c1a);
+		--ms-muted: var(--admin-muted, #5c5c57);
+		--ms-border: var(--admin-border, #dcdcd6);
+		--ms-input-border: var(--admin-input-border, #85857e);
+		--ms-warning-bg: var(--admin-warning-bg, #fff4d6);
+		--ms-error-bg: var(--admin-error-bg, #fde8e6);
+		--ms-ok-bg: var(--admin-ok-bg, #e5f4e8);
+		--ms-error: var(--admin-error, #a3261b);
+		--ms-font: var(
+			--admin-font,
 			system-ui,
 			-apple-system,
 			'Segoe UI',
 			Roboto,
-			sans-serif;
+			sans-serif
+		);
+		--ms-heading-font: var(--admin-heading-font, var(--ms-font));
+		min-height: 100vh;
+		background: var(--ms-bg);
+		color: var(--ms-text);
+		font-family: var(--ms-font);
 		font-size: 1rem;
 		line-height: 1.5;
 		letter-spacing: normal;
@@ -113,19 +138,39 @@
 	}
 
 	@media (prefers-color-scheme: dark) {
-		.ms-admin {
-			--ms-bg: #151514;
-			--ms-surface: #1f1f1d;
-			--ms-text: #f0f0ec;
-			--ms-muted: #b3b3ac;
-			--ms-border: #3a3a36;
-			--ms-input-border: #8f8f88;
-			--ms-warning-bg: #3d3216;
-			--ms-error-bg: #44201c;
-			--ms-ok-bg: #1c3a24;
-			--ms-error: #ffb3aa;
+		.ms-admin.auto {
+			--ms-accent: var(--admin-dark-accent, var(--admin-accent, #2f5bd3));
+			--ms-on-accent: var(--admin-dark-on-accent, var(--admin-on-accent, #ffffff));
+			--ms-radius: var(--admin-dark-radius, var(--admin-radius, 0.6rem));
+			--ms-bg: var(--admin-dark-bg, #151514);
+			--ms-surface: var(--admin-dark-surface, #1f1f1d);
+			--ms-text: var(--admin-dark-text, #f0f0ec);
+			--ms-muted: var(--admin-dark-muted, #b3b3ac);
+			--ms-border: var(--admin-dark-border, #3a3a36);
+			--ms-input-border: var(--admin-dark-input-border, #8f8f88);
+			--ms-warning-bg: var(--admin-dark-warning-bg, #3d3216);
+			--ms-error-bg: var(--admin-dark-error-bg, #44201c);
+			--ms-ok-bg: var(--admin-dark-ok-bg, #1c3a24);
+			--ms-error: var(--admin-dark-error, #ffb3aa);
 			color-scheme: dark;
 		}
+	}
+
+	.ms-admin.dark {
+		--ms-accent: var(--admin-dark-accent, var(--admin-accent, #2f5bd3));
+		--ms-on-accent: var(--admin-dark-on-accent, var(--admin-on-accent, #ffffff));
+		--ms-radius: var(--admin-dark-radius, var(--admin-radius, 0.6rem));
+		--ms-bg: var(--admin-dark-bg, #151514);
+		--ms-surface: var(--admin-dark-surface, #1f1f1d);
+		--ms-text: var(--admin-dark-text, #f0f0ec);
+		--ms-muted: var(--admin-dark-muted, #b3b3ac);
+		--ms-border: var(--admin-dark-border, #3a3a36);
+		--ms-input-border: var(--admin-dark-input-border, #8f8f88);
+		--ms-warning-bg: var(--admin-dark-warning-bg, #3d3216);
+		--ms-error-bg: var(--admin-dark-error-bg, #44201c);
+		--ms-ok-bg: var(--admin-dark-ok-bg, #1c3a24);
+		--ms-error: var(--admin-dark-error, #ffb3aa);
+		color-scheme: dark;
 	}
 
 	/* One focus ring for every block and for what the product puts inside the
@@ -144,9 +189,9 @@
 	/* The product's own styles for headings (a display font, wide letters,
 	   capitals) stay out of the admin. */
 	.ms-admin :global(:where(h1, h2, h3, h4)) {
-		font-family: inherit;
+		font-family: var(--ms-heading-font);
 		letter-spacing: normal;
-		text-transform: none;
+		text-transform: var(--admin-heading-transform, none);
 		line-height: 1.3;
 	}
 

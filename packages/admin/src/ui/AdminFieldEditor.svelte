@@ -68,6 +68,7 @@
 				<li class="item">
 					<div class="item-head">
 						<span class="item-title">{itemTitle(item, i)}</span>
+						{#if !field.fixed}
 						<span class="actions">
 							<button
 								type="button"
@@ -87,6 +88,7 @@
 								>{t.remove}<span class="sr">: {itemTitle(item, i)}</span></button
 							>
 						</span>
+						{/if}
 					</div>
 					{#each field.fields as sub (sub.key)}
 						<AdminFieldEditor field={sub} bind:value={item[sub.key]} path="{path}.{i}.{sub.key}" {errors} {t} />
@@ -94,9 +96,11 @@
 				</li>
 			{/each}
 		</ol>
+		{#if !field.fixed}
 		<button type="button" class="add" id="{id}-add" onclick={add}
 			>{t.add}<span class="sr">: {field.itemLabel ?? field.label}</span></button
 		>
+		{/if}
 	</fieldset>
 {:else if field.type === 'toggle'}
 	<div class="toggle">

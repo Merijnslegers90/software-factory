@@ -3,7 +3,7 @@
 // through propose() of F-0018. Server only.
 
 import { branchName } from './github-rules.js';
-import { checkValues, fileContent, mergeIntoFile, valuesFromFile } from './content-form.js';
+import { checkValues, fileContent, fixedListsKept, mergeIntoFile, valuesFromFile } from './content-form.js';
 
 /**
  * Where the form starts: the version in the open proposal for `key` when
@@ -55,6 +55,9 @@ export async function saveContentForm(repo, { path, key, title, fields, value, c
 	if (source.outcome !== 'ok') return { ok: false, outcome: source.outcome };
 	const read = valuesFromFile(fields, source.data);
 	if (!read.ok) return { ok: false, outcome: 'mismatch' };
+	if (!fixedListsKept(fields, read.values, checked.values)) {
+		return { ok: false, errors: { '': 'fixed-list' } };
+	}
 	const content = fileContent(mergeIntoFile(source.data, fields, checked.values));
 	const result = await repo.propose({ key, title, files: [{ path, content }], changedBy });
 	if (result.outcome !== 'ok') return { ok: false, outcome: result.outcome };

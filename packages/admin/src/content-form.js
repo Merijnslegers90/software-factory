@@ -22,6 +22,9 @@ export function checkFields(fields, where = 'fields') {
 		}
 		if (!field.label) throw new Error(`content-form: ${where}.${field.key} has no label.`);
 		if (field.type === 'list') checkFields(field.fields, `${where}.${field.key}`);
+		if (field.fixed && field.type !== 'list') {
+			throw new Error(`content-form: ${where}.${field.key} is fixed, but only a list can be.`);
+		}
 	}
 	return fields;
 }
@@ -219,4 +222,21 @@ export function toFormValues(fields, values) {
 			return [field.key, value ?? emptyValue(field)];
 		})
 	);
+}
+
+/**
+ * True when every list marked `fixed` has as many items as before, at every
+ * level. A fixed list can be changed but not grown, shrunk or reordered from
+ * the admin; the server checks it, because the browser can be changed.
+ */
+export function fixedListsKept(fields, before, after) {
+	for (const field of fields) {
+		if (field.type !== 'list') continue;
+		const a = before?.[field.key] ?? [];
+		const b = after?.[field.key] ?? [];
+		if (field.fixed && a.length !== b.length) return false;
+		const n = Math.min(a.length, b.length);
+		for (let i = 0; i < n; i++) if (!fixedListsKept(field.fields, a[i], b[i])) return false;
+	}
+	return true;
 }
