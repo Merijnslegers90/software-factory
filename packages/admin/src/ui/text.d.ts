@@ -18,11 +18,13 @@ export const FORM_TEXT: Readonly<
 		| 'saved'
 		| 'unchanged'
 		| 'viewProposal'
+		| 'leave'
 		| 'fixErrors'
 		| 'priceHint',
 		string
 	> & { errors: Readonly<Record<string, string>>; outcomes: Readonly<Record<string, string>> }
 >;
+export const CONTENT_TEXT: Readonly<Record<'sections' | 'proposal', string>>;
 export function withText<T extends object>(defaults: T, text?: Partial<T> | null): T;
 export function fill(text: string, values?: Record<string, unknown>): string;
 export function joinNames(names: string[]): string;

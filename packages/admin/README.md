@@ -493,6 +493,63 @@ export const actions = {
   list then fails at once, in the tests, instead of in the admin.
 - One form per page: the ids of the fields come from their keys.
 
+**The Content page** puts the forms together under one nav item, with a tab
+per section (#37). The product decides which sections there are; the package
+brings the tabs, the form per tab and the saving. Each section is a JSON file
+with its fields and saves on its own, as a proposal on `admin/<key>`:
+
+```ts
+// src/lib/server/content.ts
+import { defineContent } from '@merijnslegers/admin/content-form-server';
+import { repo } from '#lib/server/repo';
+import menu from '#lib/content/menu.json';
+import contact from '#lib/content/contact.json';
+import { contactFields, menuFields } from '#lib/admin/velden';
+
+export const content = defineContent(
+	repo,
+	[
+		{ key: 'menu', label: 'Menu', path: 'src/lib/content/menu.json', fields: menuFields, current: menu, title: 'Menu bijgewerkt' },
+		{ key: 'contact', label: 'Contactgegevens', path: 'src/lib/content/contact.json', fields: contactFields, current: contact, title: 'Contactgegevens bijgewerkt' }
+	],
+	{ changedBy: (event) => event.locals.admin?.email }
+);
+```
+
+```ts
+// src/routes/admin/content/[[section]]/+page.server.ts
+import { content } from '#lib/server/content';
+
+export const load = content.load;
+export const actions = content.actions;
+```
+
+```svelte
+<!-- src/routes/admin/content/[[section]]/+page.svelte -->
+<script lang="ts">
+	import { AdminContent } from '@merijnslegers/admin/github/ui';
+
+	let { data, form } = $props();
+</script>
+
+<h1>Content</h1>
+<AdminContent {data} {form} />
+```
+
+- `/admin/content` opens the first section, `/admin/content/<key>` another;
+  an unknown key is a 404. Another place or parameter name goes in the
+  options: `{ base: '/admin/inhoud', param: 'onderdeel' }`.
+- A tab with an open proposal says so. The open proposals are asked once
+  per page, not once per tab.
+- With one section there is no tab bar, just the form.
+- A section whose file no longer matches its fields stops only that tab.
+- `defineContent` throws when the server starts if the list has a mistake:
+  no sections, a key or file twice, a key that is not `a-z`, `0-9` and `-`,
+  no label or title, or fields that `checkFields` refuses.
+- The form asks before leaving with changes that are not saved, on this page
+  and on a form of its own.
+- Put each path in `allowedPaths` of the content repo.
+
 **Accessible:** every block works by keyboard and on a narrow screen, with
 touch targets of 44 pixels. Put the admin pages in the product's
 accessibility test, after logging in with a test user from `.env.example`.

@@ -66,12 +66,15 @@ built per product. The spec is issue #31.
     logout, one message), `AdminOverview` (facts and links), and the parts
     `AdminMessage`, `AdminCard` and `AdminField`.
   - `@merijnslegers/admin/github/ui`: `AdminProposals` (the open pull
-    requests of F-0018) and `AdminContentForm`, the form block.
+    requests of F-0018), `AdminContentForm`, the form block, and
+    `AdminContent`, one Content page with a tab per section the product
+    lists (#37).
   - `@merijnslegers/analytics/ui`: `AdminVisitors` and `AdminVisitorsSummary`
     (F-0015).
 - **A server function next to each block** prepares its data in one call
   (`loadVisitors`, `loadVisitorsSummary`, `loadProposals`, `loadContentForm`),
-  and `contentFormAction` saves the form. A page is a few lines.
+  and `contentFormAction` saves the form. `defineContent` gives the load and
+  actions of the Content page. A page is a few lines.
 - **The form block** fills one JSON file in the repo from fields the product
   describes: short text, long text, a price in euros, on and off, a link, and
   lists of items with their own fields. It starts from an open proposal, says
@@ -123,8 +126,9 @@ built per product. The spec is issue #31.
 
 - `packages/admin`: the login as in F-0016 (`src/server.js`, `src/rules.js`,
   `src/password.js`, `bin/admin.js`); `src/content-form.js` and
-  `src/content-form-server.js` for the form block; `src/ui/` for the
-  components. Tests in `test/`, including `content-form.test.mjs` and
+  `src/content-form-server.js` for the form block and the Content page with
+  a tab per section (`defineContent`, `AdminContent`, #37); `src/ui/` for
+  the components. Tests in `test/`, including `content-form.test.mjs` and
   `ui.test.mjs`.
 - `packages/analytics`: `src/visitors.js` and `src/ui/`, tested in
   `test/ui.test.mjs`.

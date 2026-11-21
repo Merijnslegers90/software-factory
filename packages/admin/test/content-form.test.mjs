@@ -11,7 +11,7 @@ import {
 	parsePrice,
 	valuesFromFile
 } from '../src/content-form.js';
-import { contentFormAction, loadContentForm, saveContentForm } from '../src/content-form-server.js';
+import { contentFormAction, defineContent, loadContentForm, saveContentForm } from '../src/content-form-server.js';
 import { createContentRepo } from '../src/github.js';
 import { fakeGitHub } from './fake-github.mjs';
 
@@ -285,4 +285,98 @@ test('the server refuses a fixed list that grew, even when the browser allowed i
 	});
 	assert.deepEqual(saved, { ok: false, errors: { '': 'fixed-list' } });
 	assert.equal(github.pulls.length, 0);
+});
+
+const contactPath = 'src/lib/content/contact.json';
+const contactFields = [{ key: 'telefoon', type: 'text', label: 'Telefoon', required: true }];
+const sections = [
+	{ key: 'menu', label: 'Menu', path, fields, current: file, title: 'Menu bijgewerkt' },
+	{ key: 'contact', label: 'Contact', path: contactPath, fields: contactFields, current: { telefoon: '0612345678' }, title: 'Contact bijgewerkt' }
+];
+
+test('defineContent refuses a list with a mistake, when the server starts', () => {
+	const repo = createContentRepo({ token: '', repo: '', allowedPaths: [path] });
+	assert.throws(() => defineContent(repo, []), /at least one section/);
+	assert.throws(() => defineContent(repo, [sections[0], { ...sections[1], key: 'menu' }]), /key "menu" is there twice/);
+	assert.throws(() => defineContent(repo, [sections[0], { ...sections[1], path }]), /is there twice/);
+	assert.throws(() => defineContent(repo, [{ ...sections[0], key: 'Menu kaart' }]), /not a valid key/);
+	assert.throws(() => defineContent(repo, [{ ...sections[0], key: 'menu-' }]), /not a valid key/);
+	assert.throws(() => defineContent(repo, [{ ...sections[0], label: ' ' }]), /no label/);
+	assert.throws(() => defineContent(repo, [{ ...sections[0], title: '' }]), /no title/);
+	assert.throws(() => defineContent(repo, [{ ...sections[0], fields: [{ key: 'x', type: 'kleur' }] }]));
+});
+
+test('the Content page opens the first section, or the one in the URL, with a tab for each', async () => {
+	const repo = createContentRepo({ token: '', repo: '', allowedPaths: [path, contactPath] });
+	const content = defineContent(repo, sections);
+	const first = (await content.load({ params: {} })).content;
+	assert.equal(first.active, 'menu');
+	assert.deepEqual(
+		first.sections.map((s) => [s.key, s.label, s.href, s.proposal]),
+		[
+			['menu', 'Menu', '/admin/content/menu', false],
+			['contact', 'Contact', '/admin/content/contact', false]
+		]
+	);
+	assert.equal(first.form.values.titel, 'Menu');
+	assert.equal(first.form.outcome, 'no-key');
+	assert.deepEqual(first.fields, fields);
+
+	const second = (await content.load({ params: { section: 'contact' } })).content;
+	assert.equal(second.active, 'contact');
+	assert.equal(second.form.values.telefoon, '0612345678');
+
+	const other = defineContent(repo, sections, { base: '/admin/inhoud/', param: 'onderdeel' });
+	const moved = (await other.load({ params: { onderdeel: 'contact' } })).content;
+	assert.equal(moved.active, 'contact');
+	assert.equal(moved.sections[0].href, '/admin/inhoud/menu');
+});
+
+test('an unknown section asks for a 404 (the real 404 is in the product e2e)', async () => {
+	const repo = createContentRepo({ token: '', repo: '', allowedPaths: [path, contactPath] });
+	const content = defineContent(repo, sections);
+	await assert.rejects(content.load({ params: { section: 'prijzen' } }), (e) => {
+		// With @sveltejs/kit this is its 404; without it in the factory, the import fails.
+		return e?.status === 404 || /@sveltejs\/kit/.test(String(e));
+	});
+});
+
+test('each section saves on its own branch, and its tab shows the open proposal', async () => {
+	const github = fakeGitHub({ files: { [path]: fileContent(file), [contactPath]: fileContent({ telefoon: '0612345678' }) } });
+	const repo = createContentRepo({
+		token: 'github_pat_test',
+		repo: 'acme/site',
+		allowedPaths: [path, contactPath],
+		fetch: github.fetch
+	});
+	const content = defineContent(repo, sections);
+	const saved = await saveContentForm(repo, { ...sections[1], value: { telefoon: '0687654321' } });
+	assert.equal(saved.proposal.branch, 'admin/contact');
+	assert.equal(JSON.parse(github.filesOn('admin/contact')[contactPath]).telefoon, '0687654321');
+	assert.equal(github.filesOn('admin/contact')[path], fileContent(file));
+
+	const before = github.calls.filter((c) => c.path.startsWith('/pulls')).length;
+	const page = (await content.load({ params: {} })).content;
+	assert.deepEqual(page.sections.map((s) => s.proposal), [false, true]);
+	assert.equal(page.form.proposal, null);
+	assert.equal(page.form.canSave, true);
+	// The open proposals are asked once per load, not once per tab.
+	assert.equal(github.calls.filter((c) => c.path.startsWith('/pulls')).length - before, 1);
+
+	const contact = (await content.load({ params: { section: 'contact' } })).content;
+	assert.equal(contact.form.values.telefoon, '0687654321');
+	assert.equal(contact.form.proposal.branch, 'admin/contact');
+});
+
+test('a section whose file no longer matches stops only that tab', async () => {
+	const github = fakeGitHub({ files: { [path]: fileContent({ ...file, zichtbaar: 'ja' }), [contactPath]: fileContent({ telefoon: '0612345678' }) } });
+	const repo = createContentRepo({
+		token: 'github_pat_test',
+		repo: 'acme/site',
+		allowedPaths: [path, contactPath],
+		fetch: github.fetch
+	});
+	const content = defineContent(repo, sections);
+	assert.equal((await content.load({ params: {} })).content.form.outcome, 'mismatch');
+	assert.equal((await content.load({ params: { section: 'contact' } })).content.form.canSave, true);
 });
