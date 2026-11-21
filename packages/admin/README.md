@@ -509,7 +509,7 @@ tests. A project's own tests use the same rules without Supabase, for instance
 for its own screen names:
 
 ```ts
-// F-0016
+// F-0020
 import { adminPaths, safeReturnPath } from '@merijnslegers/admin/rules';
 
 const paths = adminPaths({ login: '/admin/inloggen', password: '/admin/wachtwoord' });
