@@ -7,7 +7,10 @@ export interface ContentFormOptions {
 	/** One proposal per topic: the branch is `admin/<key>`. */
 	key: string;
 	fields: Field[];
-	/** The file as the site was built with it, shown when GitHub is not set up. */
+	/**
+	 * The file as the site was built with it: shown when GitHub is not set up,
+	 * and where the form starts when the file is not on GitHub yet.
+	 */
 	current?: unknown;
 }
 
