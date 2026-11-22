@@ -55,7 +55,11 @@ can write them. In the root layout:
 	const business = localBusiness(site, details);
 	const seo = $derived(
 		page.error
-			? { title: 'Pagina niet gevonden', description: '', noindex: true }
+			? {
+					title: page.status === 404 ? 'Pagina niet gevonden' : 'Er ging iets mis',
+					description: '',
+					noindex: true
+				}
 			: page.data.seo
 	);
 </script>
@@ -124,8 +128,20 @@ export function GET() {
 
 - The list of pages comes from the content: every public page, as a path or
   `{ path, lastmod }`. Not the admin, not a page that is switched off.
+- Give `lastmod` only when the date really changes with the content, such as
+  the date in a blog's frontmatter. A date that stays put, such as one copied
+  from an old CMS, is worse than none: leave it out.
 - A product with more paths to keep out passes `robots(site, { disallow })`.
 - Remove a hand-written `static/sitemap.xml` or `static/robots.txt`.
+
+## 5a. A page that goes away
+
+A page that was public stays in search results and in links elsewhere for a
+while. Give its path a permanent redirect (301) to the page that comes
+closest, usually the home, instead of a 404, and take it out of
+`e2e/pages.ts`. In SvelteKit that is `redirect(301, '/')` in the load that
+would have served it, or in a hook. Add a test that the old path answers 301
+with the new location.
 
 ## 6. The fixed test
 
