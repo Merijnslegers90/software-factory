@@ -1,6 +1,6 @@
 {
 	"name": "@merijnslegers/admin",
-	"version": "0.6.1",
+	"version": "0.6.2",
 	"description": "The admin of the software factory: the login (Supabase Auth or HTTP Basic per person), the access rules and headers, content changes through a pull request with a form block, the admin building blocks as Svelte components, and image resizing in the browser.",
 	"license": "MIT",
 	"type": "module",
