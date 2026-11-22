@@ -58,12 +58,21 @@ export function createContentRepo(options) {
 		}
 		if (response.status === 404 && notFound) return notFound;
 		if (!response.ok) {
-			let outcome = outcomeFromStatus(response.status, response.headers.get('x-ratelimit-remaining'));
+			let outcome = outcomeFromStatus(
+				response.status,
+				response.headers.get('x-ratelimit-remaining')
+			);
+			// GitHub's secondary rate limit is a 403 with retry-after: wait, not a key problem.
+			if (response.status === 403 && response.headers.get('retry-after')) outcome = 'unavailable';
 			// A token that reads but may not write: the most likely mistake when
 			// it is made, so it gets its own message.
-			if (outcome === 'key-refused' && response.status === 403 && method !== 'GET') outcome = 'no-write';
+			if (outcome === 'key-refused' && response.status === 403 && method !== 'GET') {
+				outcome = 'no-write';
+			}
 			// The answer, never the token, so a refusal can be traced in the logs.
-			console.warn(`Admin: GitHub answered ${response.status} to ${method} ${path || '/'} (${outcome}).`);
+			console.warn(
+				`Admin: GitHub answered ${response.status} to ${method} ${path || '/'} (${outcome}).`
+			);
 			throw new Refused(outcome);
 		}
 		try {
@@ -196,7 +205,8 @@ export function createContentRepo(options) {
 			// Git cannot have a branch `admin/<key>` next to a branch `admin`: then
 			// every proposal fails, until that branch is deleted.
 			if (existing === NOT_FOUND) {
-				const blocking = await github('GET', `/git/ref/${encodePath(`heads/${BRANCH_PREFIX.replace(/\/$/, '')}`)}`, null, {
+				const blockingRef = `heads/${BRANCH_PREFIX.replace(/\/$/, '')}`;
+				const blocking = await github('GET', `/git/ref/${encodePath(blockingRef)}`, null, {
 					notFound: NOT_FOUND
 				});
 				if (blocking !== NOT_FOUND && !Array.isArray(blocking)) return { outcome: 'branch-blocked' };
