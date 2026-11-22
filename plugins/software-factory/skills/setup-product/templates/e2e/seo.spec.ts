@@ -78,3 +78,10 @@ test('robots.txt names the sitemap on the fixed domain', async ({ request }) => 
 	expect(response.status()).toBe(200);
 	expect(await response.text()).toContain(`Sitemap: ${origin}/sitemap.xml`);
 });
+
+test('a page that does not exist is a 404 and stays out of the index', async ({ page }) => {
+	const response = await page.goto('/this-page-does-not-exist');
+	expect(response?.status()).toBe(404);
+	const robots = await page.locator('head meta[name="robots"]').getAttribute('content');
+	expect(robots ?? '', 'noindex on a 404').toContain('noindex');
+});

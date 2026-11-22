@@ -38,6 +38,8 @@ one user no longer holds it back. The spec is issue #32.
   print) get `noindex` and the `X-Robots-Tag` header (`NOINDEX_HEADERS`); 404
   pages get `noindex`. None of them is in the sitemap. `robots.txt` keeps
   `/admin` and `/api` out.
+- **A page that goes away** gets a permanent redirect (301) to the page that
+  comes closest, so links elsewhere and search results do not end on a 404.
 - **Sitemap and `robots.txt`** come from `sitemap()` and `robots()` of the
   package, built from the fixed domain and the product's list of public pages.
 - **Structured data** goes through `jsonLd()`, which writes the complete
