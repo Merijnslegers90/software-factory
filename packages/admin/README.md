@@ -486,6 +486,9 @@ export const actions = {
   refused with the path where it went wrong; nothing is overwritten.
 - Without `ADMIN_GITHUB_TOKEN` or `ADMIN_GITHUB_REPO` the form shows `current`
   and says what is missing; saving is off (F-0005).
+- A file that is not on GitHub yet, such as on the preview of the pull request
+  that adds it, starts from `current`. Without `current` the form starts
+  empty, for a file that is new.
 - A key inside a list item that the fields do not name counts as a mismatch,
   because saving would lose it. At the top of the file such keys are kept.
 - A file that does not exist yet starts empty, and saving creates it.
