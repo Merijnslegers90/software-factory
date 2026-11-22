@@ -58,9 +58,13 @@ export function createContentRepo(options) {
 		}
 		if (response.status === 404 && notFound) return notFound;
 		if (!response.ok) {
-			throw new Refused(
-				outcomeFromStatus(response.status, response.headers.get('x-ratelimit-remaining'))
-			);
+			let outcome = outcomeFromStatus(response.status, response.headers.get('x-ratelimit-remaining'));
+			// A token that reads but may not write: the most likely mistake when
+			// it is made, so it gets its own message.
+			if (outcome === 'key-refused' && response.status === 403 && method !== 'GET') outcome = 'no-write';
+			// The answer, never the token, so a refusal can be traced in the logs.
+			console.warn(`Admin: GitHub answered ${response.status} to ${method} ${path || '/'} (${outcome}).`);
+			throw new Refused(outcome);
 		}
 		try {
 			return await response.json();
@@ -189,6 +193,14 @@ export function createContentRepo(options) {
 			const existing = await github('GET', `/git/ref/${encodePath(`heads/${branch}`)}`, null, {
 				notFound: NOT_FOUND
 			});
+			// Git cannot have a branch `admin/<key>` next to a branch `admin`: then
+			// every proposal fails, until that branch is deleted.
+			if (existing === NOT_FOUND) {
+				const blocking = await github('GET', `/git/ref/${encodePath(`heads/${BRANCH_PREFIX.replace(/\/$/, '')}`)}`, null, {
+					notFound: NOT_FOUND
+				});
+				if (blocking !== NOT_FOUND && !Array.isArray(blocking)) return { outcome: 'branch-blocked' };
+			}
 			const open = existing === NOT_FOUND ? null : await openPullFor(branch);
 			// A branch whose pull request was merged or closed starts again from the base.
 			const parent = open

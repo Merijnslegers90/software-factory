@@ -62,6 +62,10 @@ export const FORM_TEXT = Object.freeze({
 	outcomes: Object.freeze({
 		'no-key': 'Opslaan staat uit: {missing} ontbreekt.',
 		'key-refused': 'GitHub weigert de sleutel. Er is een nieuwe nodig.',
+		'no-write':
+			'De sleutel mag lezen maar niet schrijven. Zet bij het token Contents en Pull requests op lezen en schrijven.',
+		'branch-blocked':
+			'Er staat een branch "admin" in de repo. Die houdt elk voorstel tegen; verwijder hem op GitHub.',
 		'not-allowed': 'Dit bestand mag de admin niet aanpassen.',
 		conflict: 'Iemand anders sloeg tegelijk iets op. Probeer het opnieuw.',
 		unavailable: 'GitHub is nu niet bereikbaar. Probeer het straks opnieuw.',

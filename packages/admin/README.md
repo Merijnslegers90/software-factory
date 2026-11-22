@@ -325,7 +325,13 @@ if (result.outcome !== 'ok') return fail(503, { outcome: result.outcome });
   `openProposals()` lists the open pull requests from `admin/` branches.
 - Every call returns an outcome code, never throws for GitHub's sake:
   `ok`, `no-key`, `key-refused`, `not-allowed`, `conflict`, `unavailable`,
-  and `not-found` for `readFile`. The words belong to the project.
+  and `not-found` for `readFile`. `propose` can also give `no-write` (the
+  token reads but may not write: give Contents and Pull requests read and
+  write) and `branch-blocked` (see below). The words belong to the project.
+- Each refusal is logged with GitHub's status, the method and the path,
+  never the token, so it can be traced in the logs of the host.
+- **Never name a branch `admin`.** Git cannot have `admin/<key>` next to it,
+  so every proposal would fail with `branch-blocked` until it is deleted.
 - Without the token or the repo, `enabled` is false, nothing goes to GitHub,
   and `missingSettings()` names what is missing.
 - A file over 1 MB is refused: the module is for text.
