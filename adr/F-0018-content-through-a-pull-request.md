@@ -44,7 +44,8 @@ after the merge.
   passes it. In a public repo that is a name, not an address.
 - **Branches starting with `admin/` belong to the admin.** A branch with an
   open pull request only moves forward; one without is reset from the base
-  branch when its key is saved again.
+  branch when its key is saved again. No branch is ever named `admin` itself:
+  git cannot have `admin/<key>` next to it, so it would block every proposal.
 - **This does not replace the database.** F-0017 still decides which kind a
   product is. Name, price, stock and orders of a product with a shop stay in
   its database, because they change through what customers do, not through a

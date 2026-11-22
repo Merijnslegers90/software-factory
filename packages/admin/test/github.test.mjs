@@ -419,3 +419,22 @@ test('a token that reads but may not write gets its own outcome, and the answer 
 		console.warn = warn;
 	}
 });
+
+test('a 403 with retry-after is GitHub asking to wait, not a refused key', async () => {
+	const github = fakeGitHub({ files: { 'src/lib/content/site.json': '{}\n' } });
+	github.answer(({ method }) =>
+		method === 'POST' ? new Response('{}', { status: 403, headers: { 'retry-after': '60' } }) : null
+	);
+	const warn = console.warn;
+	console.warn = () => {};
+	try {
+		const result = await repoWith(github).propose({
+			key: 'sitegegevens',
+			title: 'Sitegegevens',
+			files: [{ path: 'src/lib/content/site.json', content: '{"a":1}\n' }]
+		});
+		assert.equal(result.outcome, 'unavailable');
+	} finally {
+		console.warn = warn;
+	}
+});
