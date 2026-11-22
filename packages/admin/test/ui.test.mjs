@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { page, renderComponent, textOf } from '../../../tests/svelte-render.mjs';
 import { FORM_TEXT, fill, isCurrent, joinNames, shortDate, withText } from '../src/ui/text.js';
+import { readFileSync } from 'node:fs';
 
 // F-0020: the admin blocks render with their data and without their
 // settings, in Dutch unless the product passes its own words. Axe runs on
@@ -288,4 +289,10 @@ test('a Content page with one section has no tabs, just the form', async () => {
 	});
 	assert.doesNotMatch(html, /class="tabs/);
 	assert.match(html, /id="f-titel"/);
+});
+
+test('the shell gives headings a size of their own, so a reset in the product does not flatten them', () => {
+	const source = readFileSync(ui('AdminShell'), 'utf8');
+	assert.match(source, /:where\(h1\)\)\s*\{[^}]*font-size: 1\.75rem/);
+	assert.match(source, /:where\(h2\)\)\s*\{[^}]*font-size: 1\.25rem/);
 });
