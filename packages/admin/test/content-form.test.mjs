@@ -380,3 +380,35 @@ test('a section whose file no longer matches stops only that tab', async () => {
 	assert.equal((await content.load({ params: {} })).content.form.outcome, 'mismatch');
 	assert.equal((await content.load({ params: { section: 'contact' } })).content.form.canSave, true);
 });
+
+test('a file that is not on GitHub yet starts from the file the site was built with', async () => {
+	// Such as on the preview of the pull request that adds the file.
+	const github = fakeGitHub({ files: {} });
+	const repo = createContentRepo({ token: 'github_pat_test', repo: 'acme/site', allowedPaths: [path], fetch: github.fetch });
+	const data = await loadContentForm(repo, { path, key: 'prijzen', fields, current: file });
+	assert.equal(data.outcome, 'ok');
+	assert.equal(data.canSave, true);
+	assert.equal(data.values.titel, 'Menu');
+	assert.equal(data.values.kaarten.length, file.kaarten.length);
+
+	const fresh = await loadContentForm(repo, { path, key: 'prijzen', fields });
+	assert.equal(fresh.outcome, 'ok');
+	assert.equal(fresh.values.kaarten.length, 0);
+});
+
+test('saving a file that is not on GitHub yet proposes current with the change, not an empty file', async () => {
+	const github = fakeGitHub({ files: {} });
+	const repo = createContentRepo({ token: 'github_pat_test', repo: 'acme/site', allowedPaths: [path], fetch: github.fetch });
+	const saved = await saveContentForm(repo, {
+		path,
+		key: 'prijzen',
+		title: 'Prijzen bijgewerkt',
+		fields,
+		current: file,
+		value: { ...file, titel: 'Nieuw menu' }
+	});
+	assert.equal(saved.ok, true);
+	const proposed = JSON.parse(github.filesOn('admin/prijzen')[path]);
+	assert.equal(proposed.titel, 'Nieuw menu');
+	assert.equal(proposed.kaarten.length, file.kaarten.length);
+});

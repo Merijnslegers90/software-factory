@@ -101,7 +101,8 @@ export function commitMessage({ title, changedBy }) {
 /**
  * The outcome for an answer from GitHub that was not a success:
  * - `key-refused`: 401, or 403 that is not a rate limit; the token expired,
- *   was revoked, or lacks a permission. Also a 404 where the repo itself
+ *   was revoked, or lacks a permission (a 403 on a write becomes `no-write`
+ *   in github.js). Also a 404 where the repo itself
  *   should exist, because GitHub answers 404 for a repo a token cannot see.
  * - `conflict`: 409 or 422; the branch moved while writing.
  * - `unavailable`: a rate limit (429, or 403 with no requests left), a 5xx,

@@ -24,7 +24,10 @@ async function readSource(repo, { path, key, current }, open) {
 	if (open.outcome !== 'ok') return { outcome: open.outcome, data: current ?? null, proposal: null };
 	const proposal = open.proposals.find((p) => p.branch === branchName(key)) ?? null;
 	const file = await repo.readFile(path, proposal ? { ref: proposal.branch } : undefined);
-	if (file.outcome === 'not-found') return { outcome: 'ok', data: {}, proposal };
+	// Not on GitHub yet, such as before the change that adds the file is
+	// merged: start from the file the site was built with, never from an
+	// empty form that would save an empty file. Empty only for a new file.
+	if (file.outcome === 'not-found') return { outcome: 'ok', data: current ?? {}, proposal };
 	if (file.outcome !== 'ok') return { outcome: file.outcome, data: current ?? null, proposal };
 	try {
 		return { outcome: 'ok', data: JSON.parse(file.content), proposal };

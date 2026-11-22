@@ -325,7 +325,13 @@ if (result.outcome !== 'ok') return fail(503, { outcome: result.outcome });
   `openProposals()` lists the open pull requests from `admin/` branches.
 - Every call returns an outcome code, never throws for GitHub's sake:
   `ok`, `no-key`, `key-refused`, `not-allowed`, `conflict`, `unavailable`,
-  and `not-found` for `readFile`. The words belong to the project.
+  and `not-found` for `readFile`. `propose` can also give `no-write` (the
+  token reads but may not write: give Contents and Pull requests read and
+  write) and `branch-blocked` (see below). The words belong to the project.
+- Each refusal is logged with GitHub's status, the method and the path,
+  never the token, so it can be traced in the logs of the host.
+- **Never name a branch `admin`.** Git cannot have `admin/<key>` next to it,
+  so every proposal would fail with `branch-blocked` until it is deleted.
 - Without the token or the repo, `enabled` is false, nothing goes to GitHub,
   and `missingSettings()` names what is missing.
 - A file over 1 MB is refused: the module is for text.
@@ -486,9 +492,12 @@ export const actions = {
   refused with the path where it went wrong; nothing is overwritten.
 - Without `ADMIN_GITHUB_TOKEN` or `ADMIN_GITHUB_REPO` the form shows `current`
   and says what is missing; saving is off (F-0005).
+- A file that is not on GitHub yet starts from `current`, or empty without
+  it; saving creates it. On the preview of the pull request that adds the
+  file, merge that pull request first: a proposal saved there adds the same
+  file, and the second merge then conflicts.
 - A key inside a list item that the fields do not name counts as a mismatch,
   because saving would lose it. At the top of the file such keys are kept.
-- A file that does not exist yet starts empty, and saving creates it.
 - Call `checkFields(fields)` where the fields are defined: a wrong field
   list then fails at once, in the tests, instead of in the admin.
 - One form per page: the ids of the fields come from their keys.

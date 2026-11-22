@@ -6,11 +6,21 @@ export type { ProposedFile };
  * - `no-key`: the token or repo is missing; nothing was sent (F-0005).
  * - `key-refused`: GitHub refused the token (expired, revoked, a missing permission, or no access to the repo).
  * - `not-allowed`: a path outside `allowedPaths`, a file over 1 MB, or a key with nothing usable.
+ * - `no-write`: `propose` only; the token reads but may not write (Contents or Pull requests not on read and write).
+ * - `branch-blocked`: `propose` only; a branch named `admin` exists, so no branch `admin/<key>` can be made. Delete it.
  * - `conflict`: the branch moved while writing; try again.
  * - `unavailable`: GitHub was slow, down or rate limited.
  * - `not-found`: `readFile` only; the file is not on the base branch.
  */
-export type GitHubOutcome = 'no-key' | 'key-refused' | 'not-allowed' | 'conflict' | 'unavailable' | 'not-found';
+export type GitHubOutcome =
+	| 'no-key'
+	| 'key-refused'
+	| 'no-write'
+	| 'branch-blocked'
+	| 'not-allowed'
+	| 'conflict'
+	| 'unavailable'
+	| 'not-found';
 
 export interface Proposal {
 	number: number;

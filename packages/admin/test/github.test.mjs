@@ -367,3 +367,55 @@ test('a token with a new line at the end still works', async () => {
 	assert.equal((await repo.readFile('src/lib/content/site.json')).outcome, 'ok');
 	assert.equal(github.calls[0].headers.Authorization, 'Bearer github_pat_test');
 });
+
+test('a branch named admin blocks every proposal, and says so', async () => {
+	const github = fakeGitHub({ files: { 'src/lib/content/site.json': '{}\n' } });
+	github.refs.set('admin', github.refs.get('main'));
+	const result = await repoWith(github).propose({
+		key: 'sitegegevens',
+		title: 'Sitegegevens',
+		files: [{ path: 'src/lib/content/site.json', content: '{"a":1}\n' }]
+	});
+	assert.equal(result.outcome, 'branch-blocked');
+	assert.equal(github.pulls.length, 0);
+	assert.equal(github.calls.filter((c) => c.method !== 'GET').length, 0);
+
+	github.refs.delete('admin');
+	const again = await repoWith(github).propose({
+		key: 'sitegegevens',
+		title: 'Sitegegevens',
+		files: [{ path: 'src/lib/content/site.json', content: '{"a":1}\n' }]
+	});
+	assert.equal(again.outcome, 'ok');
+});
+
+test('a token that reads but may not write gets its own outcome, and the answer is logged without the token', async () => {
+	const github = fakeGitHub({ files: { 'src/lib/content/site.json': '{}\n' } });
+	github.answer(({ method }) =>
+		method === 'POST' ? new Response('{}', { status: 403, headers: { 'x-ratelimit-remaining': '4999' } }) : null
+	);
+	const warnings = [];
+	const warn = console.warn;
+	console.warn = (message) => warnings.push(String(message));
+	try {
+		const result = await repoWith(github).propose({
+			key: 'sitegegevens',
+			title: 'Sitegegevens',
+			files: [{ path: 'src/lib/content/site.json', content: '{"a":1}\n' }]
+		});
+		assert.equal(result.outcome, 'no-write');
+	} finally {
+		console.warn = warn;
+	}
+	assert.deepEqual(warnings, ['Admin: GitHub answered 403 to POST /git/trees (no-write).']);
+	assert.ok(warnings.every((w) => !w.includes('github_pat_test')));
+
+	// A 403 on a read is still a refused key.
+	github.answer(() => new Response('{}', { status: 403 }));
+	console.warn = () => {};
+	try {
+		assert.equal((await repoWith(github).readFile('src/lib/content/site.json')).outcome, 'key-refused');
+	} finally {
+		console.warn = warn;
+	}
+});
