@@ -1,7 +1,10 @@
-export const SHELL_TEXT: Readonly<Record<'admin' | 'menu' | 'closeMenu' | 'viewSite' | 'logout' | 'newWindow', string>>;
-export const OVERVIEW_TEXT: Readonly<Record<'facts' | 'links', string>>;
+export const SHELL_TEXT: Readonly<
+	Record<'admin' | 'menu' | 'closeMenu' | 'viewSite' | 'logout' | 'newWindow' | 'open' | 'loggedIn', string>
+>;
+export const OVERVIEW_TEXT: Readonly<Record<'facts' | 'links' | 'morning' | 'afternoon' | 'evening', string>>;
+export const TODO_TEXT: Readonly<Record<'title' | 'none', string>>;
 export const PROPOSALS_TEXT: Readonly<
-	Record<'title' | 'none' | 'intro' | 'updated' | 'open' | 'off', string> & { outcomes: Readonly<Record<string, string>> }
+	Record<'title' | 'none' | 'intro' | 'updated' | 'open' | 'off' | 'todoOne' | 'todoMany', string> & { outcomes: Readonly<Record<string, string>> }
 >;
 export const FORM_TEXT: Readonly<
 	Record<
@@ -30,3 +33,23 @@ export function fill(text: string, values?: Record<string, unknown>): string;
 export function joinNames(names: string[]): string;
 export function shortDate(iso: string, locale?: string): string;
 export function isCurrent(href: string, pathname: string, base?: string): boolean;
+
+export interface NavItem {
+	href: string;
+	label: string;
+	count?: number;
+}
+export interface NavGroup {
+	title?: string;
+	items: NavItem[];
+}
+export function navGroups(nav?: (NavItem | NavGroup)[]): NavGroup[];
+export function countLabel(count: unknown): string;
+export function totalCount(groups: NavGroup[]): number;
+export function titleWithCount(title: string, total: number): string;
+export function greeting(date: Date, timeZone?: string, text?: { morning: string; afternoon: string; evening: string }): string;
+export function longDate(date: Date, timeZone?: string): string;
+export function proposalsTodo(
+	data: import('../content-form-server.js').ProposalsData,
+	text?: { todoOne: string; todoMany: string }
+): { count: number; text: string; href: string }[];

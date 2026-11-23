@@ -21,6 +21,7 @@ export const THEME_KEYS = Object.freeze({
 	font: '--admin-font',
 	headingFont: '--admin-heading-font',
 	headingTransform: '--admin-heading-transform',
+	navTransform: '--admin-nav-transform',
 	radius: '--admin-radius'
 });
 

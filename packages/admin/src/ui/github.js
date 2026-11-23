@@ -3,4 +3,4 @@
 export { default as AdminProposals } from './AdminProposals.svelte';
 export { default as AdminContentForm } from './AdminContentForm.svelte';
 export { default as AdminContent } from './AdminContent.svelte';
-export { PROPOSALS_TEXT, FORM_TEXT, CONTENT_TEXT } from './text.js';
+export { PROPOSALS_TEXT, FORM_TEXT, CONTENT_TEXT, proposalsTodo } from './text.js';

@@ -62,9 +62,12 @@ built per product. The spec is issue #31.
 
 - **Svelte components next to their logic**, so a product takes only what it
   uses:
-  - `@merijnslegers/admin/ui`: `AdminShell` (logo, menu, link to the site,
-    logout, one message), `AdminOverview` (facts and links), and the parts
-    `AdminMessage`, `AdminCard` and `AdminField`.
+  - `@merijnslegers/admin/ui`: `AdminShell` (a sidebar from laptop width
+    with the logo, the menu in groups with counters, the link to the site,
+    who is logged in and logout, and one message; #43), `AdminOverview`
+    (a head with the date and a greeting, facts and links), `AdminTodo`
+    (what is waiting), and the parts `AdminMessage`, `AdminCard` and
+    `AdminField`.
   - `@merijnslegers/admin/github/ui`: `AdminProposals` (the open pull
     requests of F-0018), `AdminContentForm`, the form block, and
     `AdminContent`, one Content page with a tab per section the product
