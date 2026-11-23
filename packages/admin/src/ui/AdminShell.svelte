@@ -195,6 +195,19 @@
 		line-height: 1.3;
 	}
 
+	/* Sizes of their own too: Tailwind's reset makes every heading body size,
+	   so a page title in a product without heading sizes looked like text. */
+	.ms-admin :global(:where(h1)) {
+		margin: 0 0 1rem;
+		font-size: 1.75rem;
+		font-weight: 700;
+	}
+
+	.ms-admin :global(:where(h2)) {
+		font-size: 1.25rem;
+		font-weight: 700;
+	}
+
 	.inner {
 		max-width: 62rem;
 		margin: 0 auto;
