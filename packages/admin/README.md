@@ -376,12 +376,14 @@ print.
 ```
 
 - `nav` takes groups, `{ title, items }`, or a flat list of items, which is
-  one group without a title. A group without a title has no heading.
+  one group without a title. A group without a title has no heading, and
+  with only one group its title is left out as well.
 - An item's `count` above 0 shows as a badge in the accent colour (99+ above
   99), read out as "2 openstaand". The total goes on the phone's menu button
   and in the tab title: "(2) Admin Frietwagen Someren".
 - The shell sets the tab title itself, `Admin <name>` or `title`; a product
-  does not set its own `<title>` in the admin layout.
+  does not set its own `<title>` in the admin layout. **Coming from 0.6:**
+  remove a `<title>` from the admin layout, or there are two.
 - `user` is shown above "Uitloggen", such as `locals.admin.email` passed
   through a `+layout.server.ts`.
 
@@ -450,7 +452,8 @@ and the open proposals:
 ```
 
 - `greet` shows the date and a greeting by the time of day ("Goedemorgen"
-  until noon, "Goedemiddag" until six, then "Goedenavond"), with `name` after
+  from six until noon, "Goedemiddag" until six in the evening, then
+  "Goedenavond", also at night), with `name` after
   it. HTTP Basic only knows an email, so the product maps it to a name.
   `timeZone` is `Europe/Amsterdam` by default, because the server may run in
   another zone. The head is the page's `<h1>`.

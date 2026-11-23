@@ -316,8 +316,25 @@ test('the menu takes groups, and a flat list is one group without a title', () =
 	const flat = [{ href: '/admin', label: 'Overzicht' }];
 	assert.deepEqual(navGroups(flat), [{ title: undefined, items: flat }]);
 	const groups = [{ title: 'Site', items: flat }];
-	assert.equal(navGroups(groups), groups);
+	assert.deepEqual(navGroups(groups), groups);
 	assert.deepEqual(navGroups([]), []);
+	// Loose items between groups gather in a group without a title.
+	assert.deepEqual(
+		navGroups([flat[0], { title: 'Site', items: flat }, flat[0]]).map((g) => [g.title, g.items.length]),
+		[
+			[undefined, 1],
+			['Site', 1],
+			[undefined, 1]
+		]
+	);
+});
+
+test('with one group, its title is left out', async () => {
+	const html = await renderComponent(ui('AdminShell'), {
+		name: 'Site',
+		nav: [{ title: 'Alles', items: [{ href: '/admin', label: 'Overzicht' }] }]
+	});
+	assert.doesNotMatch(html, /group-title/);
 });
 
 test('a count shows above 0, as 99+ above 99, and adds up for the tab title', () => {

@@ -66,9 +66,9 @@
 	<title>{tabTitle}</title>
 </svelte:head>
 
-{#snippet badge(count, extra = '')}
+{#snippet badge(count)}
 	{#if countLabel(count)}
-		<span class="badge {extra}">{countLabel(count)}<span class="sr"> {t.open}</span></span>
+		<span class="badge">{countLabel(count)}<span class="sr"> {t.open}</span></span>
 	{/if}
 {/snippet}
 
@@ -86,7 +86,7 @@
 {#snippet menuList()}
 	{#each groups as group, index (group.title ?? index)}
 		<div class="group">
-			{#if group.title}<p class="group-title">{group.title}</p>{/if}
+			{#if group.title && groups.length > 1}<p class="group-title">{group.title}</p>{/if}
 			<ul>
 				{#each group.items as item (item.href)}
 					<li>
@@ -95,7 +95,7 @@
 							aria-current={isCurrent(item.href, path, base) ? 'page' : undefined}
 							onclick={close}
 						>
-							<span>{item.label}</span>
+							<span class="label">{item.label}</span>
 							{@render badge(item.count)}
 						</a>
 					</li>
@@ -136,7 +136,7 @@
 		<details class="fold" bind:this={menu}>
 			<summary>
 				{t.menu}
-				{@render badge(total, 'on-button')}
+				{@render badge(total)}
 			</summary>
 			<div class="panel">
 				<nav class="menu" aria-label={t.menu}>
@@ -402,6 +402,11 @@
 		background: color-mix(in srgb, currentColor 8%, transparent);
 	}
 
+	.label {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
 	.badge {
 		display: inline-flex;
 		align-items: center;
@@ -468,7 +473,7 @@
 			flex-direction: column;
 			gap: 1.5rem;
 			height: 100vh;
-			overflow-y: auto;
+			overflow: hidden;
 			padding: 1.25rem 0.75rem 1.25rem;
 			border-right: 1px solid var(--ms-border);
 		}
@@ -477,12 +482,19 @@
 			padding: 0 0.75rem;
 		}
 
+		/* Only the menu scrolls, so the logo and the bottom stay in view. */
 		.side .menu {
 			flex: 1;
+			min-height: 0;
+			overflow-y: auto;
 		}
 	}
 
 	@media print {
+		.ms-admin {
+			display: block;
+		}
+
 		.side,
 		.bar {
 			display: none;

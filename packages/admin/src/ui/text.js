@@ -141,9 +141,18 @@ export function isCurrent(href, pathname, base = '/admin') {
  * the flat list it passed before, which becomes one group without a title.
  */
 export function navGroups(nav = []) {
-	if (nav.length === 0) return [];
-	if (nav.every((entry) => Array.isArray(entry?.items))) return nav;
-	return [{ title: undefined, items: nav }];
+	const groups = [];
+	for (const entry of nav) {
+		if (Array.isArray(entry?.items)) {
+			groups.push(entry);
+			continue;
+		}
+		// Loose items between groups gather in a group without a title.
+		const last = groups.at(-1);
+		if (last?.loose) last.items.push(entry);
+		else groups.push({ title: undefined, items: [entry], loose: true });
+	}
+	return groups.map(({ loose, ...group }) => group);
 }
 
 /** A count as the badge shows it: nothing for 0 or no number, 99+ above 99. */
@@ -170,7 +179,10 @@ function hourIn(date, timeZone) {
 	return Number(hour);
 }
 
-/** "Goedemorgen" until noon, "Goedemiddag" until six, then "Goedenavond". */
+/**
+ * "Goedemorgen" from six until noon, "Goedemiddag" until six in the evening,
+ * then "Goedenavond", also through the night.
+ */
 export function greeting(date, timeZone = 'Europe/Amsterdam', text = OVERVIEW_TEXT) {
 	const hour = hourIn(date, timeZone);
 	if (hour >= 6 && hour < 12) return text.morning;
