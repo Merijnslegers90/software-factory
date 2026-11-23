@@ -80,6 +80,17 @@ export async function renderComponent(file, props = {}) {
 	return render(Component, { props }).body;
 }
 
+/** Like renderComponent, but gives the head as well: `{ head, body }`. */
+export async function renderPage(file, props = {}) {
+	const full = path.join(ROOT, file);
+	const srcDir = path.dirname(full.replace(/\/ui\/.*$/, '/ui/x'));
+	const outDir = build(srcDir);
+	const target = path.join(outDir, `${path.relative(srcDir, full)}.js`);
+	const { default: Component } = await import(pathToFileURL(target).href);
+	const { head, body } = render(Component, { props });
+	return { head, body };
+}
+
 /** Only the visible text of rendered HTML, with spaces collapsed. */
 export function textOf(html) {
 	return html

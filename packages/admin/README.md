@@ -34,7 +34,7 @@ it to silence the warning.
 | `@merijnslegers/admin/password` | `hashPassword` and `verifyPassword` for HTTP Basic, with scrypt        | server only   |
 | `@merijnslegers/admin/github` | `createContentRepo`: content changes through a pull request (F-0018)     | server only   |
 | `@merijnslegers/admin/resize` | `resizeImage` and `resizeFormFiles`                                      | browser       |
-| `@merijnslegers/admin/ui`     | `AdminShell`, `AdminOverview`, `AdminMessage`, `AdminCard`, `AdminField` | Svelte        |
+| `@merijnslegers/admin/ui`     | `AdminShell`, `AdminOverview`, `AdminTodo`, `AdminMessage`, `AdminCard`, `AdminField` | Svelte        |
 | `@merijnslegers/admin/github/ui` | `AdminProposals` and the form block `AdminContentForm`                | Svelte        |
 | `@merijnslegers/admin/content-form-server` | `loadContentForm`, `contentFormAction`, `loadProposals`     | server only   |
 | `@merijnslegers/admin/content-form` | The pure rules of the form: fields, prices, checks                 | anywhere      |
@@ -345,7 +345,12 @@ the product's SvelteKit 3 compiles, with their own scoped CSS, in Dutch by
 default. A product passes its brand colour and logo, and its own words where
 it wants other ones through the `text` prop of a block.
 
-**The frame**, in `src/routes/admin/+layout.svelte`:
+**The frame**, in `src/routes/admin/+layout.svelte`. From laptop width it
+is a sidebar (#43): the logo, the menu in groups and, at the bottom, "Bekijk
+site", who is logged in and "Uitloggen". It stays in place while the page
+scrolls and scrolls itself when the menu is long. On a phone it is a bar with
+a menu in a `<details>`, so it opens without JavaScript. Both are hidden in
+print.
 
 ```svelte
 <script lang="ts">
@@ -358,16 +363,29 @@ it wants other ones through the `text` prop of a block.
 	name="Frietwagen Someren"
 	logo="/images/logo.png"
 	{theme}
+	user={data.gebruiker}
 	nav={[
-		{ href: '/admin', label: 'Overzicht' },
-		{ href: '/admin/prijzen', label: 'Prijzen' },
-		{ href: '/admin/bezoekers', label: 'Bezoekers' }
+		{ items: [{ href: '/admin', label: 'Overzicht' }] },
+		{ title: 'Site', items: [{ href: '/admin/content', label: 'Content', count: data.open }] },
+		{ title: 'Inzicht', items: [{ href: '/admin/bezoekers', label: 'Bezoekers' }] }
 	]}
 	message={data.message}
 >
 	{@render children()}
 </AdminShell>
 ```
+
+- `nav` takes groups, `{ title, items }`, or a flat list of items, which is
+  one group without a title. A group without a title has no heading, and
+  with only one group its title is left out as well.
+- An item's `count` above 0 shows as a badge in the accent colour (99+ above
+  99), read out as "2 openstaand". The total goes on the phone's menu button
+  and in the tab title: "(2) Admin Frietwagen Someren".
+- The shell sets the tab title itself, `Admin <name>` or `title`; a product
+  does not set its own `<title>` in the admin layout. **Coming from 0.6:**
+  remove a `<title>` from the admin layout, or there are two.
+- `user` is shown above "Uitloggen", such as `locals.admin.email` passed
+  through a `+layout.server.ts`.
 
 **The theme.** A product sets its own look in one place, through `theme`
 on `AdminShell`: colours, fonts and rounding. What it leaves out keeps the
@@ -393,9 +411,10 @@ export const theme = {
 | `text`, `muted`           | Text, and the lighter text of hints and labels             |
 | `border`, `inputBorder`   | Lines, and the edge of an input (3:1 against its background) |
 | `accent`, `onAccent`      | Buttons, the current page, bars; and the text on them      |
-| `headerBg`, `headerText`  | The bar at the top, for a logo that needs its own colour   |
+| `headerBg`, `headerText`  | The sidebar and the bar, for a logo that needs its own colour |
 | `error`, `errorBg`, `warningBg`, `okBg` | Messages                                     |
 | `font`, `headingFont`, `headingTransform` | The fonts, and capitals for headings       |
+| `navTransform`            | Capitals in the menu (`uppercase`), as Van Veldeke has     |
 | `radius`                  | The rounding of corners                                    |
 | `dark`                    | The same keys for the dark version                         |
 
@@ -419,16 +438,28 @@ follows the text colour, not the accent. The blocks are meant inside
 `AdminShell`, which defines the colours; outside it they fall back to the
 light ones.
 
-**The overview**, with the visitors of this month and the open proposals:
+**The overview**, with a head, what is waiting, the visitors of this month
+and the open proposals:
 
 ```svelte
-<AdminOverview facts={[{ label: 'Domein', value: 'www.example.nl' }]} links={[{ label: 'Vercel', href: 'https://vercel.com/...' }]}>
+<AdminOverview greet name="Gerard" facts={[{ label: 'Domein', value: 'www.example.nl' }]} links={[{ label: 'Vercel', href: 'https://vercel.com/...' }]}>
+	<AdminTodo items={proposalsTodo(data.proposals)} />
 	<AdminVisitorsSummary data={data.visitors} />
 	{#if data.proposals.outcome !== 'no-key'}
 		<AdminProposals data={data.proposals} />
 	{/if}
 </AdminOverview>
 ```
+
+- `greet` shows the date and a greeting by the time of day ("Goedemorgen"
+  from six until noon, "Goedemiddag" until six in the evening, then
+  "Goedenavond", also at night), with `name` after
+  it. HTTP Basic only knows an email, so the product maps it to a name.
+  `timeZone` is `Europe/Amsterdam` by default, because the server may run in
+  another zone. The head is the page's `<h1>`.
+- `AdminTodo` lists lines of `{ count, text, href }` under "Te doen", and
+  says "Er wacht niets." when there are none. `proposalsTodo(data)` from
+  `@merijnslegers/admin/github/ui` gives the line for the open proposals.
 
 The summary leaves itself out without its settings; the proposals block says
 what is missing, which is right on a page of its own but not on the

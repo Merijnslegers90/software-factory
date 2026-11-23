@@ -1,7 +1,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { page, renderComponent, textOf } from '../../../tests/svelte-render.mjs';
-import { FORM_TEXT, fill, isCurrent, joinNames, shortDate, withText } from '../src/ui/text.js';
+import { page, renderComponent, renderPage, textOf } from '../../../tests/svelte-render.mjs';
+import {
+	FORM_TEXT,
+	countLabel,
+	fill,
+	greeting,
+	isCurrent,
+	joinNames,
+	longDate,
+	navGroups,
+	proposalsTodo,
+	shortDate,
+	titleWithCount,
+	totalCount,
+	withText
+} from '../src/ui/text.js';
 import { readFileSync } from 'node:fs';
 
 // F-0020: the admin blocks render with their data and without their
@@ -47,7 +61,8 @@ test('the shell shows the logo, the menu with the current page, the site and log
 	assert.match(html, /href="\/admin\/logout" data-sveltekit-reload/);
 	assert.match(html, /target="_blank" rel="noopener"/);
 	assert.match(textOf(html), /Opslaan staat uit\./);
-	assert.match(html, /aria-expanded="false"/);
+	// On a phone the menu is a <details>, so it opens without JavaScript.
+	assert.match(html, /<details class="fold[^"]*"><summary/);
 });
 
 test('the shell takes the product’s words', async () => {
@@ -225,7 +240,7 @@ test('a fixed list can be changed but not grown, shrunk or moved', async () => {
 test('the types name every prop the blocks take, so a product can pass it', async () => {
 	const { propsOf, typedPropsOf } = await import('../../../tests/svelte-types.mjs');
 	const blocks = {
-		'packages/admin/src/ui/index.d.ts': ['AdminShell', 'AdminOverview', 'AdminMessage', 'AdminCard', 'AdminField'],
+		'packages/admin/src/ui/index.d.ts': ['AdminShell', 'AdminOverview', 'AdminMessage', 'AdminCard', 'AdminField', 'AdminTodo'],
 		'packages/admin/src/ui/github.d.ts': ['AdminProposals', 'AdminContentForm', 'AdminContent']
 	};
 	for (const [dts, names] of Object.entries(blocks)) {
@@ -295,4 +310,111 @@ test('the shell gives headings a size of their own, so a reset in the product do
 	const source = readFileSync(ui('AdminShell'), 'utf8');
 	assert.match(source, /:where\(h1\)\)\s*\{[^}]*font-size: 1\.75rem/);
 	assert.match(source, /:where\(h2\)\)\s*\{[^}]*font-size: 1\.25rem/);
+});
+
+test('the menu takes groups, and a flat list is one group without a title', () => {
+	const flat = [{ href: '/admin', label: 'Overzicht' }];
+	assert.deepEqual(navGroups(flat), [{ title: undefined, items: flat }]);
+	const groups = [{ title: 'Site', items: flat }];
+	assert.deepEqual(navGroups(groups), groups);
+	assert.deepEqual(navGroups([]), []);
+	// Loose items between groups gather in a group without a title.
+	assert.deepEqual(
+		navGroups([flat[0], { title: 'Site', items: flat }, flat[0]]).map((g) => [g.title, g.items.length]),
+		[
+			[undefined, 1],
+			['Site', 1],
+			[undefined, 1]
+		]
+	);
+});
+
+test('with one group, its title is left out', async () => {
+	const html = await renderComponent(ui('AdminShell'), {
+		name: 'Site',
+		nav: [{ title: 'Alles', items: [{ href: '/admin', label: 'Overzicht' }] }]
+	});
+	assert.doesNotMatch(html, /group-title/);
+});
+
+test('a count shows above 0, as 99+ above 99, and adds up for the tab title', () => {
+	assert.equal(countLabel(0), '');
+	assert.equal(countLabel(-2), '');
+	assert.equal(countLabel('3'), '');
+	assert.equal(countLabel(Number.NaN), '');
+	assert.equal(countLabel(2), '2');
+	assert.equal(countLabel(120), '99+');
+	const groups = [
+		{ title: 'A', items: [{ href: '/a', label: 'A', count: 2 }, { href: '/b', label: 'B', count: 0 }] },
+		{ title: 'B', items: [{ href: '/c', label: 'C', count: 3 }, { href: '/d', label: 'D' }] }
+	];
+	assert.equal(totalCount(groups), 5);
+	assert.equal(titleWithCount('Admin Frietwagen Someren', 5), '(5) Admin Frietwagen Someren');
+	assert.equal(titleWithCount('Admin Frietwagen Someren', 0), 'Admin Frietwagen Someren');
+});
+
+test('the shell shows groups, badges with words for screen readers, who is logged in, and the total in the title', async () => {
+	page.url = new URL('http://localhost/admin/content');
+	const { head, body } = await renderPage(ui('AdminShell'), {
+		name: 'Frietwagen Someren',
+		user: 'gerard',
+		nav: [
+			{ title: 'Site', items: [{ href: '/admin/content', label: 'Content', count: 2 }] },
+			{ title: 'Inzicht', items: [{ href: '/admin/bezoekers', label: 'Bezoekers', count: 0 }] }
+		]
+	});
+	assert.match(head, /<title>\(2\) Admin Frietwagen Someren<\/title>/);
+	assert.match(body, /<p class="group-title[^"]*">Site<\/p>/);
+	assert.match(body, /<p class="group-title[^"]*">Inzicht<\/p>/);
+	assert.match(textOf(body), /Content 2 openstaand/);
+	assert.doesNotMatch(textOf(body), /Bezoekers 0/);
+	// The total on the phone's menu button.
+	assert.match(textOf(body), /Menu 2 openstaand/);
+	assert.match(textOf(body), /Ingelogd als gerard/);
+
+	const plain = await renderPage(ui('AdminShell'), { name: 'Site', title: 'Beheer' });
+	assert.match(plain.head, /<title>Beheer<\/title>/);
+	assert.doesNotMatch(plain.body, /group-title/);
+});
+
+test('the greeting follows the time of day in the product’s time zone', () => {
+	// 23 November 2026: 08:00, 13:00 and 20:00 in Amsterdam (UTC+1).
+	assert.equal(greeting(new Date('2026-11-23T07:00:00Z')), 'Goedemorgen');
+	assert.equal(greeting(new Date('2026-11-23T12:00:00Z')), 'Goedemiddag');
+	assert.equal(greeting(new Date('2026-11-23T19:00:00Z')), 'Goedenavond');
+	assert.equal(greeting(new Date('2026-11-23T03:00:00Z')), 'Goedenavond');
+	// 23:30 UTC is already the next day in Amsterdam.
+	assert.equal(longDate(new Date('2026-11-23T23:30:00Z')), 'dinsdag 24 november');
+});
+
+test('the overview head shows the date and a greeting with the name, only when asked', async () => {
+	const html = await renderComponent(ui('AdminOverview'), {
+		greet: true,
+		name: 'Gerard',
+		now: new Date('2026-11-23T12:00:00Z')
+	});
+	assert.match(textOf(html), /maandag 23 november Goedemiddag, Gerard/);
+	assert.match(html, /<h1[^>]*>Goedemiddag, Gerard<\/h1>/);
+	assert.doesNotMatch(await renderComponent(ui('AdminOverview'), {}), /<h1/);
+});
+
+test('the to-do block lists what waits with a count, and says so when nothing does', async () => {
+	const html = await renderComponent(ui('AdminTodo'), {
+		items: [{ count: 2, text: 'voorstellen wachten op een merge', href: 'https://github.com/a/b/pulls' }]
+	});
+	assert.match(textOf(html), /Te doen 2 voorstellen wachten op een merge/);
+	assert.match(html, /href="https:\/\/github.com\/a\/b\/pulls"/);
+	assert.match(textOf(await renderComponent(ui('AdminTodo'), {})), /Te doen Er wacht niets\./);
+});
+
+test('the open proposals become one to-do line, or none', () => {
+	const proposal = (number) => ({ number, title: 'x', url: `https://github.com/a/b/pull/${number}`, updatedAt: '' });
+	assert.deepEqual(proposalsTodo({ outcome: 'ok', proposals: [], missing: [] }), []);
+	assert.deepEqual(proposalsTodo({ outcome: 'no-key', proposals: [], missing: ['X'] }), []);
+	assert.deepEqual(proposalsTodo({ outcome: 'ok', proposals: [proposal(5)], missing: [] }), [
+		{ count: 1, text: 'voorstel wacht op een merge', href: 'https://github.com/a/b/pull/5' }
+	]);
+	assert.deepEqual(proposalsTodo({ outcome: 'ok', proposals: [proposal(5), proposal(6)], missing: [] }), [
+		{ count: 2, text: 'voorstellen wachten op een merge', href: 'https://github.com/a/b/pulls' }
+	]);
 });

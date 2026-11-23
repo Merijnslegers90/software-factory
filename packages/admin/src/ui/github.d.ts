@@ -34,4 +34,4 @@ export const AdminContent: Component<{
 	formText?: DeepPartial<typeof FormText>;
 }>;
 
-export { PROPOSALS_TEXT, FORM_TEXT, CONTENT_TEXT } from './text.js';
+export { PROPOSALS_TEXT, FORM_TEXT, CONTENT_TEXT, proposalsTodo } from './text.js';

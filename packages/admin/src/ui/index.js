@@ -5,4 +5,5 @@ export { default as AdminOverview } from './AdminOverview.svelte';
 export { default as AdminMessage } from './AdminMessage.svelte';
 export { default as AdminCard } from './AdminCard.svelte';
 export { default as AdminField } from './AdminField.svelte';
-export { SHELL_TEXT, OVERVIEW_TEXT, withText } from './text.js';
+export { default as AdminTodo } from './AdminTodo.svelte';
+export { SHELL_TEXT, OVERVIEW_TEXT, TODO_TEXT, withText } from './text.js';
