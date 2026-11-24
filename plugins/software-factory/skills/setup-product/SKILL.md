@@ -65,7 +65,9 @@ Ask the owner which kind of F-0017 this product is, and set up what it needs:
 
 - **A site that hardly changes:** content in code under `src/lib/content/`.
   Nothing more, unless the owner wants an admin: then `@merijnslegers/admin`
-  with HTTP Basic and `ADMIN_USERS`, without a database, and the screens from
+  with HTTP Basic, `ADMIN_USERS` for the site's people and `ADMIN_OWNERS`
+  for the owner (link the shared variable in Vercel to the new project),
+  without a database, and the screens from
   its building blocks (F-0020): `AdminShell`, `AdminOverview`, the visitors
   of F-0015, and `AdminContentForm` for content the owner's customer changes
   now and then, saved as a pull request (F-0018).

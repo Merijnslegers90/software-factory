@@ -244,6 +244,26 @@ Auth. For everything under the admin path the hook:
 Without `ADMIN_USERS` nobody gets in, and the 401 names the missing setting
 after `responses.closed`.
 
+**One owner for every product.** The person who runs all the products can
+put their own entry in `ADMIN_OWNERS`, a **shared environment variable** in
+Vercel (Team Settings, Environment Variables; Pro plan), linked to every
+product with HTTP Basic. Each product declares it in `src/env.ts` and
+`.env.example` and passes both:
+
+```ts
+import { ADMIN_OWNERS, ADMIN_USERS } from '$app/env/private';
+
+export const admin = createAdmin({ users: [ADMIN_USERS, ADMIN_OWNERS] });
+```
+
+- The list reads as one. An address in both keeps its `ADMIN_USERS` entry, so
+  a site can give the owner its own password.
+- With only `ADMIN_OWNERS` set, the admin opens for the owner alone: a new
+  product before its own people have a password.
+- A new password in the shared variable counts from the next deploy of each
+  product, like any variable (F-0005).
+- With Supabase Auth set up, both are ignored, with a warning in the log.
+
 **What it cannot do:**
 
 - `currentAdmin`, `signIn`, `sendPasswordLink`, `setPassword` and `signOut`

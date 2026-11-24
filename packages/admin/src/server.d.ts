@@ -15,8 +15,13 @@ export interface AdminOptions {
 	serviceRoleKey?: string;
 	/** Supabase Auth: `ADMIN_EMAILS`, addresses separated by commas, semicolons, spaces or new lines. */
 	allowList?: string;
-	/** HTTP Basic: `ADMIN_USERS`, entries of `email:hash` from `npx @merijnslegers/admin hash`. */
-	users?: string;
+	/**
+	 * HTTP Basic: `ADMIN_USERS`, entries of `email:hash` from `npx @merijnslegers/admin hash`.
+	 * A list reads as one: `[ADMIN_USERS, ADMIN_OWNERS]`, where `ADMIN_OWNERS` is a
+	 * shared variable with the owner's entry for every product. The first entry
+	 * for an address wins.
+	 */
+	users?: string | ReadonlyArray<string>;
 	/** HTTP Basic: the name the browser shows in its login window. `Admin` by default. */
 	realm?: string;
 	/** Where the admin lives and its two open screens. */

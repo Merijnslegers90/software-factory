@@ -73,8 +73,10 @@ export function createAdmin(options) {
 		console.warn(`Admin: ${names.users} is ignored, because Supabase Auth is set up.`);
 	}
 	if (parsedUsers.skipped > 0) {
+		// With a list of sources the bad entry can be in either of them.
+		const where = Array.isArray(options.users) ? `${names.users} or ADMIN_OWNERS` : names.users;
 		console.warn(
-			`Admin: ${parsedUsers.skipped} entries in ${names.users} have no address or no password hash, and do not count.`
+			`Admin: ${parsedUsers.skipped} entries in ${where} have no address or no password hash, and do not count.`
 		);
 	}
 	if (!ready) console.warn(`Admin: closed, missing ${missing.join(', ')}.`);

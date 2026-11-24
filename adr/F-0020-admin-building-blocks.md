@@ -36,6 +36,12 @@ built per product. The spec is issue #31.
     password does not count. The password itself is stored nowhere.
   - Removing an entry locks that person out from the next deploy; changing
     one changes only that person's password.
+  - The owner's own entry can sit in `ADMIN_OWNERS`, a Vercel shared
+    environment variable linked to every product with HTTP Basic, so one
+    password reaches every admin and changes in one place. The product
+    passes `users: [ADMIN_USERS, ADMIN_OWNERS]`; an address in both keeps
+    its `ADMIN_USERS` entry. `ADMIN_OWNERS` alone opens the admin for the
+    owner (software-factory#47).
   - The user name is the email address, so `event.locals.admin` is
     `{ email }` in both ways.
   - `<admin>/logout` answers with a 401, so the browser forgets the password.
