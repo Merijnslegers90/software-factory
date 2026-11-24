@@ -45,3 +45,20 @@ export function seriesLabel(start) {
 export function barWidth(value, max) {
 	return max > 0 ? Math.max(2, Math.round((value / max) * 100)) : 0;
 }
+
+/**
+ * Height of a bar in the series as a fraction of the largest value. A day
+ * with no visitors has no bar at all, so 0 stands above an empty column;
+ * any other day keeps the small minimum of `barWidth`.
+ */
+export function barHeight(value, max) {
+	return value > 0 ? barWidth(value, max) / 100 : 0;
+}
+
+/** A count short enough to stand above a bar: 840, 1,2k, 12k, 1,2m. */
+export function shortNumber(value) {
+	if (value < 1000) return String(value);
+	const [amount, unit] = value < 999500 ? [value / 1000, 'k'] : [value / 1000000, 'm'];
+	const text = amount < 10 ? amount.toFixed(1).replace('.', ',').replace(',0', '') : String(Math.round(amount));
+	return `${text}${unit}`;
+}

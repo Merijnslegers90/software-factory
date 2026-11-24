@@ -1,6 +1,6 @@
 {
 	"name": "@merijnslegers/analytics",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "The visitor numbers of the software factory: reads Vercel Web Analytics on the server, turns it into totals, a series and top lists, and shows them in the admin with ready-made blocks.",
 	"license": "MIT",
 	"type": "module",

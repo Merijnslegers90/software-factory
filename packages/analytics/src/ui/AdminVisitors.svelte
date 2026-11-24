@@ -3,7 +3,16 @@
 	// change, a series per day or week, the top pages and where visitors come
 	// from, and a choice of period. The data comes from loadVisitors.
 	import { VISITORS_TEXT } from './text.js';
-	import { barWidth, changeText, fill, number, seriesLabel, withText } from './shared.js';
+	import {
+		barHeight,
+		barWidth,
+		changeText,
+		fill,
+		number,
+		seriesLabel,
+		shortNumber,
+		withText
+	} from './shared.js';
 
 	/**
 	 * @type {{
@@ -65,9 +74,17 @@
 			{#if on.series}
 			<div class="block">
 				<h3>{data.granularity === 'week' ? t.seriesWeek : t.series}</h3>
+				<!-- The count stands above each bar when the bar is wide enough for it.
+				     The table below has the same numbers for screen readers. -->
 				<div class="chart" aria-hidden="true">
 					{#each data.series as point (point.start)}
-						<span class="bar" style="height: {barWidth(point.visitors, maxSeries)}%" title="{seriesLabel(point.start)}: {point.visitors}"></span>
+						<span class="column" title="{seriesLabel(point.start)}: {point.visitors}">
+							<span class="count">{shortNumber(point.visitors)}</span>
+							<span
+								class="bar"
+								style="height: calc((100% - var(--count-height)) * {barHeight(point.visitors, maxSeries)})"
+							></span>
+						</span>
 					{/each}
 				</div>
 				<details>
@@ -208,17 +225,49 @@
 	}
 
 	.chart {
+		--count-height: 1.25rem;
 		display: flex;
-		align-items: flex-end;
+		align-items: stretch;
 		gap: 2px;
-		height: 8rem;
+		height: 9rem;
 	}
 
-	.bar {
+	/* Each column is a container, so its count shows only when the column
+	   is wide enough for it, and the text shrinks a little with a narrow
+	   column: 7 days on any phone, 13 weeks from about 360 pixels wide,
+	   30 days on a laptop. */
+	.column {
+		container-type: inline-size;
 		flex: 1;
 		min-width: 2px;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		align-items: stretch;
+	}
+
+	.count {
+		visibility: hidden;
+		height: var(--count-height);
+		font-size: clamp(0.55rem, 40cqi, 0.7rem);
+		line-height: var(--count-height);
+		text-align: center;
+		color: var(--ms-muted, #5c5c57);
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		overflow: hidden;
+	}
+
+	/* The bar fills what is left under the count: a full bar is the largest day. */
+	.bar {
 		background: var(--ms-accent, #2f5bd3);
 		border-radius: 2px 2px 0 0;
+	}
+
+	@container (min-width: 1.25rem) {
+		.count {
+			visibility: visible;
+		}
 	}
 
 	details {
