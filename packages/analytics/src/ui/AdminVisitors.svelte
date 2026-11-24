@@ -3,7 +3,16 @@
 	// change, a series per day or week, the top pages and where visitors come
 	// from, and a choice of period. The data comes from loadVisitors.
 	import { VISITORS_TEXT } from './text.js';
-	import { barWidth, changeText, fill, number, seriesLabel, withText } from './shared.js';
+	import {
+		COUNTS_ALWAYS,
+		barWidth,
+		changeText,
+		fill,
+		number,
+		seriesLabel,
+		shortNumber,
+		withText
+	} from './shared.js';
 
 	/**
 	 * @type {{
@@ -65,9 +74,17 @@
 			{#if on.series}
 			<div class="block">
 				<h3>{data.granularity === 'week' ? t.seriesWeek : t.series}</h3>
-				<div class="chart" aria-hidden="true">
+				<!-- The count stands above each bar; with many bars only when there is
+				     room. The table below has the same numbers for screen readers. -->
+				<div class="chart" class:many={data.series.length > COUNTS_ALWAYS} aria-hidden="true">
 					{#each data.series as point (point.start)}
-						<span class="bar" style="height: {barWidth(point.visitors, maxSeries)}%" title="{seriesLabel(point.start)}: {point.visitors}"></span>
+						<span class="column" title="{seriesLabel(point.start)}: {point.visitors}">
+							<span class="count">{shortNumber(point.visitors)}</span>
+							<span
+								class="bar"
+								style="height: calc((100% - 1.25rem) * {barWidth(point.visitors, maxSeries) / 100})"
+							></span>
+						</span>
 					{/each}
 				</div>
 				<details>
@@ -208,17 +225,48 @@
 	}
 
 	.chart {
+		container-type: inline-size;
 		display: flex;
-		align-items: flex-end;
+		align-items: stretch;
 		gap: 2px;
-		height: 8rem;
+		height: 9rem;
 	}
 
-	.bar {
+	.column {
 		flex: 1;
 		min-width: 2px;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		align-items: stretch;
+	}
+
+	.count {
+		height: 1.25rem;
+		font-size: 0.75rem;
+		line-height: 1.25rem;
+		text-align: center;
+		color: var(--ms-muted, #5c5c57);
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		overflow: hidden;
+	}
+
+	/* The bar fills what is left under the count: a full bar is the largest day. */
+	.bar {
 		background: var(--ms-accent, #2f5bd3);
 		border-radius: 2px 2px 0 0;
+	}
+
+	/* Thirty days on a phone leave no room for a number per bar. */
+	.many .count {
+		visibility: hidden;
+	}
+
+	@container (min-width: 48rem) {
+		.many .count {
+			visibility: visible;
+		}
 	}
 
 	details {

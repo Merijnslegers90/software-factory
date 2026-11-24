@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderComponent, textOf } from '../../../tests/svelte-render.mjs';
 import { loadVisitors, loadVisitorsSummary } from '../src/visitors.js';
-import { barWidth, changeText, number, seriesLabel } from '../src/ui/shared.js';
+import { COUNTS_ALWAYS, barWidth, changeText, number, seriesLabel, shortNumber } from '../src/ui/shared.js';
 
 // F-0020: the visitor blocks get their data in one call, and render with it
 // and without the settings (F-0005).
@@ -124,4 +124,31 @@ test('the types name every prop the blocks take, so a product can pass it', asyn
 			`${name}: props missing from the types`
 		);
 	}
+});
+
+test('a count stands above every bar, short enough to fit', async () => {
+	assert.equal(shortNumber(840), '840');
+	assert.equal(shortNumber(1000), '1k');
+	assert.equal(shortNumber(1234), '1,2k');
+	assert.equal(shortNumber(12345), '12k');
+
+	const data = await loadVisitors(fakeAnalytics(), new URL('http://x/?periode=7'));
+	data.series = [
+		{ start: '2026-11-01', visitors: 4, pageviews: 9 },
+		{ start: '2026-11-02', visitors: 1234, pageviews: 2000 }
+	];
+	const html = await renderComponent(ui('AdminVisitors'), { data });
+	assert.match(html, /<span class="count[^"]*">4<\/span>/);
+	assert.match(html, /<span class="count[^"]*">1,2k<\/span>/);
+	// A full bar is the largest day, under the room for the count.
+	assert.match(html, /height: calc\(\(100% - 1\.25rem\) \* 1\)/);
+	assert.doesNotMatch(html, /class="chart[^"]* many"/);
+
+	// Thirty bars: the counts are there, shown only when the chart is wide.
+	data.series = Array.from({ length: COUNTS_ALWAYS + 1 }, (_, i) => ({
+		start: `2026-11-${String(i + 1).padStart(2, '0')}`,
+		visitors: i,
+		pageviews: i
+	}));
+	assert.match(await renderComponent(ui('AdminVisitors'), { data }), /class="chart[^"]* many"/);
 });

@@ -45,3 +45,14 @@ export function seriesLabel(start) {
 export function barWidth(value, max) {
 	return max > 0 ? Math.max(2, Math.round((value / max) * 100)) : 0;
 }
+
+/** A count short enough to stand above a bar: 840, 1,2k, 12k. */
+export function shortNumber(value) {
+	if (value < 1000) return String(value);
+	const thousands = value / 1000;
+	const text = thousands < 10 ? thousands.toFixed(1).replace('.', ',').replace(',0', '') : String(Math.round(thousands));
+	return `${text}k`;
+}
+
+/** Up to this many bars the counts always stand above them; with more, only on a wide screen. */
+export const COUNTS_ALWAYS = 14;
