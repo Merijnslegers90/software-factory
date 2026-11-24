@@ -209,17 +209,26 @@ export function isPasswordHash(value) {
  * `email:hash`, separated by commas, semicolons, spaces or new lines. An entry
  * without `@`, or with a plain password instead of a hash, does not count;
  * `skipped` says how many there were, so the server can warn.
+ *
+ * A list of sources, such as `[ADMIN_USERS, ADMIN_OWNERS]`, reads as one list.
+ * An address in more than one source keeps the entry of the first, so a site
+ * can give the owner its own password (software-factory#47).
  */
 export function parseUsers(list) {
 	const users = new Map();
 	let skipped = 0;
-	for (const entry of String(list ?? '').split(/[\s,;]+/)) {
-		if (!entry) continue;
-		const at = entry.indexOf(':');
-		const email = normaliseEmail(entry.slice(0, at));
-		const hash = entry.slice(at + 1);
-		if (at > 0 && email.includes('@') && isPasswordHash(hash)) users.set(email, hash);
-		else skipped++;
+	const sources = Array.isArray(list) ? list : [list];
+	for (const source of sources) {
+		const own = new Map();
+		for (const entry of String(source ?? '').split(/[\s,;]+/)) {
+			if (!entry) continue;
+			const at = entry.indexOf(':');
+			const email = normaliseEmail(entry.slice(0, at));
+			const hash = entry.slice(at + 1);
+			if (at > 0 && email.includes('@') && isPasswordHash(hash)) own.set(email, hash);
+			else skipped++;
+		}
+		for (const [email, hash] of own) if (!users.has(email)) users.set(email, hash);
 	}
 	return { users, skipped };
 }

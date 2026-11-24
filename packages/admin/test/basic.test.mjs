@@ -66,6 +66,16 @@ test('parseUsers reads email:hash entries and skips typos and plain passwords', 
 	assert.deepEqual(parseUsers(undefined), { users: new Map(), skipped: 0 });
 });
 
+test('parseUsers reads a list of sources as one, and the first entry for an address wins', async () => {
+	const site = await hashPassword('site');
+	const shared = await hashPassword('shared');
+	const { users, skipped } = parseUsers([`${mail('ann')}:${site}`, `${mail('Ann')}:${shared} ${mail('bob')}:${shared} typo`]);
+	assert.deepEqual([...users.keys()], [mail('ann'), mail('bob')]);
+	assert.equal(users.get(mail('ann')), site);
+	assert.equal(skipped, 1);
+	assert.deepEqual(parseUsers(['', undefined]), { users: new Map(), skipped: 0 });
+});
+
 test('loginMethod: Supabase as soon as one of its settings is there, HTTP Basic otherwise (F-0020)', () => {
 	const users = new Map([[mail('ann'), 'hash']]);
 	assert.equal(loginMethod({ supabaseUrl: 'https://db.example.org', anonKey: 'anon', users }), 'supabase');

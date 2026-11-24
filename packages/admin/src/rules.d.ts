@@ -83,7 +83,7 @@ export function refusal(
 	realm?: string
 ): Response;
 export function isPasswordHash(value: string | null | undefined): boolean;
-export function parseUsers(list: string | null | undefined): {
+export function parseUsers(list: string | null | undefined | ReadonlyArray<string | null | undefined>): {
 	users: Map<string, string>;
 	skipped: number;
 };

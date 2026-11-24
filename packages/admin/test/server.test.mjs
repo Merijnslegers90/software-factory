@@ -118,6 +118,33 @@ test('without ADMIN_USERS the admin is closed, names the setting and asks for no
 	assert.equal(seen.count, 0);
 });
 
+test('ADMIN_OWNERS next to ADMIN_USERS: the owner gets in, also alone, and the site entry wins (software-factory#47)', async () => {
+	const owner = ['owner', 'example.org'].join('@');
+	const ownerEntry = `${owner}:${await hashPassword('owner password')}`;
+	const login = (user, password) => basic(password, user);
+
+	// Both set: both people get in.
+	const both = client(quietly(() => createAdmin({ users: [users, ownerEntry] })));
+	assert.equal((await both.send('/admin', { auth: basic(PASSWORD) })).text, email);
+	assert.equal((await both.send('/admin', { auth: login(owner, 'owner password') })).text, owner);
+
+	// Only the owner: a new product before its own people have a password.
+	const alone = quietly(() => createAdmin({ users: ['', ownerEntry] }));
+	assert.equal(alone.method, 'basic');
+	assert.equal((await client(alone).send('/admin', { auth: login(owner, 'owner password') })).status, 200);
+
+	// The same address in both: the site's own password counts, not the shared one.
+	const siteEntry = `${owner}:${await hashPassword('site password')}`;
+	const own = client(quietly(() => createAdmin({ users: [siteEntry, ownerEntry] })));
+	assert.equal((await own.send('/admin', { auth: login(owner, 'site password') })).status, 200);
+	assert.equal((await own.send('/admin', { auth: login(owner, 'owner password') })).status, 401);
+
+	// Both empty: closed, and the refusal names ADMIN_USERS as before.
+	const closed = quietly(() => createAdmin({ users: ['', ''], responses: { closed: 'Dicht:' } }));
+	assert.equal(closed.method, null);
+	assert.equal((await client(closed).send('/admin')).text, 'Dicht: ADMIN_USERS');
+});
+
 test('Supabase settings win over ADMIN_USERS, and Supabase functions do nothing with HTTP Basic', async () => {
 	const both = quietly(() =>
 		createAdmin({ supabaseUrl: 'https://db.example.org', anonKey: 'anon', allowList: email, users })
