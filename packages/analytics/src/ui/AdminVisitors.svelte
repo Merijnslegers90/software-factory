@@ -4,6 +4,7 @@
 	// from, and a choice of period. The data comes from loadVisitors.
 	import { VISITORS_TEXT } from './text.js';
 	import {
+		barHeight,
 		barWidth,
 		changeText,
 		fill,
@@ -81,7 +82,7 @@
 							<span class="count">{shortNumber(point.visitors)}</span>
 							<span
 								class="bar"
-								style="height: calc((100% - var(--count-height)) * {barWidth(point.visitors, maxSeries) / 100})"
+								style="height: calc((100% - var(--count-height)) * {barHeight(point.visitors, maxSeries)})"
 							></span>
 						</span>
 					{/each}
@@ -233,7 +234,8 @@
 
 	/* Each column is a container, so its count shows only when the column
 	   is wide enough for it, and the text shrinks a little with a narrow
-	   column: 7 days and 13 weeks on a phone, 30 days on a laptop. */
+	   column: 7 days on any phone, 13 weeks from about 360 pixels wide,
+	   30 days on a laptop. */
 	.column {
 		container-type: inline-size;
 		flex: 1;

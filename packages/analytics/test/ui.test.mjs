@@ -132,17 +132,24 @@ test('a count stands above every bar, short enough to fit', async () => {
 	assert.equal(shortNumber(1000), '1k');
 	assert.equal(shortNumber(1234), '1,2k');
 	assert.equal(shortNumber(12345), '12k');
+	assert.equal(shortNumber(999499), '999k');
+	assert.equal(shortNumber(999500), '1m');
+	assert.equal(shortNumber(1234567), '1,2m');
 
 	const data = await loadVisitors(fakeAnalytics(), new URL('http://x/?periode=7'));
 	data.series = [
 		{ start: '2026-11-01', visitors: 4, pageviews: 9 },
-		{ start: '2026-11-02', visitors: 1234, pageviews: 2000 }
+		{ start: '2026-11-02', visitors: 1234, pageviews: 2000 },
+		{ start: '2026-11-03', visitors: 0, pageviews: 0 }
 	];
 	const html = await renderComponent(ui('AdminVisitors'), { data });
 	assert.match(html, /<span class="count[^"]*">4<\/span>/);
 	assert.match(html, /<span class="count[^"]*">1,2k<\/span>/);
 	// A full bar is the largest day, under the room for the count.
 	assert.match(html, /height: calc\(\(100% - var\(--count-height\)\) \* 1\)/);
+	// A day without visitors shows 0 above an empty column.
+	assert.match(html, /<span class="count[^"]*">0<\/span>/);
+	assert.match(html, /height: calc\(\(100% - var\(--count-height\)\) \* 0\)/);
 	// The count shows only in a column wide enough for it (a container query).
 	const css = readFileSync(ui('AdminVisitors'), 'utf8');
 	assert.match(css, /\.column \{\s*container-type: inline-size;/);
