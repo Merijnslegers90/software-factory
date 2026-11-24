@@ -111,10 +111,10 @@ export const load = ({ url }) => loadVisitors(analytics, url);
 - `loadVisitorsSummary(analytics)` gives this month against the same days of
   last month, for `AdminVisitorsSummary` on the overview. Without the
   settings the summary is left out, and the full block says what is missing.
-- Each bar of the series has its count above it (1,2k above a thousand).
-  With more than 14 bars, as with 30 days, the counts only show when the
-  chart is at least 48rem wide; on a phone there is no room. The table under
-  the chart has every number for screen readers.
+- Each bar of the series has its count above it (1,2k above a thousand),
+  when the bar is wide enough for it: 7 days and 13 weeks on a phone, 30
+  days on a laptop. Each column is a container query, so a number is never
+  cut off. The table under the chart has every number for screen readers.
 - The words are Dutch; a product passes its own through `text`.
 
 ## What comes back

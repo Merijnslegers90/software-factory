@@ -53,6 +53,3 @@ export function shortNumber(value) {
 	const text = thousands < 10 ? thousands.toFixed(1).replace('.', ',').replace(',0', '') : String(Math.round(thousands));
 	return `${text}k`;
 }
-
-/** Up to this many bars the counts always stand above them; with more, only on a wide screen. */
-export const COUNTS_ALWAYS = 14;

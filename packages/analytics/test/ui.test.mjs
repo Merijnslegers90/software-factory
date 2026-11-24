@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { renderComponent, textOf } from '../../../tests/svelte-render.mjs';
 import { loadVisitors, loadVisitorsSummary } from '../src/visitors.js';
-import { COUNTS_ALWAYS, barWidth, changeText, number, seriesLabel, shortNumber } from '../src/ui/shared.js';
+import { barWidth, changeText, number, seriesLabel, shortNumber } from '../src/ui/shared.js';
 
 // F-0020: the visitor blocks get their data in one call, and render with it
 // and without the settings (F-0005).
@@ -141,14 +142,9 @@ test('a count stands above every bar, short enough to fit', async () => {
 	assert.match(html, /<span class="count[^"]*">4<\/span>/);
 	assert.match(html, /<span class="count[^"]*">1,2k<\/span>/);
 	// A full bar is the largest day, under the room for the count.
-	assert.match(html, /height: calc\(\(100% - 1\.25rem\) \* 1\)/);
-	assert.doesNotMatch(html, /class="chart[^"]* many"/);
-
-	// Thirty bars: the counts are there, shown only when the chart is wide.
-	data.series = Array.from({ length: COUNTS_ALWAYS + 1 }, (_, i) => ({
-		start: `2026-11-${String(i + 1).padStart(2, '0')}`,
-		visitors: i,
-		pageviews: i
-	}));
-	assert.match(await renderComponent(ui('AdminVisitors'), { data }), /class="chart[^"]* many"/);
+	assert.match(html, /height: calc\(\(100% - var\(--count-height\)\) \* 1\)/);
+	// The count shows only in a column wide enough for it (a container query).
+	const css = readFileSync(ui('AdminVisitors'), 'utf8');
+	assert.match(css, /\.column \{\s*container-type: inline-size;/);
+	assert.match(css, /@container \(min-width: 1\.25rem\) \{\s*\.count \{\s*visibility: visible;/);
 });
