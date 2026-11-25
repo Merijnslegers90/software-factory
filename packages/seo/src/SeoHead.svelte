@@ -6,7 +6,7 @@
 	// The canonical URL and the share tags are always on site.url; on any
 	// other host the page gets noindex, except a page that was prerendered: that
 	// is written once, as on the fixed domain. The logic is in head.js and json-ld.js.
-	import { building } from '$app/environment';
+	import { building } from '$app/env';
 	import { page as current } from '$app/state';
 	import { headTags } from './head.js';
 	import { jsonLd as jsonLdTag } from './json-ld.js';
