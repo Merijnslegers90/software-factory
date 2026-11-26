@@ -44,7 +44,7 @@ export function absoluteUrl(site: Site, pathOrUrl: string): string;
 export function isIndexable(site: Site, url: URL | string, page?: Pick<Page, 'noindex'>): boolean;
 export const NOINDEX_HEADERS: Readonly<{ 'X-Robots-Tag': 'noindex' }>;
 export interface HeadOptions {
-	/** True while SvelteKit prerenders (`building` from `$app/environment`): the page is written as on the fixed domain. */
+	/** True while SvelteKit prerenders (`building` from `$app/env`): the page is written as on the fixed domain. */
 	prerendering?: boolean;
 }
 

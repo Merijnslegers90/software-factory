@@ -1,6 +1,6 @@
 {
 	"name": "@merijnslegers/seo",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Findability for every product of the software factory: the head with canonical URL and share tags on the fixed domain, sitemap and robots.txt, and structured data (F-0019).",
 	"license": "MIT",
 	"type": "module",
